@@ -1,0 +1,91 @@
+# PAC de fenêtre réversible au propane (R290) : étude physique
+
+Étude de faisabilité "sur papier" d'une pompe à chaleur air/air réversible qui
+s'installe dans une fenêtre d'appartement (battant en France / UE, guillotine aux
+USA), pour une pièce de 50 m² maximum, avec du propane comme réfrigérant.
+
+Cette première étape fournit un **simulateur physique temps réel** : on fait
+varier les charges (températures et humidités intérieure / extérieure,
+déperditions, apports) et on voit immédiatement l'effet sur le cycle et le COP.
+
+![Chauffage](docs/capture_chauffage.png)
+
+## Lancer
+
+```bash
+pip install -r requirements.txt
+python simulateur.py
+```
+
+Options : `python simulateur.py --capture vue.png [--mode clim]` génère une image
+sans ouvrir de fenêtre. Tests de cohérence : `python tests/test_physique.py`.
+
+## Ce que montre l'interface
+
+| Zone | Contenu |
+|---|---|
+| Schéma animé | Circuit réel (compresseur, vanne 4 voies, EEV, deux batteries, traversée de fenêtre). Les points circulent à une vitesse proportionnelle au débit massique ; couleur = état du fluide. |
+| Diagramme P-h | Cloche de saturation du propane (CoolProp, EOS de référence) et cycle courant 1-2-3-4. |
+| COP = f(T ext) | Courbe recalculée à chaque changement, technologie choisie vs tube-ailettes classique, avec et sans dégivrage. |
+| Historique | COP effectif, puissance utile, puissance électrique, fréquence inverter dans le temps simulé. |
+| Panneau | Pressions, températures, débit, rendements, puissances, COP cycle / unité / effectif, Carnot, exergie, givrage ou déshumidification, charge de propane vs limite IEC 60335-2-40. |
+
+Commandes : T ext, T int, HR ext, HR int, déperditions H (W/K), apports (W),
+fréquence manuelle, accélération du temps ; mode chauffage / clim (avec
+temporisation d'inversion de la vanne 4 voies) ; inverter auto ou manuel ;
+technologie d'échangeur.
+
+## Modèle physique (`pac_fenetre/physique.py`)
+
+* **Fluide** : propane R290, propriétés réelles CoolProp (HEOS).
+* **Compresseur** rotatif BLDC 16 cm³, 15 à 110 Hz : rendement volumétrique
+  (espace mort + fuites dépendant de la vitesse), rendement isentropique fonction
+  du taux de compression et de la fréquence, rendement moteur + variateur,
+  pertes carter.
+* **Échangeurs** : epsilon-NTU côté air, UA dépendant du débit (exposant 0,6).
+  Évaporateur à batterie humide (modèle enthalpique, Lewis = 1) : capacité
+  latente en été, formation de givre en hiver.
+* **Détendeur électronique** : surchauffe 5 K, sous-refroidissement 4 K ; pertes
+  de charge ligne d'aspiration et vanne 4 voies en équivalent température.
+* **Résolution** : T évaporation et T condensation telles que puissance côté
+  fluide = puissance côté air sur chaque batterie (Brent imbriqué, ~3 ms).
+* **Régulation "intelligente"** : l'inverter cherche la fréquence qui égalise la
+  capacité sensible au besoin de la pièce ; ventilateurs EC asservis ; en dessous
+  de la fréquence mini, cyclage avec coefficient de dégradation Cd = 0,15 ;
+  rampe de fréquence 1,5 Hz/s.
+* **Dégivrage** par inversion de cycle : bilan sur un cycle givrage + dégivrage
+  (masse de givre admissible, énergie de fonte prélevée dans la pièce).
+* **Besoin de la pièce** : H × ΔT ± apports, plus pont thermique du kit fenêtre.
+* **Sécurité** : charge estimée par les volumes internes et comparée à
+  m_max = 2,5 × LFL^1,25 × h0 × √A (≈ 297 g pour 50 m², h0 = 1 m) et au seuil
+  m1 = 4 × LFL ≈ 152 g. À revérifier selon l'édition applicable de la norme.
+
+### Technologies d'échangeurs (hypothèses à valider)
+
+| Technologie | UA | Puissance ventilateur | Volume interne | Capacité de givre |
+|---|---|---|---|---|
+| Tube-ailettes Cu/Al (référence) | x1,00 | x1,00 | x1,00 | x1,00 |
+| Microcanaux aluminium | x1,25 | x0,90 | x0,55 | x0,80 |
+| Impression 3D métal (TPMS, gyroïde) | x1,60 | x0,80 | x0,45 | x0,70 |
+
+Ces multiplicateurs sont des **hypothèses de départ**, pas des résultats : ils
+devront être remplacés par des corrélations (CFD ou essais) propres à la
+géométrie imprimée. Le simulateur sert justement à voir quel gain de UA est
+nécessaire pour atteindre un objectif de COP.
+
+## Ordres de grandeur obtenus (TPMS, valeurs par défaut)
+
+| Point | Fréquence | Capacité | COP / EER unité |
+|---|---|---|---|
+| Chauffage 7 / 20 °C | 60 Hz | 3,2 kW | 4,1 |
+| Chauffage -7 / 20 °C | 90 Hz | 3,2 kW | 3,0 (2,7 avec dégivrage) |
+| Clim 35 / 27 °C | 60 Hz | 3,1 kW | 3,6 |
+
+## Limites actuelles et pistes
+
+* Régime quasi-statique (pas de dynamique thermique des batteries ni de la pièce).
+* Échangeurs sans découpage en zones (surchauffe / diphasique / sous-refroidi).
+* Coefficients du compresseur génériques : à remplacer par une carte constructeur
+  (polynômes AHRI 540 d'un compresseur R290 réel).
+* Pas encore : recirculation d'air chaud au droit de la fenêtre, bruit,
+  limitation de Te en clim pour garantir la déshumidification.
