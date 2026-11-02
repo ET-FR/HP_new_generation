@@ -1,0 +1,33 @@
+{
+  "nom": "EXEMPLE gyroïde : valeurs de test, à remplacer",
+  "exemple": true,
+  "_avertissement": "Corrélations f et j : Qureshi (Leeds, 2026), tableau 5.9 (eau, parois lisses, CFD). Géométrie : 200 x 200 mm de face. Hypothèses à valider : h_propane, k_paroi (AlSi10Mg brut d'impression), Kc, Ke, grilles, rendement ventilateur constant.",
+
+  "interieur": {
+    "nombre_ventilateurs": 1,
+    "echangeur": {
+      "type": "gyroide",
+      "largeur_m": 0.20, "hauteur_m": 0.20, "profondeur_m": 0.05,
+      "L_cellule_m": 0.006, "niveau_air": 0.0, "niveau_propane": -0.5,
+      "Kc": 0.5, "Ke": 0.15,
+      "h_propane_W_m2K": 2000, "k_paroi_W_mK": 120
+    },
+    "accessoires": [{"nom": "grille intérieure (hypothèse)", "K": 1.0, "A": 0.04}],
+    "ventilateur": {"type": "rendement_constant", "eta": 0.25,
+                    "nom": "HYPOTHÈSE η = 0,25 (mesuré sur un EC axial 200 mm)"}
+  },
+
+  "exterieur": {
+    "nombre_ventilateurs": 1,
+    "echangeur": {
+      "type": "gyroide",
+      "largeur_m": 0.20, "hauteur_m": 0.20, "profondeur_m": 0.05,
+      "L_cellule_m": 0.006, "niveau_air": 0.0, "niveau_propane": -0.5,
+      "Kc": 0.5, "Ke": 0.15,
+      "h_propane_W_m2K": 2000, "k_paroi_W_mK": 120
+    },
+    "accessoires": [{"nom": "grille extérieure (hypothèse)", "K": 1.0, "A": 0.04}],
+    "ventilateur": {"type": "rendement_constant", "eta": 0.25,
+                    "nom": "HYPOTHÈSE η = 0,25 (mesuré sur un EC axial 200 mm)"}
+  }
+}

@@ -153,12 +153,53 @@ python simulateur.py --aero config_air/xxx.json
   donne une alarme et un COP indéfini, au lieu d'un chiffre trompeur.
 * Corrélations de frottement : `canal_droit_PROVISOIRE` (canal droit
   circulaire, **pas un gyroïde**, pour tester) et `leeds_gyroide` (Qureshi,
-  Leeds 2026), dont la forme et les coefficients restent à saisir.
+  Leeds 2026, voir ci-dessous).
 * `ventilateurs/W1G200-EC87-20.json` : courbes réelles de la fiche ebm-papst.
 * `config_air/EXEMPLE_aeraulique.json` : géométrie, Kc, Ke et accessoires
   **fictifs**. Avec ce ventilateur réel, le point est hors courbes : il ne
   fournit pas assez de pression pour ce circuit.
-* Limite : l'UA reste calculé par la loi UA ∝ débit^0,6 et le multiplicateur
-  de technologie, sans lien avec la géométrie déclarée ici. Le facteur j de
-  la même corrélation devra le remplacer.
+* Avec un échangeur de type `gyroide`, l'UA et le volume interne de propane
+  sont tirés de la même géométrie (voir ci-dessous). Avec un échangeur simple,
+  l'UA suit toujours la loi UA ∝ débit^0,6 × multiplicateur de technologie.
 * Tests : `python tests/test_aeraulique.py`.
+
+## Échangeur gyroïde (`pac_fenetre/gyroide.py`)
+
+Géométrie : F = sin X cos Y + sin Y cos Z + sin Z cos X (X = 2πx/L). Air pour
+F > n_air, paroi entre n_propane et n_air, propane pour F < n_propane. Les
+niveaux n sont sans dimension (le « R en mm » de la thèse est en réalité un
+niveau sans dimension). Fractions de volume, surfaces, Dh et épaisseur de
+paroi sont calculées numériquement ; elles reproduisent les tableaux 3.1 et
+5.13 de la thèse à moins de 0,5 %.
+
+Côté air (Qureshi, Leeds 2026, tableau 5.9) :
+
+| | 20 ≤ Re < 130 | 200 ≤ Re ≤ 8000 |
+|---|---|---|
+| f (Fanning) | 25,21·Re^-0,743 + 0,1533 | 2,209·Re^-0,3243 + 0,3538 |
+| j (Colburn) | 2,324·Re^-0,9467 + 0,03393 | 0,9448·Re^-0,4908 + 0,006636 |
+
+Re sur Dh du réseau air et vitesse dans les pores ; interpolation linéaire
+entre 130 et 200 (zone exclue des ajustements, alerte). h_air = j·G·cp·Pr^(-2/3).
+UA = 1 / (1/(h_air·A_air) + e/(k·A_moy) + 1/(h_propane·A_propane)).
+
+**Limites de ces corrélations** (analyse de la thèse) :
+* établies pour de l'**eau** (Pr ≈ 7) : f est transposable à l'air, j est une
+  estimation basse pour l'air en laminaire (jusqu'à ~2x) ;
+* aucune validation externe au-delà de Re = 250 (RANS k-ω SST ensuite) ;
+* parois lisses, paroi non modélisée, écoulement périodique sans effets d'entrée ;
+* la dépendance à L rapportée en instationnaire (~9 %) contredit la similitude
+  dynamique : elle est traitée comme une incertitude, f et j ne dépendent pas de L ;
+* domaine : 5 ≤ L ≤ 40 mm, niveau air de 0 à 0,6 ; au-delà, alerte d'extrapolation ;
+* l'épaisseur de paroi annoncée (« R = 0,3 → 1 mm ») est surestimée : le
+  calcul donne ~0,63 mm pour L = 10 mm, et elle est proportionnelle à L.
+
+Données d'entrée sans corrélation connue (hypothèses à fournir) : h côté propane,
+conductivité de paroi, Kc, Ke. Ventilateur `rendement_constant` : hypothèse
+P = débit × Δp / η pour explorer avant de choisir un vrai ventilateur.
+
+```bash
+python simulateur.py --aero config_air/EXEMPLE_gyroide.json
+python outils/balayage_gyroide.py --debit 520 --UA 416 --dp-max 40
+python tests/test_gyroide.py
+```

@@ -420,6 +420,19 @@ class PompeAChaleur:
         w_ext = w_from_hr(cond.T_ext, cond.HR_ext)
         UA_int = c.UA_int_ref * t["k_UA"] * r_int ** c.exposant_UA_debit
         UA_ext = c.UA_ext_ref * t["k_UA"] * r_ext ** c.exposant_UA_debit
+        self._ua_alertes, self._ua_detail = [], {}
+        if c.aeraulique is not None:   # UA tiré de la géométrie (facteur j)
+            for cote, deb, Ti in (("int", c.debit_int_nom * r_int, cond.T_int),
+                                  ("ext", c.debit_ext_nom * r_ext, cond.T_ext)):
+                circ = c.aeraulique[cote]
+                if circ.couple_UA:
+                    UA, det, al = circ.UA(deb, Ti)
+                    self._ua_detail[cote] = det
+                    self._ua_alertes += al
+                    if cote == "int":
+                        UA_int = UA
+                    else:
+                        UA_ext = UA
         air_int = CoteAir(cond.T_int, w_int, c.debit_int_nom * r_int, UA_int)
         air_ext = CoteAir(cond.T_ext, w_ext, c.debit_ext_nom * r_ext, UA_ext)
         # loi cubique des ventilateurs, chacun à son propre débit
@@ -515,8 +528,11 @@ class PompeAChaleur:
                                       ("ext", e.debit_ext, cond.T_ext, e.T_air_ext_out)):
                 P, det, al = c.aeraulique[cote].puissance(deb, Ti, To)
                 e.aero[cote] = dict(det, P=P)
+                e.aero[cote].update({k + "_UA" if k == "Re" else k: v
+                                     for k, v in self._ua_detail.get(cote, {}).items()})
                 alarmes.extend(al)
                 P_vent += P
+            alarmes.extend(a for a in dict.fromkeys(self._ua_alertes))
             e.P_vent = P_vent
             e.P_tot = e.P_comp + P_vent + c.P_veille
 
@@ -544,8 +560,17 @@ class PompeAChaleur:
 
         # Charge de propane estimée
         t = c.techno
-        V_c = (c.V_bat_int if cond.mode == "chauffage" else c.V_bat_ext) * t["k_vol"]
-        V_e = (c.V_bat_ext if cond.mode == "chauffage" else c.V_bat_int) * t["k_vol"]
+        V_int, V_ext = c.V_bat_int * t["k_vol"], c.V_bat_ext * t["k_vol"]
+        if c.aeraulique is not None:   # volume interne tiré de la géométrie
+            for cote in ("int", "ext"):
+                ech = c.aeraulique[cote].echangeur
+                if hasattr(ech, "volume_propane_L"):
+                    if cote == "int":
+                        V_int = ech.volume_propane_L
+                    else:
+                        V_ext = ech.volume_propane_L
+        V_c = V_int if cond.mode == "chauffage" else V_ext
+        V_e = V_ext if cond.mode == "chauffage" else V_int
         _, _, _, rl_c = fl.sat(Tc, 0.0)
         _, _, _, rv_c = fl.sat(Tc, 1.0)
         _, _, _, rl_e = fl.sat(Te, 0.0)
