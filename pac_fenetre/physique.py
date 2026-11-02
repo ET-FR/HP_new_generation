@@ -30,6 +30,8 @@ import CoolProp.CoolProp as CP
 from CoolProp import AbstractState
 from scipy.optimize import brentq
 
+from .carte_compresseur import CarteCompresseur
+
 P_ATM = 101325.0
 T0 = 273.15
 
@@ -153,6 +155,9 @@ class Conception:
     pertes_carter: float = 0.07  # fraction du travail perdue vers l'ambiance
     eta_variateur: float = 0.97
     T_refoul_max: float = 110.0
+    # Carte constructeur (None : modèle générique ci-dessus). Voir
+    # Conception.avec_carte() et pac_fenetre/carte_compresseur.py
+    carte: CarteCompresseur | None = None
 
     # Cycle / détendeur électronique
     surchauffe: float = 5.0
@@ -199,6 +204,18 @@ class Conception:
     @property
     def techno(self):
         return self.multiplicateurs or TECHNOLOGIES[self.technologie]
+
+    def avec_carte(self, chemin_json: str) -> "Conception":
+        """Copie de la conception avec une carte compresseur constructeur.
+
+        La cylindrée et la plage de vitesse sont reprises de la carte ; la
+        vitesse nominale garde la même fraction x = f_nom / f_max.
+        """
+        k = CarteCompresseur.depuis_json(chemin_json)
+        x_nom = self.f_nom / self.f_max
+        return replace(self, carte=k,
+                       cylindree_cm3=k.cylindree_cm3 or self.cylindree_cm3,
+                       f_min=k.v_min, f_max=k.v_max, f_nom=x_nom * k.v_max)
 
 
 @dataclass
@@ -313,13 +330,20 @@ class PompeAChaleur:
 
     # ---- compresseur ---------------------------------------------------------
     def compresseur(self, Te: float, Tc: float, f: float):
+        """État du compresseur. f : vitesse de rotation en tr/s."""
         c, fl = self.c, self.fl
-        T_bp_asp = Te - c.dT_aspiration
+        T_bp_asp = Te - c.dT_aspiration          # rosée à l'aspiration (S)
+        T_hp_ref = Tc + c.dT_refoulement         # rosée au refoulement (D)
         p_asp = fl.psat(T_bp_asp)
-        p_ref = fl.psat(Tc + c.dT_refoulement)
+        p_ref = fl.psat(T_hp_ref)
         T1 = T_bp_asp + c.surchauffe
         h1, s1, rho1 = fl.pT(p_asp, T1)
         PR = p_ref / p_asp
+        T2s_init = (T1 + T0) * PR ** (0.12 / 1.12) - T0
+        h2s = fl.h_ps(p_ref, s1, max(T2s_init, Tc + 1.0))
+        if c.carte is not None:
+            return self._compresseur_carte(T_bp_asp, T_hp_ref, f, p_asp, p_ref,
+                                           h1, s1, rho1, h2s, PR, T2s_init)
 
         eta_v = 1.0 + c.espace_mort - c.espace_mort * PR ** (1.0 / c.n_poly)
         eta_v *= 1.0 - c.k_fuite * (PR - 1.0) * math.sqrt(c.f_nom / max(f, 1.0))
@@ -332,12 +356,43 @@ class PompeAChaleur:
         eta_mot = 0.935 - 0.06 * ((f - 70.0) / 70.0) ** 2
 
         m = rho1 * c.cylindree_cm3 * 1e-6 * f * eta_v
-        T2s_init = (T1 + T0) * PR ** (0.12 / 1.12) - T0
-        h2s = fl.h_ps(p_ref, s1, max(T2s_init, Tc + 1.0))
         w = (h2s - h1) / eta_is
         h2 = h1 + (1.0 - c.pertes_carter) * w
         return dict(p_asp=p_asp, p_ref=p_ref, h1=h1, s1=s1, h2=h2, PR=PR,
-                    eta_v=eta_v, eta_is=eta_is, eta_mot=eta_mot, m=m, w=w)
+                    eta_v=eta_v, eta_is=eta_is, eta_mot=eta_mot,
+                    eta_var=c.eta_variateur, m=m, w=w, alertes=[])
+
+    def _compresseur_carte(self, S, D, f, p_asp, p_ref, h1, s1, rho1, h2s, PR, T2s_init):
+        """Compresseur depuis la carte constructeur, corrigé aux conditions réelles.
+
+        * Débit : ṁ = ṁ_carte × ρ_asp,réel / ρ_asp,carte (même volume balayé
+          et même rendement volumétrique aux mêmes pressions).
+        * Puissance : P = P_carte × (ṁ/ṁ_carte) × (Δh_is,réel / Δh_is,carte).
+        * La puissance de la carte est électrique (bornes compresseur, ou
+          entrée variateur si la carte l'inclut). Le moteur d'un rotatif
+          hermétique cède ses pertes au gaz : on prend donc w = P/ṁ comme
+          apport au fluide, moins les pertes carter vers l'ambiance.
+          η_mot est alors fixé à 1 : P_comp = W_arbre / η_var, où W_arbre
+          désigne ici la puissance électrique aux bornes du compresseur.
+        * η_is et η_v rapportés sont des rendements GLOBAUX déduits de la carte.
+        """
+        c, fl, k = self.c, self.fl, self.c.carte
+        m_c, P_c, alertes = k.evaluer(S, D, f)
+        T1_ref = k.T_aspiration_reference(S)
+        h1r, s1r, rho1r = fl.pT(p_asp, T1_ref)
+        T2s_r_init = (T1_ref + T0) * PR ** (0.12 / 1.12) - T0
+        h2s_r = fl.h_ps(p_ref, s1r, max(T2s_r_init, D + 1.0))
+        m = m_c * rho1 / rho1r
+        P = P_c * (m / m_c) * ((h2s - h1) / (h2s_r - h1r)) if m_c > 0 else 0.0
+        w = P / m if m > 0 else 0.0
+        h2 = h1 + (1.0 - c.pertes_carter) * w
+        eta_var = 1.0 if k.puissance_inclut_variateur else c.eta_variateur
+        eta_v = (m / (rho1 * c.cylindree_cm3 * 1e-6 * f)
+                 if k.cylindree_cm3 and f > 0 else float("nan"))
+        eta_is = (h2s - h1) / w if w > 0 else float("nan")
+        return dict(p_asp=p_asp, p_ref=p_ref, h1=h1, s1=s1, h2=h2, PR=PR,
+                    eta_v=eta_v, eta_is=eta_is, eta_mot=1.0, eta_var=eta_var,
+                    m=m, w=w, alertes=alertes)
 
     def h_sortie_condenseur(self, Tc: float) -> float:
         fl, sc = self.fl, self.c.sous_refroid
@@ -422,7 +477,8 @@ class PompeAChaleur:
         e.eta_v, e.eta_is, e.eta_mot = k["eta_v"], k["eta_is"], k["eta_mot"]
         e.T_refoul = fl.T_ph(k["p_ref"], k["h2"])
         e.W_arbre = m * k["w"]
-        e.P_comp = e.W_arbre / (k["eta_mot"] * c.eta_variateur)
+        e.P_comp = e.W_arbre / (k["eta_mot"] * k["eta_var"])
+        alarmes.extend(k["alertes"])
         e.P_vent = P_vent
         e.P_tot = e.P_comp + P_vent + c.P_veille
         e.Q_cond = m * (k["h2"] - h3)

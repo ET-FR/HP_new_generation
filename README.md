@@ -92,7 +92,40 @@ nécessaire pour atteindre un objectif de COP.
 
 * Régime quasi-statique (pas de dynamique thermique des batteries ni de la pièce).
 * Échangeurs sans découpage en zones (surchauffe / diphasique / sous-refroidi).
-* Coefficients du compresseur génériques : à remplacer par une carte constructeur
-  (polynômes AHRI 540 d'un compresseur R290 réel).
+* Coefficients du compresseur génériques par défaut : brancher une carte
+  constructeur (voir ci-dessous) dès qu'un compresseur R290 est sélectionné.
 * Pas encore : recirculation d'air chaud au droit de la fenêtre, bruit,
   limitation de Te en clim pour garantir la déshumidification.
+
+## Carte compresseur constructeur (`pac_fenetre/carte_compresseur.py`)
+
+Le compresseur générique peut être remplacé par une carte constructeur
+(polynômes 10 coefficients EN 12900 / AHRI 540 en fonction des températures de
+rosée à l'aspiration S et au refoulement D, un jeu par vitesse, interpolation
+linéaire entre vitesses).
+
+```bash
+python simulateur.py --carte cartes/xxx.json
+```
+
+```python
+from pac_fenetre.physique import Conception, PompeAChaleur
+pac = PompeAChaleur(Conception().avec_carte("cartes/xxx.json"))
+```
+
+* **Remplir une carte** : copier `cartes/MODELE_carte.json` (champ `_aide`
+  détaillé). Si la fiche donne un tableau de points plutôt que des
+  coefficients : `python outils/ajuster_carte.py points.csv --surchauffe 10 -o cartes/xxx.json`.
+* **Vitesses en tr/s mécaniques** : moteur 4 pôles, 60 tr/s = 120 Hz électriques.
+* **Corrections aux conditions réelles** : débit × ρ_asp,réel / ρ_asp,carte ;
+  puissance × (ṁ / ṁ_carte) × (Δh_is,réel / Δh_is,carte).
+* **Bilan énergie** : la puissance électrique (moins les pertes carter) est
+  cédée au gaz, le moteur d'un rotatif hermétique étant refroidi par le
+  réfrigérant. η_mot vaut donc 1 dans ce mode et η_is, η_v affichés sont des
+  rendements globaux déduits de la carte.
+* **Plage de vitesse** reprise de la carte ; la vitesse nominale garde la même
+  fraction x = f_nom / f_max.
+* **Alarmes** : point (Te, Tc) hors enveloppe constructeur, vitesse hors carte.
+* `cartes/SYNTHETIQUE_generique.json` est une carte **synthétique** ajustée sur
+  le modèle générique, uniquement pour les tests (`python tests/test_carte.py`).
+  Ce n'est pas un compresseur réel.
