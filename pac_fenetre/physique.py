@@ -30,6 +30,7 @@ import CoolProp.CoolProp as CP
 from CoolProp import AbstractState
 from scipy.optimize import brentq
 
+from .aeraulique import charger_aeraulique
 from .carte_compresseur import CarteCompresseur
 
 P_ATM = 101325.0
@@ -158,6 +159,9 @@ class Conception:
     # Carte constructeur (None : modèle générique ci-dessus). Voir
     # Conception.avec_carte() et pac_fenetre/carte_compresseur.py
     carte: CarteCompresseur | None = None
+    # Aéraulique physique (None : loi P_vent_nom × k_vent × r³). Voir
+    # Conception.avec_aeraulique() et pac_fenetre/aeraulique.py
+    aeraulique: dict | None = None
 
     # Cycle / détendeur électronique
     surchauffe: float = 5.0
@@ -204,6 +208,10 @@ class Conception:
     @property
     def techno(self):
         return self.multiplicateurs or TECHNOLOGIES[self.technologie]
+
+    def avec_aeraulique(self, chemin_json: str) -> "Conception":
+        """Copie de la conception avec circuits d'air et ventilateurs réels."""
+        return replace(self, aeraulique=charger_aeraulique(chemin_json))
 
     def avec_carte(self, chemin_json: str) -> "Conception":
         """Copie de la conception avec une carte compresseur constructeur.
@@ -312,6 +320,7 @@ class Etat:
     charge_g: float = float("nan")
     points_ph: list = field(default_factory=list)  # [(h kJ/kg, p bar), ...]
     alarmes: list = field(default_factory=list)
+    aero: dict = field(default_factory=dict)   # détail aéraulique (si activé)
 
 
 # --------------------------------------------------------------------------
@@ -499,6 +508,17 @@ class PompeAChaleur:
             e.T_air_int_out = air_int.T_in - e.Q_sensible / air_int.C
             e.T_air_ext_out = air_ext.T_in + e.Q_cond / air_ext.C
             T_ch, T_fr = cond.T_ext, cond.T_int
+
+        if c.aeraulique is not None:
+            P_vent = 0.0
+            for cote, deb, Ti, To in (("int", e.debit_int, cond.T_int, e.T_air_int_out),
+                                      ("ext", e.debit_ext, cond.T_ext, e.T_air_ext_out)):
+                P, det, al = c.aeraulique[cote].puissance(deb, Ti, To)
+                e.aero[cote] = dict(det, P=P)
+                alarmes.extend(al)
+                P_vent += P
+            e.P_vent = P_vent
+            e.P_tot = e.P_comp + P_vent + c.P_veille
 
         e.COP_cycle = e.Q_utile / e.W_arbre
         e.COP = e.Q_utile / e.P_tot

@@ -83,9 +83,10 @@ class Simulateur:
     DELAI_INVERSION = 120.0  # s, égalisation des pressions avant redémarrage
     T_EXT_COURBE = {"chauffage": np.linspace(-20, 18, 14), "clim": np.linspace(18, 46, 13)}
 
-    def __init__(self, carte: str | None = None):
+    def __init__(self, carte: str | None = None, aero: str | None = None):
         self.fluide = Propane()
         base = Conception().avec_carte(carte) if carte else Conception()
+        base = base.avec_aeraulique(aero) if aero else base
         self.pac = {t: PompeAChaleur(replace(base, technologie=t), self.fluide) for t in TECHNOLOGIES}
         self.mode = "chauffage"
         self.techno = "Impression 3D métal (TPMS)"

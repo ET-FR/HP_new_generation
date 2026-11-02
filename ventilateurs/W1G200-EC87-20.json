@@ -1,0 +1,10 @@
+{
+  "nom": "ebm-papst W1G200-EC87-20",
+  "source": "Fiche technique ebm-papst W1G200-EC87-20 (EC axial 200 mm, 230 VAC), valeurs mesurées publiées",
+  "n_max_tr_min": 1300,
+  "n_min_tr_min": 900,
+  "courbes": [
+    {"n_tr_min": 1300, "q_m3h": [460, 410, 370, 320], "dp_Pa": [0, 10, 18, 23], "P_W": [7.0, 8.0, 8.0, 8.0]},
+    {"n_tr_min": 900,  "q_m3h": [315, 280, 250, 220], "dp_Pa": [0, 5, 8, 11],   "P_W": [3.4, 4.0, 4.1, 4.0]}
+  ]
+}

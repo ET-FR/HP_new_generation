@@ -1,0 +1,43 @@
+{
+  "nom": "EXEMPLE : géométrie et accessoires FICTIFS pour tester le code",
+  "exemple": true,
+  "_avertissement": "Seule la courbe ventilateur est réelle (fiche ebm-papst W1G200-EC87-20). Géométrie, Kc, Ke, accessoires et corrélation de frottement sont des valeurs de test, à remplacer.",
+
+  "interieur": {
+    "nombre_ventilateurs": 2,
+    "echangeur": {
+      "A_frontale_m2": 0.04,
+      "profondeur_m": 0.10,
+      "sigma": 0.6,
+      "D_h_m": 0.004,
+      "Kc": 0.4,
+      "Ke": 0.1,
+      "correlation_f": "canal_droit_PROVISOIRE",
+      "L_cellule_m": null,
+      "R_offset_m": null
+    },
+    "accessoires": [
+      {"nom": "grille intérieure (fictif)", "K": 1.0, "A": 0.04}
+    ],
+    "ventilateur_fichier": "../ventilateurs/W1G200-EC87-20.json"
+  },
+
+  "exterieur": {
+    "nombre_ventilateurs": 4,
+    "echangeur": {
+      "A_frontale_m2": 0.04,
+      "profondeur_m": 0.10,
+      "sigma": 0.6,
+      "D_h_m": 0.004,
+      "Kc": 0.4,
+      "Ke": 0.1,
+      "correlation_f": "canal_droit_PROVISOIRE",
+      "L_cellule_m": null,
+      "R_offset_m": null
+    },
+    "accessoires": [
+      {"nom": "grille extérieure (fictif)", "K": 1.0, "A": 0.04}
+    ],
+    "ventilateur_fichier": "../ventilateurs/W1G200-EC87-20.json"
+  }
+}

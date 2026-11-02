@@ -129,3 +129,36 @@ pac = PompeAChaleur(Conception().avec_carte("cartes/xxx.json"))
 * `cartes/SYNTHETIQUE_generique.json` est une carte **synthétique** ajustée sur
   le modèle générique, uniquement pour les tests (`python tests/test_carte.py`).
   Ce n'est pas un compresseur réel.
+
+## Aéraulique physique (`pac_fenetre/aeraulique.py`)
+
+Remplace la loi ventilateur P = P_nom × k_vent × r³ (toujours utilisée par
+défaut) par un calcul physique :
+
+```bash
+python simulateur.py --aero config_air/xxx.json
+```
+
+1. **Courbe du circuit** : Δp(Q) de l'échangeur selon Kays & London
+   (contraction d'entrée Kc, accélération due à l'échauffement de l'air,
+   frottement f(Re) × 4L/Dh, expansion de sortie Ke), plus les accessoires
+   (grilles, filtre) en K × ρu²/2.
+2. **Point de fonctionnement** du ventilateur réel : vitesse donnée par les
+   lois de similitude appliquées à la courbe constructeur.
+3. **Puissance électrique** interpolée entre les courbes mesurées à plusieurs
+   vitesses : la baisse de rendement des moteurs EC à basse vitesse est prise
+   en compte (absente des lois de similitude seules).
+
+* Un point hors des courbes constructeur (pression insuffisante, décrochage)
+  donne une alarme et un COP indéfini, au lieu d'un chiffre trompeur.
+* Corrélations de frottement : `canal_droit_PROVISOIRE` (canal droit
+  circulaire, **pas un gyroïde**, pour tester) et `leeds_gyroide` (Qureshi,
+  Leeds 2026), dont la forme et les coefficients restent à saisir.
+* `ventilateurs/W1G200-EC87-20.json` : courbes réelles de la fiche ebm-papst.
+* `config_air/EXEMPLE_aeraulique.json` : géométrie, Kc, Ke et accessoires
+  **fictifs**. Avec ce ventilateur réel, le point est hors courbes : il ne
+  fournit pas assez de pression pour ce circuit.
+* Limite : l'UA reste calculé par la loi UA ∝ débit^0,6 et le multiplicateur
+  de technologie, sans lien avec la géométrie déclarée ici. Le facteur j de
+  la même corrélation devra le remplacer.
+* Tests : `python tests/test_aeraulique.py`.
