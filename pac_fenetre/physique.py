@@ -162,6 +162,7 @@ class Conception:
 
     # Échangeurs et ventilateurs (technologie de référence)
     technologie: str = "Impression 3D métal (TPMS)"
+    multiplicateurs: dict | None = None  # remplace TECHNOLOGIES[technologie] si fourni
     UA_int_ref: float = 260.0    # W/K, batterie intérieure, débit nominal
     UA_ext_ref: float = 420.0    # W/K, batterie extérieure, débit nominal
     debit_int_nom: float = 520.0   # m3/h
@@ -197,7 +198,7 @@ class Conception:
 
     @property
     def techno(self):
-        return TECHNOLOGIES[self.technologie]
+        return self.multiplicateurs or TECHNOLOGIES[self.technologie]
 
 
 @dataclass
@@ -208,7 +209,8 @@ class Conditions:
     HR_ext: float = 0.80
     HR_int: float = 0.50
     freq: float = 60.0
-    ratio_vent: float | None = None  # None : asservi à la fréquence
+    debit_int: float | None = None  # m3/h ; None : asservi à la fréquence
+    debit_ext: float | None = None  # m3/h ; None : asservi à la fréquence
 
 
 # --------------------------------------------------------------------------
@@ -347,15 +349,18 @@ class PompeAChaleur:
     # ---- côtés air -----------------------------------------------------------
     def cotes_air(self, cond: Conditions, f: float):
         c, t = self.c, self.c.techno
-        r = cond.ratio_vent if cond.ratio_vent is not None else self.ratio_ventilation(f)
+        r = self.ratio_ventilation(f)
+        r_int = cond.debit_int / c.debit_int_nom if cond.debit_int is not None else r
+        r_ext = cond.debit_ext / c.debit_ext_nom if cond.debit_ext is not None else r
         w_int = w_from_hr(cond.T_int, cond.HR_int)
         w_ext = w_from_hr(cond.T_ext, cond.HR_ext)
-        UA_int = c.UA_int_ref * t["k_UA"] * r ** c.exposant_UA_debit
-        UA_ext = c.UA_ext_ref * t["k_UA"] * r ** c.exposant_UA_debit
-        air_int = CoteAir(cond.T_int, w_int, c.debit_int_nom * r, UA_int)
-        air_ext = CoteAir(cond.T_ext, w_ext, c.debit_ext_nom * r, UA_ext)
-        P_vent = (c.P_vent_int_nom + c.P_vent_ext_nom) * t["k_vent"] * r ** 3
-        return air_int, air_ext, P_vent, r
+        UA_int = c.UA_int_ref * t["k_UA"] * r_int ** c.exposant_UA_debit
+        UA_ext = c.UA_ext_ref * t["k_UA"] * r_ext ** c.exposant_UA_debit
+        air_int = CoteAir(cond.T_int, w_int, c.debit_int_nom * r_int, UA_int)
+        air_ext = CoteAir(cond.T_ext, w_ext, c.debit_ext_nom * r_ext, UA_ext)
+        # loi cubique des ventilateurs, chacun à son propre débit
+        P_vent = (c.P_vent_int_nom * r_int ** 3 + c.P_vent_ext_nom * r_ext ** 3) * t["k_vent"]
+        return air_int, air_ext, P_vent, (r_int, r_ext)
 
     # ---- résolution du cycle -------------------------------------------------
     def resoudre(self, cond: Conditions, f: float | None = None) -> Etat:
@@ -484,6 +489,43 @@ class PompeAChaleur:
         e.ok = True
         return e
 
+    def cascade_pertes(self, cond: Conditions, e: Etat):
+        """Décomposition de l'écart entre Carnot (airs) et le COP de l'unité.
+
+        Chaque étape remplace une hypothèse idéale par la réalité ; retourne
+        [(clé, COP après l'étape), ...] en partant de Carnot entre les deux airs.
+        """
+        c = self.c
+        chauf = cond.mode == "chauffage"
+
+        def carnot(T_ch, T_fr):
+            dT = T_ch - T_fr
+            if dT <= 0.5:
+                return float("inf")
+            return ((T_ch if chauf else T_fr) + T0) / dT
+
+        k = self.compresseur(e.Te, e.Tc, e.freq)
+        h1, h3 = k["h1"], self.h_sortie_condenseur(e.Tc)
+        h2s = h1 + k["w"] * k["eta_is"]
+        cop_ideal = ((h2s - h3) if chauf else (h1 - h3)) / (h2s - h1)
+        if chauf:  # intérieur = condenseur (côté chaud)
+            ech_int, ech_ext = carnot(e.Tc, cond.T_ext), carnot(e.Tc, e.Te)
+        else:      # intérieur = évaporateur (côté froid)
+            ech_int, ech_ext = carnot(cond.T_ext, e.Te), carnot(e.Tc, e.Te)
+        etapes = [
+            ("carnot_air", carnot(*((cond.T_int, cond.T_ext) if chauf else (cond.T_ext, cond.T_int)))),
+            ("ech_int", ech_int),
+            ("ech_ext", ech_ext),
+            ("pertes_charge", carnot(e.Tc + c.dT_refoulement, e.Te - c.dT_aspiration)),
+            ("cycle", cop_ideal),
+            ("compression", e.COP_cycle),
+            ("moteur", e.Q_utile / e.P_comp),
+            ("ventilateurs", e.COP),
+        ]
+        if chauf:
+            etapes.append(("degivrage", e.COP_integre))
+        return etapes
+
     def _points_ph(self, k, Te, Tc, h3):
         fl = self.fl
         p_e = fl.psat(Te)
@@ -547,4 +589,4 @@ class PompeAChaleur:
         return m_max * 1000.0, 4 * LFL * 1000.0
 
     def avec_techno(self, techno: str) -> "PompeAChaleur":
-        return PompeAChaleur(replace(self.c, technologie=techno), self.fl)
+        return PompeAChaleur(replace(self.c, technologie=techno, multiplicateurs=None), self.fl)

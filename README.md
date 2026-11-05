@@ -13,12 +13,19 @@ déperditions, apports) et on voit immédiatement l'effet sur le cycle et le COP
 ## Lancer
 
 ```bash
+python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python simulateur.py
 ```
 
-Options : `python simulateur.py --capture vue.png [--mode clim]` génère une image
-sans ouvrir de fenêtre. Tests de cohérence : `python tests/test_physique.py`.
+L'interface s'ouvre dans le navigateur (http://127.0.0.1:8765/) : le calcul
+physique tourne en Python (`pac_fenetre/moteur.py`, servi par
+`pac_fenetre/serveur.py`), la page `pac_fenetre/web/index.html` ne fait que
+l'affichage. Chaque réglage a un curseur et un champ de saisie (valider par Entrée).
+
+Options : `--port 9000`, `--sans-navigateur`, `--tk` (ancienne interface
+matplotlib, plus lente), `--capture vue.png [--mode clim]` (image sans fenêtre).
+Tests de cohérence : `python tests/test_physique.py`.
 
 ## Ce que montre l'interface
 

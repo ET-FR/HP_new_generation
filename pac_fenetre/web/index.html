@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulateur PAC R290</title>
+<style>
+:root {
+  --bg: #f4f5f7; --card: #ffffff; --ink: #1f2328; --muted: #6a737d; --line: #d8dde3;
+  --grid: #eceff2; --accent: #1c7ed6; --danger: #e03131; --input: #ffffff;
+  --refoul: #d62728; --cond: #e8590c; --liquide: #f59f00; --diphasique: #1c7ed6;
+  --evap: #4dabf7; --aspiration: #15aabf; --ref: #868e96; --q: #e8590c; --p: #5f3dc4;
+  --pipe: #ced4da; --window: #adb5bd; --off: #f1f3f5; --fill: rgba(255, 201, 201, .55);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --card: #171a21; --ink: #e6e8eb; --muted: #959ca6; --line: #2c313a;
+    --grid: #232831; --input: #0f1115; --pipe: #3a404a; --window: #4a515c; --off: #262b33;
+    --ref: #9aa1aa; --p: #9775fa; --fill: rgba(255, 107, 107, .22);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --card: #171a21; --ink: #e6e8eb; --muted: #959ca6; --line: #2c313a;
+  --grid: #232831; --input: #0f1115; --pipe: #3a404a; --window: #4a515c; --off: #262b33;
+  --ref: #9aa1aa; --p: #9775fa; --fill: rgba(255, 107, 107, .22);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+header {
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--card);
+}
+header h1 { font-size: 15px; margin: 0; }
+#connexion { font-size: 12px; color: var(--muted); margin-left: auto; }
+#connexion.ko { color: var(--danger); font-weight: 600; }
+main {
+  display: grid; gap: 12px; padding: 12px 16px;
+  grid-template-columns: 300px minmax(0, 1fr) 330px;
+}
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
+#commandes { display: flex; flex-direction: column; gap: 12px; }
+.reglage { margin-bottom: 10px; }
+.reglage label { display: block; font-size: 12px; margin-bottom: 2px; }
+.reglage .ligne { display: flex; gap: 8px; align-items: center; }
+.reglage input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.reglage input[type=number] {
+  width: 76px; padding: 3px 6px; font: inherit; font-variant-numeric: tabular-nums;
+  color: var(--ink); background: var(--input); border: 1px solid var(--line); border-radius: 4px;
+}
+.reglage input[type=number]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.reglage input:disabled { opacity: .5; }
+.choix label { display: flex; gap: 6px; align-items: center; padding: 2px 0; cursor: pointer; }
+.choix input { accent-color: var(--accent); margin: 0; }
+.techno { padding: 3px 0 5px; }
+.techno .ligne { display: flex; align-items: center; gap: 8px; }
+.techno label { flex: 1; min-width: 0; }
+.techno .ua { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.techno input[type=number] {
+  width: 62px; padding: 2px 5px; font: inherit; font-variant-numeric: tabular-nums; color: var(--ink);
+  background: var(--input); border: 1px solid var(--line); border-radius: 4px;
+}
+.techno .ua-abs { font-size: 11px; color: var(--muted); padding-left: 19px; }
+#hypotheses { font-size: 11.5px; color: var(--muted); white-space: pre-wrap; margin: 0; font-family: ui-monospace, Menlo, Consolas, monospace; }
+#graphes { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
+canvas { display: block; width: 100%; }
+#cv-schema, #cv-ph { aspect-ratio: 4 / 3.3; }
+#cv-cop, #cv-hist { aspect-ratio: 16 / 10; }
+.large { grid-column: 1 / -1; }
+#pertes { display: grid; gap: 12px; }
+#pertes p { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+#cv-pertes { aspect-ratio: 16 / 6; min-height: 260px; }
+#tab-pertes .nom { font-weight: 600; }
+#tab-pertes table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#tab-pertes th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase;
+                 letter-spacing: .03em; border-bottom: 1px solid var(--line); padding: 3px 4px; }
+#tab-pertes td { border-bottom: 1px solid var(--grid); padding: 5px 4px; vertical-align: top; }
+#tab-pertes td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#tab-pertes .pastille { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+#tab-pertes .levier { color: var(--muted); display: block; margin-top: 2px; }
+#valeurs table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+#valeurs td { padding: 1.5px 0; vertical-align: top; }
+#valeurs td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; }
+#valeurs tr.titre td { text-align: left; padding-top: 10px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+#valeurs .tete { font-weight: 600; }
+#valeurs .alarme td { color: var(--danger); font-weight: 600; text-align: left; }
+#valeurs .fort { font-weight: 700; }
+[hidden] { display: none !important; }
+.onglets { display: flex; gap: 4px; }
+.onglets button {
+  font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--muted);
+}
+.onglets button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+#vue-dim { grid-template-columns: 300px minmax(0, 1fr); }
+.colonne { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.discret { color: var(--muted); font-size: 12px; }
+.card p { margin: 0 0 8px; }
+#form-dim fieldset { border: 0; padding: 0; margin: 0 0 10px; }
+#form-dim legend { font-size: 12px; padding: 0; margin-bottom: 3px; }
+#form-dim .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+#form-dim .trio span { display: block; font-size: 10.5px; color: var(--muted); }
+#form-dim input[type=number], #form-dim select {
+  width: 100%; padding: 3px 6px; font: inherit; color: var(--ink); background: var(--input);
+  border: 1px solid var(--line); border-radius: 4px; font-variant-numeric: tabular-nums;
+}
+#form-dim label.case { display: flex; gap: 6px; align-items: center; padding: 1px 0; font-size: 12.5px; }
+#form-dim input[type=checkbox] { accent-color: var(--accent); margin: 0; }
+button.principal {
+  width: 100%; font: inherit; font-weight: 600; padding: 8px; border-radius: 6px; cursor: pointer;
+  border: 0; background: var(--accent); color: #fff;
+}
+button.principal:disabled { opacity: .55; cursor: default; }
+.barre { height: 6px; background: var(--grid); border-radius: 3px; margin: 10px 0 6px; overflow: hidden; }
+.barre div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+#cv-dim { aspect-ratio: 16 / 7; min-height: 260px; cursor: crosshair; }
+.tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0 12px; }
+.tuile { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.tuile b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
+.tuile span { font-size: 11px; color: var(--muted); }
+.deux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.deux h3 { font-size: 13px; margin: 0 0 4px; }
+table.donnees { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+table.donnees th { text-align: left; font-weight: 600; font-size: 11px; color: var(--muted); text-transform: uppercase;
+                   letter-spacing: .03em; border-bottom: 1px solid var(--line); padding: 4px; white-space: nowrap; }
+table.donnees td { border-bottom: 1px solid var(--grid); padding: 4px; vertical-align: top; }
+table.donnees td.num, table.donnees th.num { text-align: right; white-space: nowrap; }
+table.donnees tr.clic { cursor: pointer; }
+table.donnees tr.clic:hover td { background: var(--grid); }
+table.donnees tr.sel td { background: var(--grid); font-weight: 600; }
+table.donnees tr.non td { color: var(--muted); }
+.defaut { color: var(--danger); font-size: 11px; }
+.pastille-f { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.table-defile { overflow-x: auto; }
+@media (max-width: 1250px) {
+  main { grid-template-columns: 280px minmax(0, 1fr); }
+  #valeurs { grid-column: 1 / -1; }
+}
+@media (max-width: 800px) {
+  main, #vue-dim { grid-template-columns: minmax(0, 1fr); }
+  #graphes, .deux { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pompe à chaleur réversible de fenêtre au propane (R290)</h1>
+  <nav class="onglets" role="tablist">
+    <button role="tab" data-onglet="sim" aria-selected="true">Simulateur temps réel</button>
+    <button role="tab" data-onglet="dim" aria-selected="false">Dimensionnement des échangeurs</button>
+  </nav>
+  <span id="connexion">connexion…</span>
+</header>
+<main id="vue-dim" hidden>
+  <section class="colonne">
+    <div class="card"><h2>Besoin et contraintes</h2><form id="form-dim"></form></div>
+    <div class="card">
+      <button id="btn-optim" type="button" class="principal">Lancer le dimensionnement</button>
+      <div class="barre"><div id="barre-optim"></div></div>
+      <div id="msg-optim" class="discret"></div>
+    </div>
+  </section>
+  <section class="colonne">
+    <div class="card" id="dim-reco"><h2>Recommandation</h2>
+      <p class="discret">Choisir les contraintes puis lancer le dimensionnement. Le calcul explore plusieurs milliers
+        de géométries d'échangeur par côté, puis évalue les meilleurs couples avec le modèle de cycle complet.</p>
+    </div>
+    <div class="card"><h2>Performance en fonction du coût des deux échangeurs</h2>
+      <canvas id="cv-dim"></canvas>
+      <div id="leg-dim" class="discret"></div>
+    </div>
+    <div class="card"><h2>Meilleur choix par technologie et matériau</h2><div id="dim-techno"></div></div>
+    <div class="card"><h2>Fiche du couple sélectionné</h2><div id="dim-fiche" class="discret">Cliquer un point ou une ligne.</div></div>
+    <div class="card"><h2>Classement des couples évalués</h2><div id="dim-classement"></div></div>
+    <div class="card"><h2>Hypothèses du modèle d'échangeur</h2><div id="dim-hyp"></div></div>
+  </section>
+</main>
+<main id="vue-sim">
+  <section id="commandes">
+    <div class="card"><h2>Charges et conditions</h2><div id="reglages"></div></div>
+    <div class="card choix"><h2>Mode (vanne 4 voies)</h2>
+      <label><input type="radio" name="mode" value="chauffage"> Chauffage</label>
+      <label><input type="radio" name="mode" value="clim"> Climatisation</label>
+    </div>
+    <div class="card choix"><h2>Contrôle compresseur</h2>
+      <label><input type="radio" name="auto" value="1"> Inverter auto (suit la charge)</label>
+      <label><input type="radio" name="auto" value="0"> Fréquence manuelle</label>
+    </div>
+    <div class="card choix"><h2>Ventilation</h2>
+      <label><input type="radio" name="ventil_auto" value="1"> Asservie à la fréquence</label>
+      <label><input type="radio" name="ventil_auto" value="0"> Débits manuels (curseurs de débit)</label>
+    </div>
+    <div class="card choix"><h2>Technologie des échangeurs</h2><div id="technos"></div></div>
+    <div class="card"><h2>Hypothèses</h2><pre id="hypotheses"></pre></div>
+  </section>
+  <section id="graphes">
+    <div class="card"><canvas id="cv-schema"></canvas></div>
+    <div class="card"><canvas id="cv-ph"></canvas></div>
+    <div class="card"><canvas id="cv-cop"></canvas></div>
+    <div class="card"><canvas id="cv-hist"></canvas></div>
+    <div class="card large"><h2>Où partent les pertes ?</h2>
+      <div id="pertes">
+        <div>
+          <p id="pertes-intro"></p>
+          <canvas id="cv-pertes"></canvas>
+        </div>
+        <div id="tab-pertes"></div>
+      </div>
+    </div>
+  </section>
+  <section id="valeurs" class="card"></section>
+</main>
+<script>
+"use strict";
+
+// ------------------------------------------------------------------ données
+const CIRCUIT = {
+  chauffage: [
+    [[[6.4, 5.0], [6.4, 7.8]], "refoul"],
+    [[[6.4, 7.8], [6.2, 8.2], [1.6, 8.2], [1.6, 7.0]], "refoul"],
+    [[[1.6, 7.0], [1.6, 3.0]], "cond"],
+    [[[1.6, 3.0], [1.6, 1.2], [6.3, 1.2]], "liquide"],
+    [[[6.3, 1.2], [8.4, 1.2], [8.4, 3.0]], "diphasique"],
+    [[[8.4, 3.0], [8.4, 7.0]], "evap"],
+    [[[8.4, 7.0], [8.4, 8.2], [6.8, 8.2], [6.6, 7.8], [6.6, 5.0]], "aspiration"],
+  ],
+  clim: [
+    [[[6.4, 5.0], [6.4, 7.8], [6.8, 8.2], [8.4, 8.2], [8.4, 7.0]], "refoul"],
+    [[[8.4, 7.0], [8.4, 3.0]], "cond"],
+    [[[8.4, 3.0], [8.4, 1.2], [6.3, 1.2]], "liquide"],
+    [[[6.3, 1.2], [1.6, 1.2], [1.6, 3.0]], "diphasique"],
+    [[[1.6, 3.0], [1.6, 7.0]], "evap"],
+    [[[1.6, 7.0], [1.6, 8.2], [6.2, 8.2], [6.6, 7.8], [6.6, 5.0]], "aspiration"],
+  ],
+};
+const N_POINTS_FLUX = 70;
+const HIST_MAX = 900;
+
+let STAT = null;          // données fixes du serveur
+let S = null;             // dernier état reçu
+let enAttente = {};       // réglages modifiés à envoyer
+let historique = [];
+let phaseFlux = 0;
+let grapheAJour = true;
+
+// --------------------------------------------------------------- couleurs
+let C = {};
+function lireCouleurs() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ["bg", "card", "ink", "muted", "line", "grid", "accent", "danger", "refoul", "cond",
+                   "liquide", "diphasique", "evap", "aspiration", "ref", "q", "p", "pipe", "window", "off", "fill"])
+    C[k] = cs.getPropertyValue("--" + k).trim();
+  grapheAJour = true;
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", lireCouleurs);
+
+const COOLWARM = [[0, [59, 76, 192]], [.25, [141, 176, 254]], [.5, [221, 221, 221]],
+                  [.75, [244, 154, 123]], [1, [180, 4, 38]]];
+function coolwarm(t) {
+  t = Math.min(Math.max(t, 0), 1);
+  for (let i = 1; i < COOLWARM.length; i++) {
+    const [b, cb] = COOLWARM[i], [a, ca] = COOLWARM[i - 1];
+    if (t <= b) {
+      const x = (t - a) / (b - a);
+      return `rgb(${ca.map((v, j) => Math.round(v + x * (cb[j] - v))).join(",")})`;
+    }
+  }
+}
+
+// ------------------------------------------------------------- utilitaires
+const fin = v => v !== null && v !== undefined && Number.isFinite(v);
+const fmt = (v, d = 1) => fin(v) ? v.toFixed(d) : "—";
+
+function preparer(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+  }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return [ctx, w, h];
+}
+
+function texte(ctx, s, x, y, {couleur = C.ink, taille = 11, align = "left", va = "top", gras = false,
+                              rot = 0, mono = false} = {}) {
+  ctx.save();
+  ctx.fillStyle = couleur;
+  ctx.font = `${gras ? "600 " : ""}${taille}px ${mono ? "ui-monospace, Menlo, Consolas, monospace" : "system-ui, sans-serif"}`;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.translate(x, y);
+  if (rot) ctx.rotate(rot);
+  const lignes = String(s).split("\n"), lh = taille * 1.25;
+  const y0 = va === "top" ? lh / 2 : va === "bottom" ? -lh * (lignes.length - .5) : -lh * (lignes.length - 1) / 2;
+  lignes.forEach((l, i) => ctx.fillText(l, 0, y0 + i * lh));
+  ctx.restore();
+}
+
+function graduations(lo, hi, n = 6) {
+  const brut = (hi - lo) / n, p = 10 ** Math.floor(Math.log10(brut));
+  const pas = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= brut);
+  const out = [];
+  for (let v = Math.ceil(lo / pas) * pas; v <= hi + pas * 1e-9; v += pas) out.push(+v.toFixed(10));
+  return out;
+}
+function graduationsLog(lo, hi) {
+  const out = [];
+  for (let k = Math.floor(Math.log10(lo)); k <= Math.ceil(Math.log10(hi)); k++)
+    for (const m of [1, 2, 5]) { const v = m * 10 ** k; if (v >= lo && v <= hi) out.push(v); }
+  return out;
+}
+
+// ------------------------------------------------------------ graphe 2D
+class Graphe {
+  constructor(cv) { this.cv = cv; }
+
+  debut(o) {
+    const [ctx, w, h] = preparer(this.cv);
+    Object.assign(this, {ctx, o});
+    this.x0 = 50; this.x1 = w - (o.y2lim ? 48 : 12); this.y1 = 26; this.y0 = h - (o.bas || 36);
+    const {xlim, ylim} = o;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = C.grid;
+    const xt = o.xlog ? graduationsLog(...xlim) : graduations(...xlim, Math.max(3, Math.round((this.x1 - this.x0) / 70)));
+    if (!o.sansX) for (const v of xt) {
+      const x = this.X(v);
+      ctx.beginPath(); ctx.moveTo(x, this.y1); ctx.lineTo(x, this.y0); ctx.stroke();
+      texte(ctx, String(v), x, this.y0 + 4, {couleur: C.muted, taille: 10, align: "center"});
+    }
+    const yt = o.ylog ? graduationsLog(...ylim) : graduations(...ylim, 5);
+    for (const v of yt) {
+      const y = this.Y(v);
+      ctx.beginPath(); ctx.moveTo(this.x0, y); ctx.lineTo(this.x1, y); ctx.stroke();
+      texte(ctx, String(v), this.x0 - 5, y, {couleur: C.muted, taille: 10, align: "right", va: "middle"});
+    }
+    if (o.y2lim) for (const v of graduations(...o.y2lim, 5))
+      texte(ctx, String(v), this.x1 + 5, this.Y(v, true), {couleur: C.muted, taille: 10, va: "middle"});
+    ctx.strokeStyle = C.line;
+    ctx.strokeRect(this.x0, this.y1, this.x1 - this.x0, this.y0 - this.y1);
+    texte(ctx, o.titre, this.x0, 6, {gras: true, taille: 12});
+    texte(ctx, o.xlabel, (this.x0 + this.x1) / 2, h - 14, {couleur: C.muted, taille: 11, align: "center"});
+    texte(ctx, o.ylabel, 12, (this.y0 + this.y1) / 2, {couleur: o.ycouleur || C.muted, taille: 11,
+                                                       align: "center", va: "middle", rot: -Math.PI / 2});
+    if (o.y2label) texte(ctx, o.y2label, w - 8, (this.y0 + this.y1) / 2,
+                         {couleur: C.muted, taille: 11, align: "center", va: "middle", rot: -Math.PI / 2});
+    ctx.save();
+    ctx.beginPath(); ctx.rect(this.x0, this.y1, this.x1 - this.x0, this.y0 - this.y1); ctx.clip();
+  }
+
+  fin() { this.ctx.restore(); }
+
+  X(x) {
+    const [a, b] = this.o.xlim;
+    const t = this.o.xlog ? Math.log(x / a) / Math.log(b / a) : (x - a) / (b - a);
+    return this.x0 + t * (this.x1 - this.x0);
+  }
+
+  Y(y, axe2 = false) {
+    const [a, b] = axe2 ? this.o.y2lim : this.o.ylim;
+    const t = this.o.ylog && !axe2 ? Math.log(y / a) / Math.log(b / a) : (y - a) / (b - a);
+    return this.y0 - t * (this.y0 - this.y1);
+  }
+
+  courbe(xs, ys, {couleur, epaisseur = 1.6, tirets = [], axe2 = false, fermer = false, remplir = null} = {}) {
+    const ctx = this.ctx;
+    ctx.beginPath();
+    let dedans = false;
+    xs.forEach((x, i) => {
+      const y = ys[i];
+      if (!fin(x) || !fin(y)) { dedans = false; return; }
+      const px = this.X(x), py = this.Y(y, axe2);
+      dedans ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+      dedans = true;
+    });
+    if (fermer) ctx.closePath();
+    if (remplir) { ctx.fillStyle = remplir; ctx.fill(); }
+    ctx.strokeStyle = couleur; ctx.lineWidth = epaisseur; ctx.setLineDash(tirets);
+    ctx.lineJoin = "round"; ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  point(x, y, {couleur, r = 4} = {}) {
+    if (!fin(x) || !fin(y)) return;
+    const ctx = this.ctx;
+    ctx.beginPath(); ctx.arc(this.X(x), this.Y(y), r, 0, 2 * Math.PI);
+    ctx.fillStyle = couleur; ctx.fill();
+  }
+
+  legende(items, coin = "haut-gauche", dy = 0) {
+    const ctx = this.ctx;
+    ctx.font = "10.5px system-ui, sans-serif";
+    const w = Math.max(...items.map(i => ctx.measureText(i.label).width)) + 34, h = items.length * 14 + 6;
+    const x = coin.endsWith("droite") ? this.x1 - w - 4 : this.x0 + 8;
+    let y = (coin.startsWith("bas") ? this.y0 - h - 4 : this.y1 + 8) + dy;
+    ctx.fillStyle = C.card; ctx.globalAlpha = .85; ctx.fillRect(x - 4, y - 4, w, h); ctx.globalAlpha = 1;
+    for (const it of items) {
+      ctx.strokeStyle = it.couleur; ctx.lineWidth = 2; ctx.setLineDash(it.tirets || []);
+      ctx.beginPath(); ctx.moveTo(x, y + 6); ctx.lineTo(x + 20, y + 6); ctx.stroke(); ctx.setLineDash([]);
+      texte(ctx, it.label, x + 26, y + 6, {taille: 10.5, va: "middle"});
+      y += 14;
+    }
+  }
+}
+
+// ------------------------------------------------------------- schéma
+function discretiser(segments) {
+  const pts = [], natures = [], cum = [0];
+  for (const [poly, nature] of segments)
+    for (let i = 0; i + 1 < poly.length; i++) {
+      pts.push([poly[i], poly[i + 1]]);
+      natures.push(nature);
+      cum.push(cum[cum.length - 1] + Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]));
+    }
+  return {pts, natures, cum, L: cum[cum.length - 1]};
+}
+const CIRCUITS = {chauffage: discretiser(CIRCUIT.chauffage), clim: discretiser(CIRCUIT.clim)};
+
+function position(c, s) {
+  s = ((s % c.L) + c.L) % c.L;
+  let i = 0;
+  while (i < c.pts.length - 1 && c.cum[i + 1] <= s) i++;
+  const [[ax, ay], [bx, by]] = c.pts[i], L = c.cum[i + 1] - c.cum[i];
+  const x = L > 0 ? (s - c.cum[i]) / L : 0;
+  return [ax + x * (bx - ax), ay + x * (by - ay), c.natures[i]];
+}
+
+function dessinerSchema() {
+  const cv = document.getElementById("cv-schema");
+  const [ctx, w, h] = preparer(cv);
+  const sx = w / 10, sy = (h - 8) / 10, sr = Math.min(sx, sy);
+  const X = x => x * sx, Y = y => h - 4 - y * sy;
+  const rect = (x, y, rw, rh, fond, bord) => {
+    ctx.beginPath(); ctx.rect(X(x), Y(y + rh), rw * sx, rh * sy);
+    if (fond) { ctx.fillStyle = fond; ctx.fill(); }
+    if (bord) { ctx.strokeStyle = bord; ctx.lineWidth = 1.2; ctx.stroke(); }
+  };
+  const cercle = (x, y, r, fond, ep = 1.2) => {
+    ctx.beginPath(); ctx.arc(X(x), Y(y), r * sr, 0, 2 * Math.PI);
+    ctx.fillStyle = fond; ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = ep; ctx.stroke();
+  };
+  const fleche = (xa, xb, y) => {
+    ctx.strokeStyle = C.ref; ctx.fillStyle = C.ref; ctx.lineWidth = 2; ctx.globalAlpha = .6;
+    ctx.beginPath(); ctx.moveTo(X(xa), Y(y)); ctx.lineTo(X(xb) - 8, Y(y)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(xb), Y(y)); ctx.lineTo(X(xb) - 10, Y(y) - 5); ctx.lineTo(X(xb) - 10, Y(y) + 5);
+    ctx.fill(); ctx.globalAlpha = 1;
+  };
+  const t = (s, x, y, o = {}) => texte(ctx, s, X(x), Y(y), {taille: 10, ...o});
+
+  const mode = S ? S.params.mode : "chauffage";
+  const e = S && S.etat, marche = S && S.marche;
+
+  ctx.globalAlpha = .6; rect(4.65, 0.2, 0.35, 9.2, C.window); ctx.globalAlpha = 1;
+  t("FENÊTRE / KIT D'ÉTANCHÉITÉ", 4.825, 4.8, {align: "center", va: "middle", rot: -Math.PI / 2, taille: 9, couleur: C.muted});
+  t("INTÉRIEUR", 2.3, 9.95, {align: "center", gras: true, taille: 11});
+  t("EXTÉRIEUR", 7.4, 9.95, {align: "center", gras: true, taille: 11});
+
+  ctx.strokeStyle = C.pipe; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  for (const [poly] of CIRCUIT.chauffage) {
+    ctx.beginPath(); poly.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.stroke();
+  }
+  ctx.lineCap = "butt";
+  fleche(0.15, 3.4, 5.0);
+  fleche(7.25, 9.95, 5.0);
+
+  const coul = T => coolwarm((T + 25) / 95);
+  let T_bint = null, T_bext = null;
+  if (marche) [T_bint, T_bext] = mode === "chauffage" ? [e.Tc, e.Te] : [e.Te, e.Tc];
+  rect(1.1, 3.0, 1.0, 4.0, marche ? coul(T_bint) : C.off, C.ink);
+  rect(7.9, 3.0, 1.0, 4.0, marche ? coul(T_bext) : C.off, C.ink);
+  cercle(0.55, 5.0, 0.35, C.card); t("V", 0.55, 5.0, {align: "center", va: "middle", taille: 9});
+  cercle(9.45, 5.0, 0.35, C.card); t("V", 9.45, 5.0, {align: "center", va: "middle", taille: 9});
+  cercle(6.5, 4.5, 0.5, marche ? "#ffc9c9" : C.off, 1.5);
+  rect(6.1, 7.75, 0.8, 0.5, "#fff3bf", C.ink);
+  t("V4V", 6.5, 8.0, {align: "center", va: "middle", taille: 9, couleur: "#1f2328"});
+  ctx.beginPath();
+  [[6.05, 0.95], [6.05, 1.45], [6.55, 0.95], [6.55, 1.45]].forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y)));
+  ctx.closePath(); ctx.fillStyle = C.off; ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke();
+  t("EEV", 6.3, 0.75, {align: "center", taille: 9});
+
+  // points de fluide
+  const circ = CIRCUITS[mode];
+  for (let i = 0; i < N_POINTS_FLUX; i++) {
+    const [x, y, nature] = position(circ, i / N_POINTS_FLUX * circ.L + phaseFlux);
+    ctx.beginPath(); ctx.arc(X(x), Y(y), 2.3, 0, 2 * Math.PI);
+    ctx.fillStyle = marche ? C[nature] : C.window; ctx.fill();
+  }
+
+  if (!S) return;
+  const p = S.params;
+  if (marche) {
+    const [ri, re] = mode === "chauffage" ? ["CONDENSEUR", "ÉVAPORATEUR"] : ["ÉVAPORATEUR", "CONDENSEUR"];
+    t(`Batterie int. : ${ri}\nT réfrigérant ${fmt(T_bint)} °C`, 2.3, 9.55, {align: "center"});
+    t(`Batterie ext. : ${re}\nT réfrigérant ${fmt(T_bext)} °C` + (e.givre ? "  GIVRAGE" : ""), 7.6, 9.55, {align: "center"});
+    t(`Compresseur\n${fmt(e.freq, 0)} Hz  ${fmt(e.P_comp, 0)} W\n${fmt(e.m_dot * 1e3)} g/s`, 6.5, 3.85, {align: "center"});
+    t(`HP ${fmt(e.p_hp / 1e5)} bar\n(${fmt(e.Tc)} °C sat.)`, 5.15, 7.65, {couleur: C.refoul});
+    t(`BP ${fmt(e.p_bp / 1e5, 2)} bar\n(${fmt(e.Te)} °C sat.)`, 7.0, 0.85, {couleur: C.diphasique});
+    t(`refoul.\n${fmt(e.T_refoul, 0)} °C`, 6.3, 6.4, {align: "right", couleur: C.refoul});
+    t(`soufflé\n${fmt(e.T_air_int_out)} °C`, 2.75, 5.25, {align: "center", va: "bottom", gras: true});
+    t(`rejeté\n${fmt(e.T_air_ext_out)} °C`, 9.45, 5.45, {align: "center", va: "bottom", gras: true});
+    t(`Air pièce ${fmt(e.debit_int, 0)} m³/h\n${fmt(p.T_int)} → ${fmt(e.T_air_int_out)} °C`, 0.05, 2.6);
+    t(`Air ext. ${fmt(e.debit_ext, 0)} m³/h\n${fmt(p.T_ext)} → ${fmt(e.T_air_ext_out)} °C`, 9.95, 2.6, {align: "right"});
+  } else {
+    const msg = S.delai > 0 ? "Inversion V4V : égalisation\ndes pressions" : "Arrêt";
+    t(`Compresseur\n${msg}`, 6.5, 3.85, {align: "center"});
+    t(`Air pièce ${fmt(p.T_int)} °C`, 0.05, 2.6);
+    t(`Air ext. ${fmt(p.T_ext)} °C`, 9.95, 2.6, {align: "right"});
+  }
+}
+
+// ------------------------------------------------------------ graphes
+const gPH = new Graphe(document.getElementById("cv-ph"));
+const gCOP = new Graphe(document.getElementById("cv-cop"));
+const gHist = new Graphe(document.getElementById("cv-hist"));
+
+function dessinerPH() {
+  const g = gPH;
+  g.debut({xlim: [30, 760], ylim: [0.9, 45], ylog: true, titre: "Diagramme P-h du propane (R290) et cycle courant",
+           xlabel: "Enthalpie h (kJ/kg)", ylabel: "Pression p (bar)"});
+  for (const [T, p] of STAT.isothermes) {
+    g.courbe([30, 760], [p, p], {couleur: C.line, epaisseur: .8});
+    texte(g.ctx, `${T} °C`, g.X(36), g.Y(p) - 2, {couleur: C.muted, taille: 9.5, va: "bottom"});
+  }
+  const d = STAT.dome, haut = d[d.length - 1];
+  g.courbe([...d.map(r => r[0]), haut[1], ...d.map(r => r[1]).reverse()],
+           [...d.map(r => r[2]), haut[2], ...d.map(r => r[2]).reverse()], {couleur: C.ink, epaisseur: 1.1});
+  if (S && S.marche) {
+    const pts = S.etat.points_ph, h = pts.map(q => q[0]), p = pts.map(q => q[1]);
+    g.courbe(h, p, {couleur: C.refoul, epaisseur: 2.2, fermer: true, remplir: C.fill});
+    const cles = [pts[0], pts[5], pts[9], pts[10]], decal = [[-8, .82], [8, 1.05], [-24, 1.05], [-24, .82]];
+    cles.forEach(([hh, pp], i) => {
+      g.point(hh, pp, {couleur: C.ink, r: 3.5});
+      texte(g.ctx, String(i + 1), g.X(hh + decal[i][0]), g.Y(pp * decal[i][1]), {gras: true, taille: 11, va: "middle"});
+    });
+  }
+  g.fin();
+}
+
+// Limite de Carnot entre une source chaude et une source froide (°C)
+function carnot(mode, T_chaud, T_froid) {
+  const dT = T_chaud - T_froid;
+  if (dT <= 0.5) return null;
+  return ((mode === "chauffage" ? T_chaud : T_froid) + 273.15) / dT;
+}
+const carnotAir = (p, T_ext) =>
+  p.mode === "chauffage" ? carnot(p.mode, p.T_int, T_ext) : carnot(p.mode, T_ext, p.T_int);
+
+function dessinerCOP() {
+  const g = gCOP, p = S.params, ref = STAT.reference;
+  const cur = S.courbe[p.techno] || [], autre = p.techno !== ref ? (S.courbe[ref] || []) : [];
+  const xs = STAT.T_ext_courbe[p.mode];
+  const xlim = [Math.min(xs[0], p.T_ext) - 1, Math.max(xs[xs.length - 1], p.T_ext) + 1];
+  const tc = Array.from({length: 241}, (_, i) => xlim[0] + i * (xlim[1] - xlim[0]) / 240);
+  const cc = tc.map(T => carnotAir(p, T));
+  const vals = [...cur, ...autre].flatMap(r => [r[1], r[2]]).concat(cc).filter(fin);
+  if (fin(S.cop_eff)) vals.push(S.cop_eff);
+  const ymax = vals.length ? Math.max(...vals) : 6;
+  const nom = p.mode === "chauffage" ? "COP" : "EER";
+  g.debut({xlim, ylim: [0, Math.min(Math.max(4, ymax * 1.15), 12)],
+           titre: `${nom} effectif en fonction de T extérieure (T int. fixée)`, xlabel: "T extérieure (°C)", ylabel: nom});
+  const leg = [];
+  g.courbe(tc, cc, {couleur: C.ink, epaisseur: 1.4, tirets: [1, 3]});
+  g.point(p.T_ext, carnotAir(p, p.T_ext), {couleur: C.ink, r: 3.5});
+  leg.push({label: "Carnot (meilleur théorique, air)", couleur: C.ink, tirets: [1, 3]});
+  if (autre.length) {
+    g.courbe(autre.map(r => r[0]), autre.map(r => r[1]), {couleur: C.ref, epaisseur: 1.8});
+    leg.push({label: ref, couleur: C.ref});
+  }
+  g.courbe(cur.map(r => r[0]), cur.map(r => r[1]), {couleur: C.accent, epaisseur: 2.2});
+  leg.push({label: p.techno, couleur: C.accent});
+  if (p.mode === "chauffage") {
+    g.courbe(cur.map(r => r[0]), cur.map(r => r[2]), {couleur: C.accent, epaisseur: 1, tirets: [5, 4]});
+    leg.push({label: "choisie, sans dégivrage", couleur: C.accent, tirets: [5, 4]});
+  }
+  g.point(p.T_ext, S.cop_eff, {couleur: C.danger, r: 5});
+  leg.push({label: "point courant", couleur: C.danger});
+  g.legende(leg, "haut-droite", 16);
+  const cAct = carnotAir(p, p.T_ext);
+  texte(g.ctx, `Carnot à ${fmt(p.T_ext)} °C : ${cAct === null ? "∞" : fmt(cAct, 1)}` +
+        (S.courbe_complete ? "" : "   (calcul…)"),
+        g.x1 - 6, g.y1 + 6, {couleur: C.ink, taille: 10.5, align: "right", gras: true});
+  g.fin();
+}
+
+function dessinerHist() {
+  const g = gHist;
+  const t = historique.map(r => r[0]), cop = historique.map(r => r[1]);
+  const copOk = cop.filter(fin), autres = historique.flatMap(r => [r[2], r[3], r[4]]).filter(fin);
+  const t0 = t.length ? t[0] : 0, t1 = t.length ? Math.max(t[t.length - 1], t0 + 1) : 1;
+  g.debut({xlim: [t0, t1], ylim: [0, Math.max(4, (copOk.length ? Math.max(...copOk) : 4) * 1.15)],
+           y2lim: [0, Math.max(1, ...autres) * 1.15], titre: "Historique temps réel", xlabel: "Temps simulé (min)",
+           ylabel: "COP effectif", ycouleur: C.accent, y2label: "Puissance (kW) / fréquence (Hz/100)"});
+  if (historique.length > 1) {
+    g.courbe(t, historique.map(r => r[4]), {couleur: C.ref, epaisseur: 1, tirets: [2, 3], axe2: true});
+    g.courbe(t, historique.map(r => r[2]), {couleur: C.q, epaisseur: 1.4, axe2: true});
+    g.courbe(t, historique.map(r => r[3]), {couleur: C.p, epaisseur: 1.4, axe2: true});
+    g.courbe(t, cop, {couleur: C.accent, epaisseur: 1.8});
+  }
+  g.legende([{label: "COP effectif", couleur: C.accent}, {label: "Q utile kW", couleur: C.q},
+             {label: "P élec kW", couleur: C.p}, {label: "f /100", couleur: C.ref, tirets: [2, 3]}]);
+  g.fin();
+}
+
+// ------------------------------------------------------------ pertes
+// Groupes de pertes : couleur dans la cascade
+const GROUPES = {
+  echangeurs: {nom: "Échangeurs (écart de température air / fluide)", couleur: () => C.cond},
+  thermo: {nom: "Cycle et compresseur", couleur: () => C.p},
+  elec: {nom: "Électrique et auxiliaires", couleur: () => C.ref},
+  fonct: {nom: "Fonctionnement (givre, marche/arrêt)", couleur: () => C.liquide},
+};
+// Pour chaque étape : libellé court (graphe), nom, explication et levier en fonction de l'état
+const PERTES = {
+  carnot_air: {court: "Carnot\n(airs)"},
+  ech_int: {court: "Échangeur\nintérieur", nom: "Échangeur intérieur", groupe: "echangeurs",
+    pourquoi: (p, e) => p.mode === "chauffage"
+      ? `Le propane condense à ${fmt(e.Tc)} °C pour chauffer l'air de la pièce à ${fmt(p.T_int)} °C (${fmt(e.Tc - p.T_int)} K d'écart). ` +
+        `Avec ${fmt(e.debit_int, 0)} m³/h, l'air doit ressortir à ${fmt(e.T_air_int_out)} °C : le fluide doit être encore plus chaud.`
+      : `Le propane s'évapore à ${fmt(e.Te)} °C pour refroidir l'air de la pièce à ${fmt(p.T_int)} °C (${fmt(p.T_int - e.Te)} K d'écart). ` +
+        `Avec ${fmt(e.debit_int, 0)} m³/h, l'air doit ressortir à ${fmt(e.T_air_int_out)} °C : le fluide doit être encore plus froid.` +
+        (e.Q_lat > 0 ? " Une partie de la puissance sert à condenser l'eau de l'air (déshumidification)." : ""),
+    levier: "Plus de débit d'air intérieur (compromis bruit / ventilateur), plus de surface d'échange (UA, TPMS)."},
+  ech_ext: {court: "Échangeur\nextérieur", nom: "Échangeur extérieur", groupe: "echangeurs",
+    pourquoi: (p, e) => p.mode === "chauffage"
+      ? `Le propane s'évapore à ${fmt(e.Te)} °C pour prendre la chaleur de l'air extérieur à ${fmt(p.T_ext)} °C (${fmt(p.T_ext - e.Te)} K d'écart).`
+      : `Le propane condense à ${fmt(e.Tc)} °C pour rejeter la chaleur vers l'air extérieur à ${fmt(p.T_ext)} °C (${fmt(e.Tc - p.T_ext)} K d'écart).`,
+    levier: "Plus de surface d'échange ou de débit d'air extérieur (au prix des ventilateurs)."},
+  pertes_charge: {court: "Pertes de\ncharge", nom: "Pertes de charge", groupe: "thermo",
+    pourquoi: () => "Chute de pression dans la ligne d'aspiration et la vanne 4 voies : le compresseur aspire plus bas et refoule plus haut que les échangeurs.",
+    levier: "Tuyauterie courte et de bon diamètre, vanne 4 voies à faible perte de charge."},
+  cycle: {court: "Cycle\n(détente,\ndésurch.)", nom: "Cycle à compression de vapeur", groupe: "thermo",
+    pourquoi: () => "Même avec un compresseur parfait, ce n'est pas un cycle de Carnot : détente sans récupération de travail dans l'EEV, désurchauffe du gaz refoulé à haute température.",
+    levier: "Sous-refroidissement plus poussé, échangeur interne liquide / vapeur, éjecteur. Le propane est déjà favorable."},
+  compression: {court: "Compresseur\n(η is)", nom: "Compresseur", groupe: "thermo",
+    pourquoi: (p, e) => `Rendement isentropique η is = ${fmt(e.eta_is, 2)} à ${fmt(e.freq, 0)} Hz et taux de compression ${fmt(e.PR, 2)} : frottements, fuites internes, échauffement du gaz aspiré, pertes du carter.`,
+    levier: "Compresseur adapté à ce taux de compression, fonctionnement proche de sa fréquence optimale."},
+  moteur: {court: "Moteur +\nvariateur", nom: "Moteur et variateur", groupe: "elec",
+    pourquoi: (p, e) => `Pertes électriques du moteur BLDC (η = ${fmt(e.eta_mot, 2)}) et de l'onduleur (η = 0,97).`,
+    levier: "Moteur à aimants haut rendement, éviter les fréquences extrêmes."},
+  ventilateurs: {court: "Ventilateurs\n+ veille", nom: "Ventilateurs et électronique", groupe: "elec",
+    pourquoi: (p, e) => `${fmt(e.P_vent, 0)} W de ventilateurs et 4 W d'électronique, qui ne produisent ni chaud ni froid.`,
+    levier: "Échangeurs à faible perte de charge côté air, grands ventilateurs lents. Compromis avec la taille des échangeurs."},
+  degivrage: {court: "Dégivrage", nom: "Dégivrage", groupe: "fonct",
+    pourquoi: (p, e) => e.givre
+      ? `Le givre sur la batterie extérieure impose des inversions de cycle : énergie de fonte et chauffage interrompu ${fmt(e.frac_degivrage * 100, 0)} % du temps.`
+      : "Pas de givrage à ce point de fonctionnement.",
+    levier: "Batterie extérieure moins sensible au givre, dégivrage déclenché à la demande."},
+  cyclage: {court: "Cyclage", nom: "Marche / arrêt", groupe: "fonct",
+    pourquoi: () => S.PLR < 1
+      ? `Besoin inférieur à la puissance minimale : le compresseur fonctionne ${fmt(S.PLR * 100, 0)} % du temps (pertes de redémarrage, Cd = 0,15).`
+      : "Pas de cyclage : l'inverter suit le besoin en continu.",
+    levier: "Fréquence minimale plus basse ou compresseur plus petit."},
+};
+
+// Étapes exploitables : on retire un Carnot infini (T int ≈ T ext)
+function etapesPertes() {
+  const c = S.cascade;
+  if (!c) return null;
+  const etapes = c.filter(([, v]) => fin(v));
+  return etapes.length >= 2 ? etapes : null;
+}
+
+const gPertes = new Graphe(document.getElementById("cv-pertes"));
+
+function dessinerPertes() {
+  const g = gPertes, etapes = etapesPertes();
+  const nom = S.params.mode === "chauffage" ? "COP" : "EER";
+  const n = etapes ? etapes.length + 1 : 1, haut = etapes ? etapes[0][1] * 1.1 : 1;
+  g.debut({xlim: [-0.5, n - 0.5], ylim: [0, haut], sansX: true, bas: 52, ylabel: nom,
+           titre: `De ${nom} Carnot à ${nom} effectif`, xlabel: ""});
+  if (!etapes) {
+    const raison = !("cascade" in S)
+      ? "Serveur lancé avec une ancienne version : arrêter (Ctrl+C) et relancer python simulateur.py"
+      : !S.marche
+        ? (S.delai > 0 ? "Compresseur à l'arrêt : inversion de la vanne 4 voies en cours"
+                       : `Compresseur à l'arrêt (statut : ${S.statut || "arrêt"}) : aucun besoin à couvrir, augmenter l'écart T int / T ext ou les déperditions`)
+        : "T int ≈ T ext : Carnot infini, pas de décomposition possible";
+    texte(g.ctx, raison, (g.x0 + g.x1) / 2, (g.y0 + g.y1) / 2, {couleur: C.muted, align: "center", va: "middle"});
+    g.fin();
+    return;
+  }
+  const ctx = g.ctx, larg = Math.min(46, (g.x1 - g.x0) / n * 0.7);
+  const barre = (i, a, b, couleur) => {
+    const y = g.Y(Math.max(a, b)), hh = Math.abs(g.Y(a) - g.Y(b));
+    ctx.fillStyle = couleur;
+    ctx.fillRect(g.X(i) - larg / 2, y, larg, Math.max(hh, 1));
+  };
+  const valeur = (i, v, s) => texte(ctx, s, g.X(i), g.Y(v) - 3, {taille: 10.5, align: "center", va: "bottom", gras: true});
+  barre(0, 0, etapes[0][1], C.muted);
+  valeur(0, etapes[0][1], fmt(etapes[0][1], 1));
+  for (let i = 1; i < etapes.length; i++) {
+    const [cle, v] = etapes[i], prec = etapes[i - 1][1], d = prec - v;
+    ctx.strokeStyle = C.line; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(g.X(i - 1) + larg / 2, g.Y(prec)); ctx.lineTo(g.X(i) - larg / 2, g.Y(prec)); ctx.stroke();
+    ctx.setLineDash([]);
+    barre(i, v, prec, GROUPES[PERTES[cle].groupe].couleur());
+    if (d > 0.005) valeur(i, prec, `−${fmt(d, d < 1 ? 2 : 1)}`);
+  }
+  const fin_ = etapes[etapes.length - 1][1];
+  barre(n - 1, 0, fin_, C.accent);
+  valeur(n - 1, fin_, fmt(fin_, 2));
+  g.fin();
+  const libelles = [...etapes.map(([k]) => PERTES[k].court), `${nom}\neffectif`];
+  libelles.forEach((l, i) => texte(ctx, l, g.X(i), g.y0 + 5, {taille: 9.5, align: "center", couleur: C.muted}));
+}
+
+function tablePertes() {
+  const etapes = etapesPertes(), intro = document.getElementById("pertes-intro");
+  const tab = document.getElementById("tab-pertes"), nom = S.params.mode === "chauffage" ? "COP" : "EER";
+  if (!etapes) {
+    intro.textContent = "";
+    tab.innerHTML = "";
+    return;
+  }
+  const debut = etapes[0][1], finale = etapes[etapes.length - 1][1], ecart = debut - finale;
+  intro.textContent = `On part du ${nom} de Carnot entre l'air intérieur et l'air extérieur (${fmt(debut, 2)}, ` +
+    `limite physique absolue) et on remplace une hypothèse idéale par la réalité à chaque barre, jusqu'au ` +
+    `${nom} effectif (${fmt(finale, 2)}). L'unité atteint ${fmt(finale / debut * 100, 1)} % de Carnot.`;
+  const lignes = etapes.slice(1).map(([cle, v], i) => ({cle, d: etapes[i][1] - v}));
+  const dmax = Math.max(...lignes.map(l => l.d));
+  const parGroupe = {};
+  for (const l of lignes) parGroupe[PERTES[l.cle].groupe] = (parGroupe[PERTES[l.cle].groupe] || 0) + l.d;
+  const e = S.etat, p = S.params;
+  tab.innerHTML = `<table><thead><tr><th>Perte</th><th style="text-align:right">Δ ${nom}</th>` +
+    `<th style="text-align:right">Part</th></tr></thead><tbody>` +
+    lignes.map(({cle, d}) => {
+      const P = PERTES[cle];
+      return `<tr><td><span class="pastille" style="background:${GROUPES[P.groupe].couleur()}"></span>` +
+        `<span class="nom">${P.nom}${d === dmax ? " · perte principale" : ""}</span><br>${P.pourquoi(p, e)}` +
+        `<span class="levier">→ ${P.levier}</span></td>` +
+        `<td class="num">−${fmt(d, 2)}</td><td class="num">${fmt(d / ecart * 100, 0)} %</td></tr>`;
+    }).join("") +
+    `</tbody></table><p style="margin-top:8px">` +
+    Object.entries(parGroupe).map(([k, d]) =>
+      `<span class="pastille" style="background:${GROUPES[k].couleur()}"></span>${GROUPES[k].nom} : ` +
+      `<b>${fmt(d / ecart * 100, 0)} %</b>`).join("<br>") + `</p>`;
+}
+
+// ------------------------------------------------------------ panneau
+function panneau() {
+  const p = S.params, e = S.etat, nom = p.mode === "chauffage" ? "COP" : "EER";
+  const rows = [];
+  const titre = s => rows.push(`<tr class="titre"><td colspan="2">${s}</td></tr>`);
+  const ligne = (a, b, cls = "") => rows.push(`<tr class="${cls}"><td>${a}</td><td>${b}</td></tr>`);
+  const alarme = s => rows.push(`<tr class="alarme"><td colspan="2">⚠ ${s}</td></tr>`);
+
+  rows.push(`<tr class="tete"><td>MODE ${p.mode === "chauffage" ? "CHAUFFAGE" : "CLIMATISATION"}</td>` +
+            `<td>t = ${fmt(S.t_sim / 60)} min</td></tr>`);
+  ligne("Échangeurs", p.techno);
+  ligne("Contrôle", p.auto ? "inverter auto" : "manuel");
+  ligne("Ventilation", p.ventil_auto ? "asservie à la fréquence" : "débits manuels");
+  titre("Besoin de la pièce (50 m² max)");
+  ligne("Besoin sensible", `${fmt(S.besoin / 1e3, 2)} kW`);
+  ligne("Statut régulation", S.statut);
+  ligne("Fréquence", `${fmt(S.f_reel)} Hz (cible ${fmt(S.f_cible)})`);
+  ligne("Taux de charge PLR", `${fmt(S.PLR, 2)} (cyclage ×${fmt(S.k_cyc, 3)})`);
+  const iec = S.iec;
+  if (!S.marche) {
+    titre("Compresseur à l'arrêt");
+    if (e && !e.ok) alarme(e.message);
+    ligne("Charge max IEC 60335-2-40", `${fmt(iec.m_max, 0)} g`);
+    ligne("Seuil m1", `${fmt(iec.m1, 0)} g`);
+  } else {
+    titre("Cycle R290");
+    ligne("T évaporation / BP", `${fmt(e.Te)} °C · ${fmt(e.p_bp / 1e5, 2)} bar`);
+    ligne("T condensation / HP", `${fmt(e.Tc)} °C · ${fmt(e.p_hp / 1e5, 2)} bar`);
+    ligne("Taux de compression", fmt(e.PR, 2));
+    ligne("T refoulement", `${fmt(e.T_refoul)} °C`);
+    ligne("Débit massique", `${fmt(e.m_dot * 1e3, 2)} g/s`);
+    ligne("η vol · η is · η mot", `${fmt(e.eta_v, 2)} · ${fmt(e.eta_is, 2)} · ${fmt(e.eta_mot, 2)}`);
+    titre("Puissances (instantanées)");
+    ligne("Q condenseur", `${fmt(e.Q_cond / 1e3, 2)} kW`);
+    ligne("Q évaporateur", `${fmt(e.Q_evap / 1e3, 2)} kW`);
+    ligne("dont latent", `${fmt(e.Q_lat / 1e3, 2)} kW`);
+    ligne("P compresseur", `${fmt(e.P_comp, 0)} W`);
+    ligne("P ventilateurs", `${fmt(e.P_vent, 0)} W`);
+    ligne("P totale", `${fmt(e.P_tot, 0)} W`);
+    titre("Performances");
+    ligne(`${nom} cycle (arbre)`, fmt(e.COP_cycle, 2));
+    ligne(`${nom} unité`, fmt(e.COP, 2));
+    ligne(`${nom} effectif (dégivrage + cyclage)`, fmt(S.cop_eff, 2), "fort");
+    ligne("Q / P effectifs", `${fmt(S.q_eff / 1e3, 2)} kW · ${fmt(S.p_eff, 0)} W`);
+    const cRef = carnot(p.mode, e.Tc, e.Te);  // Tc côté chaud, Te côté froid dans les deux modes
+    ligne(`${nom} max théorique (Carnot air)`, fin(e.COP_carnot) && e.COP_carnot < 99 ? fmt(e.COP_carnot, 2) : "> 99", "fort");
+    ligne(`${nom} Carnot réfrigérant (Te/Tc)`, fmt(cRef, 2));
+    ligne("Rendement exergétique", fin(e.eta_exergie) ? `${fmt(e.eta_exergie * 100)} %` : "n/a");
+    if (p.mode === "chauffage")
+      ligne("Givrage", e.givre ? `OUI · ${fmt(e.eau_kg_h, 2)} kg/h · dégivrage ${fmt(e.frac_degivrage * 100, 0)} % du temps` : "non");
+    else
+      ligne("Déshumidification · SHR", `${fmt(e.eau_kg_h, 2)} L/h · ${fmt(e.Q_utile > 0 ? e.Q_sensible / e.Q_utile : 1, 2)}`);
+    titre("Sécurité propane");
+    ligne("Charge estimée", `${fmt(e.charge_g, 0)} g`);
+    ligne(`Max IEC 60335-2-40 (h0 = ${iec.h0} m, ${fmt(iec.surface, 0)} m²)`, `${fmt(iec.m_max, 0)} g`);
+    ligne("Seuil m1 = 4 × LFL", `${fmt(iec.m1, 0)} g`);
+    if (e.charge_g > iec.m_max) alarme("Charge supérieure à la limite");
+    for (const a of e.alarmes) alarme(a);
+  }
+  if (S.statut === "capacité insuffisante") alarme("Capacité insuffisante pour le besoin");
+  document.getElementById("valeurs").innerHTML = `<h2>Valeurs</h2><table>${rows.join("")}</table>`;
+}
+
+// ------------------------------------------------------------ commandes
+const champs = {};   // clé -> {range, nombre}
+const champsUA = {}; // technologie -> {nombre, abs}
+
+function construireCommandes() {
+  const div = document.getElementById("reglages");
+  for (const [k, label, lo, hi, v, pas] of STAT.reglages) {
+    const bloc = document.createElement("div");
+    bloc.className = "reglage";
+    bloc.innerHTML = `<label for="r-${k}">${label}</label><div class="ligne">` +
+      `<input type="range" id="r-${k}" min="${lo}" max="${hi}" step="${pas}" value="${v}">` +
+      `<input type="number" min="${lo}" max="${hi}" step="${pas}" value="${v}" aria-label="${label}"></div>`;
+    div.appendChild(bloc);
+    const [range, nombre] = bloc.querySelectorAll("input");
+    champs[k] = {range, nombre};
+    range.addEventListener("input", () => { nombre.value = range.value; enAttente[k] = +range.value; });
+    nombre.addEventListener("change", () => {
+      if (nombre.value === "" || !Number.isFinite(+nombre.value)) return;
+      const val = Math.min(Math.max(+nombre.value, lo), hi);
+      nombre.value = val; range.value = val; enAttente[k] = val;
+    });
+    nombre.addEventListener("keydown", ev => { if (ev.key === "Enter") nombre.blur(); });
+  }
+  const tech = document.getElementById("technos"), [kmin, kmax] = STAT.k_UA_bornes;
+  for (const nom of Object.keys(STAT.technologies)) {
+    const bloc = document.createElement("div");
+    bloc.className = "techno";
+    bloc.innerHTML = `<div class="ligne"><label><input type="radio" name="techno"> </label>` +
+      `<span class="ua">UA ×<input type="number" min="${kmin}" max="${kmax}" step="0.05"></span></div>` +
+      `<div class="ua-abs"></div>`;
+    const [radio, nombre] = bloc.querySelectorAll("input");
+    radio.value = nom;
+    radio.parentElement.append(nom);
+    nombre.setAttribute("aria-label", `Multiplicateur d'UA ${nom}`);
+    nombre.addEventListener("change", () => {
+      if (nombre.value === "" || !Number.isFinite(+nombre.value)) return;
+      const val = Math.min(Math.max(+nombre.value, kmin), kmax);
+      nombre.value = val;
+      enAttente.k_UA = {...(enAttente.k_UA || {}), [nom]: val};
+    });
+    nombre.addEventListener("keydown", ev => { if (ev.key === "Enter") nombre.blur(); });
+    champsUA[nom] = {nombre, abs: bloc.querySelector(".ua-abs")};
+    tech.appendChild(bloc);
+  }
+  for (const nom of ["mode", "auto", "techno", "ventil_auto"])
+    for (const r of document.querySelectorAll(`input[name=${nom}]`))
+      r.addEventListener("change", () => {
+        const booleen = nom === "auto" || nom === "ventil_auto";
+        enAttente[nom] = booleen ? r.value === "1" : r.value;
+        // passage en débits manuels : on part des débits actuellement appliqués
+        if (nom === "ventil_auto" && r.value === "0" && S && S.etat) {
+          enAttente.debit_int = Math.round(S.etat.debit_int);
+          enAttente.debit_ext = Math.round(S.etat.debit_ext);
+        }
+      });
+
+  document.getElementById("hypotheses").textContent = texteHypotheses();
+}
+
+function texteHypotheses(k_UA = {}) {
+  const hyp = ["Multiplicateurs (à valider) :"];
+  for (const [k, v] of Object.entries(STAT.technologies))
+    hyp.push(` ${k}`, `   UA ×${(k_UA[k] ?? v.k_UA).toFixed(2)}  vent. ×${v.k_vent.toFixed(2)}`,
+             `   vol. ×${v.k_vol.toFixed(2)}  givre ×${v.k_givre.toFixed(2)}`);
+  hyp.push("", "Compresseur rotatif BLDC 16 cm³,", "15-110 Hz. EEV surchauffe 5 K,",
+           "sous-refroid. 4 K. Ventilateurs EC", "asservis à la fréquence.");
+  return hyp.join("\n");
+}
+
+function synchroniserCommandes() {
+  const p = S.params;
+  for (const [k, {range, nombre}] of Object.entries(champs)) {
+    // ventilation asservie : les curseurs de débit affichent le débit appliqué, sans être modifiables
+    const asservi = (k === "debit_int" || k === "debit_ext") && p.ventil_auto;
+    range.disabled = nombre.disabled = asservi;
+    if (k in enAttente) continue;
+    const v = asservi ? (S.etat ? Math.round(S.etat[k]) : p[k]) : p[k];
+    range.value = v;
+    if (document.activeElement !== nombre) nombre.value = v;
+  }
+  for (const [nom, {nombre, abs}] of Object.entries(champsUA)) {
+    const k = p.k_UA[nom];
+    if (!(enAttente.k_UA && nom in enAttente.k_UA) && document.activeElement !== nombre) nombre.value = k;
+    abs.textContent = `int. ${Math.round(STAT.UA_ref.int * k)} W/K · ext. ${Math.round(STAT.UA_ref.ext * k)} W/K (débit nominal)`;
+  }
+  const hyp = texteHypotheses(p.k_UA), pre = document.getElementById("hypotheses");
+  if (pre.textContent !== hyp) pre.textContent = hyp;
+  for (const [nom, val] of [["mode", p.mode], ["auto", p.auto ? "1" : "0"], ["techno", p.techno],
+                            ["ventil_auto", p.ventil_auto ? "1" : "0"]])
+    if (!(nom in enAttente))
+      for (const r of document.querySelectorAll(`input[name=${nom}]`)) r.checked = r.value === val;
+}
+
+// ------------------------------------------------- onglet dimensionnement
+const DIM = {hyp: null, etat: null, sel: 0, points: []};
+const COUL_FAMILLE = {tube_ailettes: () => C.cond, microcanaux: () => C.accent, tpms: () => C.p};
+const gDim = new Graphe(document.getElementById("cv-dim"));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+function construireFormDim() {
+  const d = DIM.hyp.defaut, form = document.getElementById("form-dim");
+  const champ = (cle, label, pas = "any") =>
+    `<fieldset><legend>${label}</legend><input type="number" name="${cle}" value="${d[cle]}" step="${pas}" min="0"></fieldset>`;
+  const trio = (cote, label) => `<fieldset><legend>${label}</legend><div class="trio">` +
+    ["L", "H", "P"].map((k, i) => `<label><span>${["largeur", "hauteur", "profondeur"][i]} (mm)</span>` +
+      `<input type="number" name="${cote}_${k}" value="${d[`${cote}_${k}`]}" step="5" min="5"></label>`).join("") + `</div></fieldset>`;
+  form.innerHTML =
+    champ("puissance_kW", "Puissance visée à 60 Hz, chaud et froid (kW)", 0.1) +
+    `<fieldset><legend>Objectif</legend><select name="objectif">` +
+    Object.entries(DIM.hyp.objectifs).map(([k, v]) => `<option value="${k}"${k === d.objectif ? " selected" : ""}>${esc(v)}</option>`).join("") +
+    `</select></fieldset>` +
+    trio("int", "Encombrement max batterie intérieure") +
+    trio("ext", "Encombrement max batterie extérieure") +
+    champ("v_max", "Vitesse d'air frontale max, bruit (m/s)", 0.1) +
+    champ("charge_max_g", "Charge max de propane (g) · IEC 60335-2-40", 1) +
+    champ("budget", "Budget des deux échangeurs (€)", 10) +
+    `<fieldset><legend>Technologies</legend>` + Object.entries(DIM.hyp.familles).map(([k, f]) =>
+      `<label class="case"><input type="checkbox" name="familles" value="${k}" checked> ${esc(f.nom)}</label>`).join("") + `</fieldset>` +
+    `<fieldset><legend>Matériaux</legend>` + Object.keys(DIM.hyp.materiaux).map(m =>
+      `<label class="case"><input type="checkbox" name="materiaux" value="${esc(m)}" checked> ${esc(m)}</label>`).join("") + `</fieldset>`;
+}
+
+function lireFormDim() {
+  const form = document.getElementById("form-dim"), out = {familles: [], materiaux: []};
+  for (const el of form.elements) {
+    if (!el.name) continue;
+    if (el.type === "checkbox") { if (el.checked) out[el.name].push(el.value); }
+    else if (el.tagName === "SELECT") out[el.name] = el.value;
+    else if (el.value !== "") out[el.name] = +el.value;
+  }
+  return out;
+}
+
+async function lancerOptim() {
+  const ct = lireFormDim();
+  if (!ct.familles.length || !ct.materiaux.length) {
+    document.getElementById("msg-optim").textContent = "Cocher au moins une technologie et un matériau.";
+    return;
+  }
+  await fetch("/api/optim", {method: "POST", body: JSON.stringify(ct)});
+  DIM.sel = 0;
+  suivreOptim();
+}
+
+async function suivreOptim() {
+  try {
+    DIM.etat = await (await fetch("/api/optim")).json();
+  } catch { return; }
+  const e = DIM.etat, btn = document.getElementById("btn-optim");
+  document.getElementById("barre-optim").style.width = `${Math.round(e.progression * 100)}%`;
+  btn.disabled = e.statut === "en cours";
+  const msg = document.getElementById("msg-optim");
+  if (e.statut === "en cours") {
+    msg.textContent = e.message;
+    setTimeout(suivreOptim, 300);
+  } else if (e.statut === "erreur") {
+    msg.textContent = `Erreur : ${e.erreur}`;
+  } else if (e.statut === "terminé") {
+    const s = e.resultats.stats;
+    msg.textContent = `${s.n_int} batteries intérieures et ${s.n_ext} extérieures générées, ` +
+      `${s.n_couples} couples évalués sur le cycle complet en ${fmt(s.duree, 1)} s.`;
+    afficherDim();
+  }
+}
+
+const descr = c => `${c.techno} · ${c.materiau}`;
+const dimsTxt = c => `${c.L} × ${c.H} × ${fmt(c.P, 0)} mm, ${c.debit} m³/h`;
+
+function afficherDim() {
+  const R = DIM.etat && DIM.etat.resultats;
+  if (!R) return;
+  const C_ = R.candidats, couples = R.couples, best = couples[0];
+  const reco = document.getElementById("dim-reco");
+  if (!best.faisable) {
+    reco.innerHTML = `<h2>Recommandation</h2><p class="defaut">Aucun couple ne respecte toutes les contraintes. ` +
+      `Le moins mauvais : ${esc(best.raisons.join(", "))}. Assouplir l'encombrement, le budget, la charge ou la puissance visée.</p>`;
+  } else {
+    const i = C_[best.i], e = C_[best.e], ref = couples.find(r => C_[r.i].famille === "tube_ailettes" &&
+                                                                 C_[r.e].famille === "tube_ailettes" && r.faisable);
+    const gain = ref ? ` (tube-ailettes classique le mieux placé : score ${fmt(ref.score, 2)}, ${fmt(ref.cout, 0)} €)` : "";
+    reco.innerHTML = `<h2>Recommandation</h2>` +
+      `<p><b>Intérieur :</b> ${esc(descr(i))}, ${esc(i.geometrie)}, ${dimsTxt(i)}<br>` +
+      `<b>Extérieur :</b> ${esc(descr(e))}, ${esc(e.geometrie)}, ${dimsTxt(e)}</p>` +
+      `<div class="tuiles">` + [
+        [fmt(best.EER, 2), "EER 35/27 °C"], [fmt(best.COP7, 2), "COP 7/20 °C"], [fmt(best.COP_7, 2), "COP −7/20 °C"],
+        [`${fmt(best.Q_clim, 2)} kW`, "froid à 60 Hz"], [`${fmt(best.charge_g, 0)} g`, "charge propane"],
+        [`${fmt(best.cout, 0)} €`, "coût échangeurs"], [`${fmt(best.P_vent, 0)} W`, "ventilateurs"],
+      ].map(([v, l]) => `<div class="tuile"><b>${v}</b><span>${l}</span></div>`).join("") + `</div>` +
+      `<p class="discret">Score ${fmt(best.score, 2)} (${esc(DIM.hyp.objectifs[R.contraintes.objectif])})${esc(gain)}. ` +
+      `L'optimum se trouve souvent en butée d'encombrement : c'est le volume disponible qui limite.</p>`;
+  }
+  // tableaux par technologie
+  const ligneTech = (t, cote) => {
+    const r = couples[t.couple], c = C_[cote === "int" ? r.i : r.e];
+    return `<tr class="clic${t.couple === DIM.sel ? " sel" : ""}${r.faisable ? "" : " non"}" data-couple="${t.couple}">` +
+      `<td><span class="pastille-f" style="background:${COUL_FAMILLE[t.famille]()}"></span>${esc(t.techno)}<br>${esc(t.materiau)}</td>` +
+      `<td>${esc(c.geometrie)}<br>${dimsTxt(c)}</td><td class="num">${fmt(c.UA, 0)}</td><td class="num">${fmt(c.P_vent, 0)}</td>` +
+      `<td class="num">${fmt(c.V_ref_L, 2)}</td><td class="num">${fmt(c.cout, 0)}</td><td class="num">${fmt(r.score, 2)}</td>` +
+      `<td>${r.faisable ? "✓" : `<span class="defaut">${esc(r.raisons.join(", "))}</span>`}</td></tr>`;
+  };
+  const tete = `<tr><th>Technologie</th><th>Géométrie</th><th class="num">UA W/K</th><th class="num">Vent. W</th>` +
+    `<th class="num">Vol. L</th><th class="num">Coût €</th><th class="num">Score</th><th>Contraintes</th></tr>`;
+  document.getElementById("dim-techno").innerHTML =
+    ["int", "ext"].map(cote => `<h3 style="font-size:13px;margin:6px 0 4px">Batterie ${cote === "int" ? "intérieure" : "extérieure"}</h3>` +
+      `<div class="table-defile"><table class="donnees">${tete}${R.par_techno[cote].map(t => ligneTech(t, cote)).join("")}</table></div>`).join("") +
+    `<p class="discret" style="margin-top:6px">Pour chaque technologie, le meilleur couple qui la contient (l'autre batterie est optimisée en même temps).</p>`;
+  // classement
+  document.getElementById("dim-classement").innerHTML = `<div class="table-defile"><table class="donnees"><tr><th>#</th><th>Intérieur</th>` +
+    `<th>Extérieur</th><th class="num">Score</th><th class="num">EER</th><th class="num">COP 7</th><th class="num">COP −7</th>` +
+    `<th class="num">Charge g</th><th class="num">Coût €</th></tr>` +
+    couples.slice(0, 25).map((r, k) => {
+      const i = C_[r.i], e = C_[r.e];
+      return `<tr class="clic${k === DIM.sel ? " sel" : ""}${r.faisable ? "" : " non"}" data-couple="${k}"><td>${k + 1}</td>` +
+        `<td>${esc(descr(i))}<br><span class="discret">${esc(i.geometrie)}, ${dimsTxt(i)}</span></td>` +
+        `<td>${esc(descr(e))}<br><span class="discret">${esc(e.geometrie)}, ${dimsTxt(e)}</span></td>` +
+        `<td class="num">${fmt(r.score, 2)}</td><td class="num">${fmt(r.EER, 2)}</td><td class="num">${fmt(r.COP7, 2)}</td>` +
+        `<td class="num">${fmt(r.COP_7, 2)}</td><td class="num">${fmt(r.charge_g, 0)}</td><td class="num">${fmt(r.cout, 0)}</td></tr>`;
+    }).join("") + `</table></div>`;
+  for (const tr of document.querySelectorAll("#vue-dim tr[data-couple]"))
+    tr.addEventListener("click", () => { DIM.sel = +tr.dataset.couple; afficherDim(); });
+  ficheDim();
+  dessinerDim();
+}
+
+function ficheDim() {
+  const R = DIM.etat.resultats, r = R.couples[DIM.sel], C_ = R.candidats;
+  const bloc = (c, titre) => {
+    const F = DIM.hyp.familles[c.famille];
+    const lignes = [
+      ["Technologie", `${c.techno} (${F.detail})`], ["Matériau", c.materiau], ["Géométrie", c.geometrie],
+      ["L × H × P", `${c.L} × ${c.H} × ${fmt(c.P, 0)} mm`], ["Débit d'air nominal", `${c.debit} m³/h`],
+      ["Vitesse frontale", `${fmt(c.u_face, 2)} m/s`], ["Diamètre hydraulique air", `${fmt(c.Dh_mm, 2)} mm`],
+      ["Reynolds", fmt(c.Re, 0)], ["Colburn j · Fanning f", `${fmt(c.j, 4)} · ${fmt(c.f, 3)}`],
+      ["h côté air", `${fmt(c.h_air, 0)} W/m²K`], ["Surface côté air", `${fmt(c.A_air, 2)} m²`],
+      ["Rendement d'ailette", fmt(c.eta_ailette, 2)], ["UA", `${fmt(c.UA, 0)} W/K`],
+      ["Part de la résistance côté air", `${fmt(c.part_air * 100, 0)} %`],
+      ["Perte de charge (avec grille, filtre)", `${fmt(c.dP, 1)} Pa`], ["Puissance ventilateur", `${fmt(c.P_vent, 1)} W`],
+      ["Volume interne côté propane", `${fmt(c.V_ref_L, 2)} L`], ["Volume du noyau", `${fmt(c.volume_L, 2)} L`],
+      ["Masse", `${fmt(c.masse, 2)} kg`], ["Coût estimé", `${fmt(c.cout, 0)} €`],
+    ];
+    return `<div><h3><span class="pastille-f" style="background:${COUL_FAMILLE[c.famille]()}"></span>${titre}</h3>` +
+      `<table class="donnees">${lignes.map(([a, b]) => `<tr><td>${a}</td><td class="num">${esc(b)}</td></tr>`).join("")}</table>` +
+      `<p class="discret" style="margin-top:6px">${esc(F.notes)}</p></div>`;
+  };
+  const perf = [
+    ["Score", fmt(r.score, 2)], ["EER 35/27 °C (60 Hz)", fmt(r.EER, 2)], ["COP 7/20 °C (60 Hz, dégivrage)", fmt(r.COP7, 2)],
+    ["COP −7/20 °C (90 Hz, dégivrage)", fmt(r.COP_7, 2)], ["Froid / chaud à 60 Hz", `${fmt(r.Q_clim, 2)} / ${fmt(r.Q_chauf, 2)} kW`],
+    ["Chaud à −7 °C (90 Hz)", `${fmt(r.Q_froid7, 2)} kW`],
+    ["Évaporation / condensation en clim", `${fmt(r.Te_clim)} / ${fmt(r.Tc_clim)} °C`],
+    ["Évaporation / condensation à 7 °C", `${fmt(r.Te_ch)} / ${fmt(r.Tc_ch)} °C`],
+    ["Charge de propane", `${fmt(r.charge_g, 0)} g (max ${fmt(R.contraintes.charge_max_g, 0)} g)`],
+    ["Coût · masse des deux échangeurs", `${fmt(r.cout, 0)} € · ${fmt(r.masse, 1)} kg`],
+  ];
+  document.getElementById("dim-fiche").innerHTML =
+    `<table class="donnees" style="margin-bottom:12px">${perf.map(([a, b]) => `<tr><td>${a}</td><td class="num">${esc(b)}</td></tr>`).join("")}` +
+    (r.faisable ? "" : `<tr><td colspan="2" class="defaut">Contraintes non respectées : ${esc(r.raisons.join(", "))}</td></tr>`) +
+    r.alarmes.map(a => `<tr><td colspan="2" class="defaut">⚠ ${esc(a)}</td></tr>`).join("") + `</table>` +
+    `<div class="deux">${bloc(C_[r.i], "Batterie intérieure")}${bloc(C_[r.e], "Batterie extérieure")}</div>`;
+  document.getElementById("dim-fiche").className = "";
+}
+
+function dessinerDim() {
+  const R = DIM.etat && DIM.etat.resultats;
+  if (!R || document.getElementById("vue-dim").hidden) return;
+  const pts = R.couples.map((r, k) => ({r, k})).filter(p => fin(p.r.score) && p.r.cout > 0);
+  const xs = pts.map(p => p.r.cout), ys = pts.map(p => p.r.score);
+  const g = gDim;
+  g.debut({xlim: [Math.min(...xs) / 1.3, Math.max(...xs) * 1.3], xlog: true,
+           ylim: [Math.min(...ys) * 0.97, Math.max(...ys) * 1.02], titre: "",
+           xlabel: "Coût estimé des deux échangeurs (€, échelle log)", ylabel: "Score"});
+  const ctx = g.ctx;
+  DIM.points = [];
+  for (const {r, k} of pts) {
+    const x = g.X(r.cout), y = g.Y(r.score), c = COUL_FAMILLE[R.candidats[r.i].famille]();
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 2 * Math.PI);
+    if (r.faisable) { ctx.fillStyle = c; ctx.fill(); }
+    else { ctx.strokeStyle = c; ctx.lineWidth = 1.3; ctx.stroke(); }
+    if (k === DIM.sel) { ctx.beginPath(); ctx.arc(x, y, 8.5, 0, 2 * Math.PI); ctx.strokeStyle = C.ink; ctx.lineWidth = 2; ctx.stroke(); }
+    DIM.points.push({x, y, k});
+  }
+  g.fin();
+  document.getElementById("leg-dim").innerHTML = Object.entries(DIM.hyp.familles).map(([k, f]) =>
+    `<span class="pastille-f" style="background:${COUL_FAMILLE[k]()}"></span>${esc(f.nom)}`).join(" &nbsp; ") +
+    " &nbsp; (couleur = batterie intérieure ; point plein = contraintes respectées, cercle vide = non respectées)";
+}
+
+document.getElementById("cv-dim").addEventListener("click", ev => {
+  const rect = ev.target.getBoundingClientRect(), mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+  let best = null, dmin = 12;
+  for (const p of DIM.points) { const d = Math.hypot(p.x - mx, p.y - my); if (d < dmin) { dmin = d; best = p; } }
+  if (best) { DIM.sel = best.k; afficherDim(); }
+});
+
+function hypothesesDim() {
+  const H = DIM.hyp;
+  document.getElementById("dim-hyp").innerHTML =
+    `<p class="discret">Côté air : j = Cj·Re<sup>−nj</sup>, f = Cf·Re<sup>−nf</sup> (Fanning, Re sur le diamètre hydraulique). ` +
+    `UA = 1 / (1/(η<sub>o</sub>·h·A<sub>air</sub>) + 1/(h<sub>propane</sub>·A<sub>propane</sub>) + e/(k·A)). ` +
+    `Ventilateur : rendement global ${H.air.eta_ventilateur}, pertes hors batterie ${H.air.K_systeme} × ρu²/2. ` +
+    `Points de cycle à fréquence fixe (60 Hz, −7 °C à 90 Hz), compresseur actuel (16 cm³) inchangé. ` +
+    `Coefficients et coûts indicatifs, à recaler sur essais ou CFD.</p>` +
+    `<div class="table-defile"><table class="donnees"><tr><th>Technologie</th><th class="num">Cj</th><th class="num">nj</th>` +
+    `<th class="num">Cf</th><th class="num">nf</th><th class="num">h propane</th><th>Matériaux</th></tr>` +
+    Object.values(H.familles).map(f => `<tr><td>${esc(f.nom)}<br><span class="discret">${esc(f.detail)}</span></td>` +
+      `<td class="num">${f.Cj}</td><td class="num">${f.nj}</td><td class="num">${f.Cf}</td><td class="num">${f.nf}</td>` +
+      `<td class="num">${f.h_ref} W/m²K</td><td>${f.materiaux.map(esc).join(", ")}</td></tr>`).join("") + `</table></div>` +
+    `<div class="table-defile" style="margin-top:10px"><table class="donnees"><tr><th>Matériau</th><th class="num">k W/m·K</th>` +
+    `<th class="num">ρ kg/m³</th><th class="num">€/kg (pièce)</th><th class="num">Paroi min mm</th></tr>` +
+    Object.entries(H.materiaux).map(([n, m]) => `<tr><td>${esc(n)}</td><td class="num">${m.k}</td><td class="num">${m.rho}</td>` +
+      `<td class="num">${m.cout_kg}</td><td class="num">${m.e_min}</td></tr>`).join("") + `</table></div>`;
+}
+
+function changerOnglet(nom) {
+  for (const b of document.querySelectorAll(".onglets button")) b.setAttribute("aria-selected", b.dataset.onglet === nom);
+  document.getElementById("vue-sim").hidden = nom !== "sim";
+  document.getElementById("vue-dim").hidden = nom !== "dim";
+  try { localStorage.setItem("onglet", nom); } catch {}
+  grapheAJour = true;
+  if (nom === "dim") dessinerDim();
+}
+for (const b of document.querySelectorAll(".onglets button")) b.addEventListener("click", () => changerOnglet(b.dataset.onglet));
+document.getElementById("btn-optim").addEventListener("click", lancerOptim);
+window.addEventListener("resize", () => dessinerDim());
+
+async function initDim() {
+  DIM.hyp = await (await fetch("/api/optim/hypotheses")).json();
+  construireFormDim();
+  hypothesesDim();
+  suivreOptim();
+  let onglet = "sim";
+  try { onglet = localStorage.getItem("onglet") || "sim"; } catch {}
+  if (location.hash === "#dim" || location.hash === "#sim") onglet = location.hash.slice(1);
+  changerOnglet(onglet);
+}
+
+// ------------------------------------------------------------ boucles
+let dernierPas = performance.now();
+
+async function pas() {
+  const t = performance.now(), dt = (t - dernierPas) / 1000;
+  dernierPas = t;
+  const regler = enAttente;
+  enAttente = {};
+  const cx = document.getElementById("connexion");
+  try {
+    const r = await fetch("/api/pas", {method: "POST", body: JSON.stringify({dt, regler})});
+    S = await r.json();
+    cx.textContent = "calcul Python (CoolProp) connecté";
+    cx.className = "";
+    historique.push([S.t_sim / 60, S.cop_eff, S.q_eff / 1e3, S.p_eff / 1e3, S.f_reel / 100]);
+    if (historique.length > HIST_MAX) historique.shift();
+    synchroniserCommandes();
+    panneau();
+    tablePertes();
+    grapheAJour = true;
+  } catch (err) {
+    enAttente = {...regler, ...enAttente};
+    cx.textContent = "serveur arrêté : relancer python simulateur.py";
+    cx.className = "ko";
+  }
+  setTimeout(pas, Math.max(0, 100 - (performance.now() - t)));
+}
+
+let derniereImage = performance.now();
+function image(t) {
+  const dt = Math.min((t - derniereImage) / 1000, 0.1);
+  derniereImage = t;
+  if (S && S.marche) phaseFlux += S.etat.m_dot * 1e3 * 0.012 * Math.sqrt(S.params.vitesse) * dt / 0.1;
+  dessinerSchema();
+  if (S && grapheAJour) {
+    dessinerPH(); dessinerCOP(); dessinerHist(); dessinerPertes();
+    grapheAJour = false;
+  }
+  requestAnimationFrame(image);
+}
+
+window.addEventListener("resize", () => { grapheAJour = true; });
+
+(async () => {
+  lireCouleurs();
+  STAT = await (await fetch("/api/statique")).json();
+  construireCommandes();
+  initDim();
+  pas();
+  requestAnimationFrame(image);
+})();
+</script>
+</body>
+</html>
