@@ -321,6 +321,10 @@ class Etat:
     points_ph: list = field(default_factory=list)  # [(h kJ/kg, p bar), ...]
     alarmes: list = field(default_factory=list)
     aero: dict = field(default_factory=dict)   # détail aéraulique (si activé)
+    # états du réfrigérant aux 4 points du cycle (numérotation du diagramme P-h) :
+    # {"1": aspiration, "2": refoulement, "3": sortie condenseur, "4": après détente},
+    # chacun {T °C, p bar, h kJ/kg, x titre ou None}
+    points: dict = field(default_factory=dict)
 
 
 # --------------------------------------------------------------------------
@@ -586,6 +590,7 @@ class PompeAChaleur:
             alarmes.append("BP très basse")
 
         e.points_ph = self._points_ph(k, Te, Tc, h3)
+        e.points = self._points_cycle(k, Te, Tc, h3, e.T_refoul)
         e.alarmes = alarmes
         e.ok = True
         return e
@@ -626,6 +631,53 @@ class PompeAChaleur:
         if chauf:
             etapes.append(("degivrage", e.COP_integre))
         return etapes
+
+    def cycles_reference(self, cond: Conditions, e: Etat):
+        """Cycles fantômes pour le diagramme P-h, avec leur COP thermodynamique.
+
+        * ideal : évaporation et condensation aux températures des airs
+          (pincement nul), vapeur et liquide saturés, compression isentropique.
+        * comp_parfait : pressions, surchauffe et sous-refroidissement réels,
+          mais compression isentropique (compresseur parfait).
+        """
+        fl, chauf = self.fl, cond.mode == "chauffage"
+        out = {}
+        Tc_i, Te_i = ((cond.T_int, cond.T_ext) if chauf else (cond.T_ext, cond.T_int))
+        if Tc_i - Te_i >= 1.0 and Tc_i < fl.Tcrit - 5:
+            p_e, h1, s1, _ = fl.sat(Te_i, 1.0)
+            p_c, h3, _, _ = fl.sat(Tc_i, 0.0)
+            out["ideal"] = self._cycle_isentropique(p_e, p_c, p_e, p_c, h1, s1, h3, chauf)
+        k = self.compresseur(e.Te, e.Tc, e.freq)
+        h3 = self.h_sortie_condenseur(e.Tc)
+        out["comp_parfait"] = self._cycle_isentropique(
+            k["p_asp"], k["p_ref"], fl.psat(e.Te), fl.psat(e.Tc), k["h1"], k["s1"], h3, chauf)
+        return out
+
+    def _cycle_isentropique(self, p_asp, p_ref, p_e, p_c, h1, s1, h3, chauf):
+        a, pts = self.fl.AS, []
+        for i in range(9):
+            p = p_asp * (p_ref / p_asp) ** (i / 8)
+            a.update(CP.PSmass_INPUTS, p, s1)
+            pts.append((a.hmass(), p))
+        h2 = pts[-1][0]
+        pts += [(h2, p_c), (h3, p_c), (h3, p_e), (h1, p_e), (h1, p_asp)]
+        cop = ((h2 - h3) if chauf else (h1 - h3)) / (h2 - h1)
+        return dict(cop=cop, points=[(h / 1e3, p / 1e5) for h, p in pts])
+
+    def _points_cycle(self, k, Te, Tc, h3, T_refoul):
+        fl = self.fl
+        p_e, p_c = fl.psat(Te), fl.psat(Tc)
+        hl_e, hv_e = fl.sat(Te, 0.0)[1], fl.sat(Te, 1.0)[1]
+        pt = lambda T, p, h, x=None: dict(T=T, p=p / 1e5, h=h / 1e3, x=x)
+        hl_c, hv_c = fl.sat(Tc, 0.0)[1], fl.sat(Tc, 1.0)[1]
+        # hl / hv : enthalpies de saturation liquide / vapeur côté condenseur (point 3)
+        # et côté évaporateur (point 4), pour situer les zones mono / diphasiques.
+        return {
+            "1": pt(fl.T_ph(k["p_asp"], k["h1"]), k["p_asp"], k["h1"]),
+            "2": pt(T_refoul, k["p_ref"], k["h2"]),
+            "3": dict(pt(fl.T_ph(p_c, h3), p_c, h3), Tsat=Tc, hl=hl_c / 1e3, hv=hv_c / 1e3),
+            "4": dict(pt(Te, p_e, h3, (h3 - hl_e) / (hv_e - hl_e)), Tsat=Te, hl=hl_e / 1e3, hv=hv_e / 1e3),
+        }
 
     def _points_ph(self, k, Te, Tc, h3):
         fl = self.fl

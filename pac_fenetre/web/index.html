@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Simulateur PAC R290</title>
+<script type="importmap">{"imports": {"three": "/vendor/three.module.min.js"}}</script>
 <style>
 :root {
   --bg: #f4f5f7; --card: #ffffff; --ink: #1f2328; --muted: #6a737d; --line: #d8dde3;
@@ -89,6 +90,36 @@ canvas { display: block; width: 100%; }
 #valeurs .alarme td { color: var(--danger); font-weight: 600; text-align: left; }
 #valeurs .fort { font-weight: 700; }
 [hidden] { display: none !important; }
+#vue-glo { display: block; max-width: 1100px; margin: 0 auto; }
+#vue-pri { display: block; max-width: 900px; margin: 0 auto; }
+#vue-pri > p { margin: 4px 0 14px; }
+.principe { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 14px; margin-bottom: 12px; padding: 14px 16px; }
+.principe .num { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.principe h3 { margin: 0 0 8px; font-size: 16px; line-height: 1.35; }
+.principe .eq {
+  display: inline-block; margin: 2px 0 8px; padding: 6px 12px; border-radius: 6px; background: var(--bg);
+  border: 1px solid var(--line); font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace;
+}
+.principe p { margin: 0 0 4px; line-height: 1.5; }
+.principe .live { color: var(--muted); font-size: 12px; margin-top: 6px; }
+.principe .live b { color: var(--ink); font-variant-numeric: tabular-nums; }
+#glo-tete { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+#glo-recherche {
+  flex: 1; min-width: 220px; padding: 7px 10px; font: inherit; font-size: 14px; color: var(--ink);
+  background: var(--input); border: 1px solid var(--line); border-radius: 6px;
+}
+#glo-recherche:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+#glo-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+#glo-cats a { font-size: 12px; color: var(--accent); text-decoration: none; padding: 2px 9px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+#glo-liste .card { margin-bottom: 12px; scroll-margin-top: 12px; }
+#glo-liste dl { margin: 0; display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr); gap: 0 16px; }
+#glo-liste dt, #glo-liste dd { padding: 6px 0; border-top: 1px solid var(--grid); margin: 0; }
+#glo-liste dt { font-weight: 600; }
+#glo-liste dt .alias { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
+#glo-liste dd { line-height: 1.5; }
+#glo-liste dd .ex { color: var(--muted); font-size: 12px; }
+#glo-liste mark { background: rgba(250, 176, 5, .35); color: inherit; border-radius: 2px; }
+@media (max-width: 700px) { #glo-liste dl { grid-template-columns: minmax(0, 1fr); } #glo-liste dd { border-top: 0; padding-top: 0; } }
 .onglets { display: flex; gap: 4px; }
 .onglets button {
   font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px; cursor: pointer;
@@ -117,6 +148,67 @@ button.principal:disabled { opacity: .55; cursor: default; }
 .barre { height: 6px; background: var(--grid); border-radius: 3px; margin: 10px 0 6px; overflow: hidden; }
 .barre div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 #cv-dim { aspect-ratio: 16 / 7; min-height: 260px; cursor: crosshair; }
+#gy-grille { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { #gy-grille { grid-template-columns: minmax(0, 1fr); } }
+.gy-cond { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; margin-bottom: 10px; }
+.gy-cond label { display: flex; flex-direction: column; font-size: 11.5px; color: var(--muted); gap: 2px; }
+.gy-cond label.large { grid-column: 1 / -1; }
+#gy-form input[type=number], #gy-form select {
+  width: 100%; padding: 3px 6px; font: inherit; font-size: 12.5px; color: var(--ink); background: var(--input);
+  border: 1px solid var(--line); border-radius: 4px; font-variant-numeric: tabular-nums;
+}
+.gy-params { width: 100%; border-collapse: collapse; font-size: 12px; }
+.gy-params th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: left; padding: 2px 4px; }
+.gy-params td { padding: 2px 4px; }
+.gy-params td:first-child { width: 48%; }
+.gy-aide { margin: 8px 0; line-height: 1.45; }
+.gy-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gy-actions button:not(.principal) {
+  font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.gyro-choix { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+#gy-3d { position: relative; height: 400px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); overflow: hidden; }
+#gy-3d canvas { width: 100% !important; height: 100% !important; cursor: grab; }
+#gy-3d-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); pointer-events: none; text-align: center; padding: 20px; }
+#gy-3d-msg:empty { display: none; }
+.gy-legende { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+.gy-barre { display: inline-flex; align-items: center; gap: 6px; }
+.gy-barre i { display: inline-block; width: 120px; height: 10px; border-radius: 2px;
+  background: linear-gradient(90deg, rgb(37,99,235), rgb(34,184,207) 30%, rgb(250,210,60) 55%, rgb(245,130,40) 78%, rgb(214,40,40)); }
+.gy-pastille { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 4px; }
+#cv-gyro { height: 230px; margin-top: 10px; }
+#gy-resultats { margin-top: 10px; }
+.gy-h3 { font-size: 12.5px; margin: 0 0 6px; }
+.gy-res { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 6px; }
+.gy-res th { font-size: 11px; color: var(--muted); text-align: right; padding: 3px 4px; border-bottom: 1px solid var(--line); }
+.gy-res th:first-child { text-align: left; }
+.gy-res td { padding: 3px 4px; border-bottom: 1px solid var(--grid); text-align: right; font-variant-numeric: tabular-nums; }
+.gy-res td:first-child { text-align: left; }
+.gy-res tr.fort td { font-weight: 700; }
+#vue-dim .attention { color: #e8590c; }
+#cmp-grille2 { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { #cmp-grille2 { grid-template-columns: minmax(0, 1fr); } }
+#cmp-form fieldset { border: 0; padding: 0; margin: 0 0 10px; }
+#cmp-form legend { font-size: 11.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 4px; }
+.cmp-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
+.cmp-grille label { display: flex; flex-direction: column; font-size: 11.5px; color: var(--muted); gap: 2px; }
+.cmp-grille label.large { grid-column: 1 / -1; }
+#cmp-form input[type=number], #cmp-form select {
+  width: 100%; padding: 3px 6px; font: inherit; font-size: 12.5px; color: var(--ink); background: var(--input);
+  border: 1px solid var(--line); border-radius: 4px; font-variant-numeric: tabular-nums;
+}
+.cmp-cands { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; font-size: 12px; }
+.cmp-cands label { display: flex; gap: 6px; align-items: center; }
+.cmp-defile { overflow-x: auto; }
+.cmp-table td, .cmp-table th { white-space: nowrap; }
+.cmp-table td:last-child { white-space: normal; min-width: 220px; text-align: left; font-size: 11px; }
+.cmp-table th:last-child { text-align: left; }
+.cmp-table tr.cmp-ref td { background: var(--bg); }
+.cmp-table tr.cmp-off td { color: var(--muted); }
+.cmp-barre { display: inline-block; width: 60px; height: 6px; background: var(--grid); border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+.cmp-barre i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+#vue-dim .danger { color: var(--danger); font-weight: 600; }
 .tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0 12px; }
 .tuile { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
 .tuile b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
@@ -135,6 +227,97 @@ table.donnees tr.non td { color: var(--muted); }
 .defaut { color: var(--danger); font-size: 11px; }
 .pastille-f { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
 .table-defile { overflow-x: auto; }
+/* ---------------------------------------------- onglet Simulateur temps réel 2 */
+#vue-sim2 { grid-template-columns: minmax(0, 1fr); max-width: 1400px; margin: 0 auto; }
+.s2-tete { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.s2-tete h2 { margin: 0; }
+.s2-tete .discret { margin-left: auto; }
+button.secondaire {
+  font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+#schema2 { position: relative; aspect-ratio: 1200 / 700; width: 100%; }
+#schema2 > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#schema2 .tuyau-fond { fill: none; stroke: var(--pipe); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+#schema2 .flux { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
+                 stroke-dasharray: 0 14; animation: flux2 .4s linear infinite; }
+#schema2 .flux.inverse { animation-direction: reverse; }
+#schema2.arret .flux { stroke: var(--window) !important; animation-play-state: paused; }
+@keyframes flux2 { to { stroke-dashoffset: -14; } }
+#schema2 .air { stroke: var(--ref); stroke-width: 3; fill: none; opacity: .6; marker-end: url(#pointe2); }
+#schema2 .mur { fill: var(--window); opacity: .6; }
+#schema2 .mur-txt { fill: var(--muted); font: 600 11px system-ui, sans-serif; letter-spacing: .08em; }
+.bloc2 {
+  position: absolute; display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+  background: var(--card); border: 1.5px solid var(--ink); border-top-width: 6px; border-radius: 8px;
+  padding: 6px 9px; font-size: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+.bloc2 h3 { margin: 0; font-size: 12.5px; display: flex; justify-content: space-between; gap: 6px; }
+.bloc2 h3 .role { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.bloc2 .sous { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+               border-top: 1px solid var(--grid); padding-top: 3px; margin-top: 2px; }
+.p2 { display: grid; grid-template-columns: minmax(0, 1fr) 66px 30px; gap: 5px; align-items: center; }
+.p2 > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p2 select { grid-column: 2 / 4; }
+.p2 i:empty { display: none; }
+.p2 i { font-style: normal; color: var(--muted); font-size: 11px; }
+.p2 input, .p2 select, .zone2 input {
+  width: 100%; padding: 1px 5px; font: inherit; font-variant-numeric: tabular-nums; color: var(--ink);
+  background: var(--input); border: 1px solid var(--line); border-radius: 4px;
+}
+.p2 input:focus, .zone2 input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.p2 input:disabled { opacity: .45; }
+.p2.modifie > span { color: var(--accent); font-weight: 600; }
+.mes2 { display: grid; grid-template-columns: auto auto; gap: 0 8px; font-variant-numeric: tabular-nums; }
+.mes2 dt { color: var(--muted); }
+.mes2 dd { margin: 0; text-align: right; white-space: nowrap; }
+.mes2 .chaud { color: var(--refoul); font-weight: 600; }
+.mes2 .froid { color: var(--diphasique); font-weight: 600; }
+.bloc2 .alerte { color: var(--danger); font-weight: 600; font-size: 11px; }
+.zone2 { position: absolute; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.zone2 b { font-size: 13px; letter-spacing: .06em; }
+.zone2 label { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+.zone2 input { width: 58px; }
+#b2-v4v { border-top-width: 1.5px; background: #fff3bf; color: #1f2328; align-items: center; justify-content: center; }
+#b2-v4v h3 { justify-content: center; }
+#b2-v4v .choix2 { display: flex; gap: 10px; }
+#b2-v4v label { display: flex; gap: 3px; align-items: center; cursor: pointer; }
+#b2-v4v input { accent-color: #1c7ed6; margin: 0; }
+#s2-bilan { margin: 10px 0 0; }
+button.tuile { font: inherit; color: inherit; text-align: left; background: var(--card); cursor: pointer; }
+button.tuile:hover { border-color: var(--accent); }
+button.tuile[aria-expanded="true"] { border-color: var(--accent); outline: 1px solid var(--accent); }
+button.tuile .plus { color: var(--accent); font-weight: 600; }
+#s2-detail { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-top: 4px; }
+#s2-detail h3 { margin: 0 0 4px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+#s2-detail table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+#s2-detail th { text-align: left; font-weight: 600; font-size: 11px; color: var(--muted); text-transform: uppercase;
+                letter-spacing: .03em; border-bottom: 1px solid var(--line); padding: 4px; }
+#s2-detail td { border-bottom: 1px solid var(--grid); padding: 5px 4px; vertical-align: top; }
+#s2-detail td.n { color: var(--muted); width: 22px; }
+#s2-detail td.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 13.5px; white-space: nowrap; }
+#s2-detail td.an { color: var(--muted); }
+#s2-detail td.res { text-align: right; white-space: nowrap; font-weight: 600; }
+#s2-detail tr.final td { background: var(--grid); font-weight: 700; }
+#s2-detail .note { color: var(--muted); font-size: 11px; display: block; }
+#s2-detail .params { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 4px 20px; margin-top: 6px; }
+#s2-detail .params h4 { grid-column: 1 / -1; margin: 8px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+#s2-detail .params div { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; border-bottom: 1px dotted var(--grid); }
+#s2-detail .params span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table-defile { overflow-x: auto; }
+.pt2 { position: absolute; font-size: 11px; line-height: 1.3; font-variant-numeric: tabular-nums;
+       background: var(--card); border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px;
+       padding: 3px 6px; overflow: hidden; }
+.pt2 b { display: block; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt2 .tp { font-size: 12px; font-weight: 600; }
+.pt2 .discret { font-size: 10.5px; white-space: nowrap; }
+#schema2 .num2 circle { fill: var(--card); stroke: var(--ink); stroke-width: 2; }
+#schema2 .num2 text { fill: var(--ink); font: 700 14px system-ui, sans-serif; text-anchor: middle; dominant-baseline: central; }
+@media (max-width: 1000px) {
+  #schema2 { aspect-ratio: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  #schema2 > svg { display: none; }
+  .bloc2, .zone2, .pt2 { position: static; width: auto !important; height: auto !important; align-self: start; }
+}
 @media (max-width: 1250px) {
   main { grid-template-columns: 280px minmax(0, 1fr); }
   #valeurs { grid-column: 1 / -1; }
@@ -150,10 +333,79 @@ table.donnees tr.non td { color: var(--muted); }
   <h1>Pompe à chaleur réversible de fenêtre au propane (R290)</h1>
   <nav class="onglets" role="tablist">
     <button role="tab" data-onglet="sim" aria-selected="true">Simulateur temps réel</button>
+    <button role="tab" data-onglet="sim2" aria-selected="false">Simulateur temps réel 2</button>
     <button role="tab" data-onglet="dim" aria-selected="false">Dimensionnement des échangeurs</button>
+    <button role="tab" data-onglet="pri" aria-selected="false">Principes de design</button>
+    <button role="tab" data-onglet="glo" aria-selected="false">Glossaire</button>
   </nav>
   <span id="connexion">connexion…</span>
 </header>
+<main id="vue-pri" hidden>
+  <p class="discret">Les quelques règles à garder en tête pour concevoir une pompe à chaleur très efficace. Températures en kelvins dans les équations (T[K] = T[°C] + 273,15). Les valeurs « au point courant » viennent du simulateur temps réel.</p>
+  <section class="card principe">
+    <div class="num">1</div>
+    <div>
+      <h3>Le COP est plafonné par les températures intérieure et extérieure : aucune machine ne peut dépasser le COP de Carnot entre les deux airs.</h3>
+      <div class="eq">COP<sub>max</sub> = T<sub>chaud</sub> / (T<sub>chaud</sub> − T<sub>froid</sub>)</div>
+      <p>En chauffage, T<sub>chaud</sub> = pièce et T<sub>froid</sub> = extérieur (en froid, l'EER max vaut T<sub>froid</sub> / (T<sub>chaud</sub> − T<sub>froid</sub>)). Plus l'écart entre les deux airs est grand, plus le plafond baisse : on ne choisit pas ce plafond, on essaie seulement de s'en approcher.</p>
+      <div class="live" data-live="1"></div>
+    </div>
+  </section>
+  <section class="card principe">
+    <div class="num">2</div>
+    <div>
+      <h3>Pour optimiser le COP, il faut toujours rapprocher Te et Tc des températures de l'air.</h3>
+      <div class="eq">COP<sub>cycle</sub> &lt; T<sub>c</sub> / (T<sub>c</sub> − T<sub>e</sub>)  →  chaque kelvin d'écart Tc − Te en moins ≈ +3 à 4 % de COP</div>
+      <p>Le compresseur ne voit pas les airs, il voit Te et Tc. Tout l'écart entre l'air et le réfrigérant (échangeurs trop petits, débit d'air trop faible, pertes de charge) élargit la « marche » qu'il doit franchir. C'est la première source de pertes de la cascade.</p>
+      <div class="live" data-live="2"></div>
+    </div>
+  </section>
+  <section class="card principe">
+    <div class="num">3</div>
+    <div>
+      <h3>Des échangeurs grands et traversés lentement : une grande surface frontale bat un ventilateur rapide.</h3>
+      <div class="eq">ΔT = Q / UA   ;   P<sub>vent</sub> ≈ k · V̇³ / A<sub>frontale</sub>²</div>
+      <p>Plus d'UA réduit l'écart air-réfrigérant ; plus de débit d'air limite le réchauffement de l'air. Mais à batterie fixe, la puissance du ventilateur croît comme le cube du débit. Doubler la surface frontale permet le même débit pour environ 4 fois moins de puissance ventilateur. La surface n'a pas d'optimum : c'est la place disponible qui la limite.</p>
+      <div class="live" data-live="3"></div>
+    </div>
+  </section>
+  <section class="card principe">
+    <div class="num">4</div>
+    <div>
+      <h3>Tourner lentement et longtemps : une machine efficace module sa puissance au lieu de s'arrêter et redémarrer.</h3>
+      <div class="eq">ΔT = Q / UA  →  à mi-charge, mêmes batteries, écarts divisés par ~2</div>
+      <p>À charge partielle, les mêmes batteries transfèrent moins de chaleur avec des écarts plus faibles : Te et Tc se rapprochent des airs et le COP monte. La machine passe la plupart de l'année à 20-50 % de sa puissance : c'est là qu'il faut être excellent (compresseur à large plage de fréquence, f<sub>min</sub> basse, pas de cyclage). C'est ce que mesure le SCOP.</p>
+      <div class="live" data-live="4"></div>
+    </div>
+  </section>
+  <section class="card principe">
+    <div class="num">5</div>
+    <div>
+      <h3>Choisir le compresseur pour son rendement au point où la machine passe le plus de temps, pas au point nominal.</h3>
+      <div class="eq">P<sub>comp</sub> = ṁ · Δh<sub>is</sub> / (η<sub>is</sub> · η<sub>mot</sub> · η<sub>var</sub>)</div>
+      <p>Une fois Te et Tc fixés par les échangeurs, le compresseur, son moteur et son électronique multiplient la consommation par 1/(η<sub>is</sub>·η<sub>mot</sub>·η<sub>var</sub>), souvent 1,5 à 1,7. Il faut un compresseur dont η<sub>is</sub> est maximal à faible taux de compression et basse fréquence, car de bons échangeurs y amènent justement la machine.</p>
+      <div class="live" data-live="5"></div>
+    </div>
+  </section>
+  <section class="card principe">
+    <div class="num">6</div>
+    <div>
+      <h3>Un grand échangeur, c'est de la surface côté air, pas du temps de contact avec le réfrigérant.</h3>
+      <div class="eq">Q = U · A · ΔT   ;   h<sub>air</sub> ≈ 50–100 ≪ h<sub>propane</sub> ≈ 2 000–5 000 W/(m²·K)</div>
+      <p>• Plus de surface côté air : plus d'ailettes, plus de rangs, plus de surface frontale (l'air est le maillon faible de l'échange).</p>
+      <p>• Traversée lentement par l'air : grande surface frontale pour limiter la puissance des ventilateurs.</p>
+      <p>• Avec assez de débit d'air pour que l'air ne se réchauffe ou ne se refroidisse pas trop en la traversant.</p>
+    </div>
+  </section>
+</main>
+<main id="vue-glo" hidden>
+  <div id="glo-tete">
+    <input id="glo-recherche" type="search" placeholder="Rechercher un terme ou un sigle (ex. Te, COP, UA, pincement…)" aria-label="Rechercher dans le glossaire">
+    <span id="glo-compte" class="discret"></span>
+  </div>
+  <nav id="glo-cats" aria-label="Catégories"></nav>
+  <div id="glo-liste"></div>
+</main>
 <main id="vue-dim" hidden>
   <section class="colonne">
     <div class="card"><h2>Besoin et contraintes</h2><form id="form-dim"></form></div>
@@ -168,6 +420,36 @@ table.donnees tr.non td { color: var(--muted); }
       <p class="discret">Choisir les contraintes puis lancer le dimensionnement. Le calcul explore plusieurs milliers
         de géométries d'échangeur par côté, puis évalue les meilleurs couples avec le modèle de cycle complet.</p>
     </div>
+    <div class="card"><h2>Échangeur gyroïde 3D : paramètres et simulation</h2>
+      <div id="gy-grille">
+        <form id="gy-form" onsubmit="return false"></form>
+        <div>
+          <div class="choix gyro-choix">
+            <label><input type="radio" name="gyro-cote" value="int" checked> Batterie intérieure</label>
+            <label><input type="radio" name="gyro-cote" value="ext"> Batterie extérieure</label>
+            <label><input type="checkbox" id="gy-voile" checked> Voile côté air</label>
+            <span class="discret">Glisser pour tourner, molette pour zoomer, clic droit pour déplacer.</span>
+          </div>
+          <div id="gy-3d"><div id="gy-3d-msg">Chargement de la vue 3D…</div></div>
+          <div class="gy-legende">
+            <span class="gy-barre"><span id="gy-barre-min"></span><i></i><span id="gy-barre-max"></span></span>
+            <span>Canaux propane : surfaces opaques</span>
+            <span>Paroi côté air : voile translucide</span>
+            <span><span class="gy-pastille" style="background:#1c7ed6"></span>air</span>
+            <span><span class="gy-pastille" style="background:#d62728"></span>propane (contre-courant)</span>
+          </div>
+          <p id="gy-3d-note" class="discret" style="margin:4px 0 0"></p>
+        </div>
+      </div>
+      <canvas id="cv-gyro"></canvas>
+      <div id="gy-resultats"></div>
+    </div>
+    <div class="card"><h2>Comparateur de surfaces d'échange</h2>
+      <p class="discret">Même enveloppe, mêmes débits d'air, même puissance et mêmes conditions pour chaque technologie ;
+        le cycle complet est résolu pour chacune. Les surfaces TPMS sans corrélation côté air apparaissent « à calibrer »
+        jusqu'à la campagne CFD (outils/cfd_tpms).</p>
+      <div id="cmp-grille2"><form id="cmp-form" onsubmit="return false"></form><div id="cmp-resultats"></div></div>
+    </div>
     <div class="card"><h2>Performance en fonction du coût des deux échangeurs</h2>
       <canvas id="cv-dim"></canvas>
       <div id="leg-dim" class="discret"></div>
@@ -177,6 +459,77 @@ table.donnees tr.non td { color: var(--muted); }
     <div class="card"><h2>Classement des couples évalués</h2><div id="dim-classement"></div></div>
     <div class="card"><h2>Hypothèses du modèle d'échangeur</h2><div id="dim-hyp"></div></div>
   </section>
+</main>
+<main id="vue-sim2" hidden>
+  <div class="card">
+    <div class="s2-tete">
+      <h2>Schéma de la machine · paramètres des composants</h2>
+      <button type="button" id="s2-reset" class="secondaire">Valeurs par défaut</button>
+      <span class="discret" id="s2-statut"></span>
+    </div>
+    <div id="schema2" class="arret">
+      <svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true">
+        <defs><marker id="pointe2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--ref)"/></marker></defs>
+        <rect class="mur" x="400" y="20" width="30" height="670"/>
+        <text class="mur-txt" transform="translate(420 360) rotate(-90)" text-anchor="middle">FENÊTRE / KIT D'ÉTANCHÉITÉ</text>
+        <path class="air" d="M2,340 H36"/><path class="air" d="M344,340 H394"/>
+        <path class="air" d="M800,340 H854"/><path class="air" d="M1164,340 H1198"/>
+        <g id="s2-tuyaux">
+          <path data-seg="A" d="M560,95 H190 V140"/>
+          <path data-seg="B" d="M190,540 V625 H490"/>
+          <path data-seg="C" d="M790,625 H1010 V540"/>
+          <path data-seg="D" d="M1010,140 V95 H720"/>
+          <path data-seg="E" d="M610,200 V130"/>
+          <path data-seg="F" d="M670,130 V200"/>
+        </g>
+        <g class="num2" data-coin="TL"><circle cx="190" cy="95" r="14"/><text x="190" y="95"></text></g>
+        <g class="num2" data-coin="BL"><circle cx="190" cy="625" r="14"/><text x="190" y="625"></text></g>
+        <g class="num2" data-coin="BR"><circle cx="1010" cy="625" r="14"/><text x="1010" y="625"></text></g>
+        <g class="num2" data-coin="TR"><circle cx="1010" cy="95" r="14"/><text x="1010" y="95"></text></g>
+      </svg>
+
+      <div class="zone2" style="left:3.333%;top:2.000%;width:28.333%;height:7.143%"><b>INTÉRIEUR</b>
+        <label>T air <input type="number" data-param="T_int" step="0.5"> °C</label></div>
+      <div class="zone2" style="left:71.667%;top:2.000%;width:25.000%;height:7.143%"><b>EXTÉRIEUR</b>
+        <label>T air <input type="number" data-param="T_ext" step="0.5"> °C</label></div>
+
+      <div class="pt2" data-coin="TL" style="left:2.333%;top:9.143%;width:12.000%;height:10.857%"></div>
+      <div class="pt2" data-coin="TR" style="left:85.667%;top:9.143%;width:12.000%;height:10.857%"></div>
+      <div class="pt2" data-coin="BL" style="left:2.333%;top:82.857%;width:12.000%;height:11.714%"></div>
+      <div class="pt2" data-coin="BR" style="left:85.667%;top:82.857%;width:12.000%;height:11.714%"></div>
+      <div class="bloc2" id="b2-int" style="left:3.333%;top:20.000%;width:25.000%;height:57.143%">
+        <h3>Batterie intérieure <span class="role"></span></h3>
+        <div data-composant="bat_int"></div>
+        <div class="sous">Fonctionnement</div><dl class="mes2"></dl>
+      </div>
+      <div class="bloc2" id="b2-ext" style="left:71.667%;top:20.000%;width:25.000%;height:57.143%">
+        <h3>Batterie extérieure <span class="role"></span></h3>
+        <div data-composant="bat_ext"></div>
+        <div class="sous">Fonctionnement</div><dl class="mes2"></dl>
+      </div>
+      <div class="bloc2" id="b2-v4v" style="left:46.667%;top:8.571%;width:13.333%;height:10.000%">
+        <h3>Vanne 4 voies</h3>
+        <div class="choix2"><label><input type="radio" name="mode2" value="chauffage"> Chaud</label>
+          <label><input type="radio" name="mode2" value="clim"> Froid</label></div>
+      </div>
+      <div class="bloc2" id="b2-comp" style="left:40.833%;top:28.571%;width:25.000%;height:47.143%">
+        <h3>Compresseur <span class="role">rotatif BLDC</span></h3>
+        <label class="p2"><span>Pilotage</span><select data-param="auto">
+          <option value="1">inverter auto</option><option value="0">manuel</option></select></label>
+        <label class="p2"><span>Fréquence manuelle</span><input type="number" data-param="freq" step="0.5"><i>Hz</i></label>
+        <div data-composant="compresseur"></div>
+        <div class="sous">Fonctionnement</div><dl class="mes2"></dl>
+      </div>
+      <div class="bloc2" id="b2-eev" style="left:40.833%;top:80.000%;width:25.000%;height:18.571%">
+        <h3>Détendeur électronique <span class="role">EEV</span></h3>
+        <div data-composant="detendeur"></div>
+        <dl class="mes2"></dl>
+      </div>
+    </div>
+    <div id="s2-bilan" class="tuiles"></div>
+    <div id="s2-detail" hidden></div>
+  </div>
 </main>
 <main id="vue-sim">
   <section id="commandes">
@@ -517,10 +870,51 @@ const gPH = new Graphe(document.getElementById("cv-ph"));
 const gCOP = new Graphe(document.getElementById("cv-cop"));
 const gHist = new Graphe(document.getElementById("cv-hist"));
 
+// États du propane sur le P-h : zones teintées + étiquettes (liquide / mélange / vapeur / supercritique)
+function zonesPH(g) {
+  const d = STAT.dome, haut = d[d.length - 1], [h0, h1] = [30, 760], [p0, p1] = [0.9, 45];
+  const pc = haut[2], ctx = g.ctx;
+  // h sur une courbe de saturation (col 0 = liquide, 1 = vapeur) à la pression p, interpolé en log p
+  const hSat = (col, p) => {
+    for (let i = 1; i < d.length; i++) if (d[i][2] >= p) {
+      const a = d[i - 1], b = d[i], t = Math.log(p / a[2]) / Math.log(b[2] / a[2]);
+      return a[col] + t * (b[col] - a[col]);
+    }
+    return haut[col];
+  };
+  const zone = (pts, couleur, alpha) => {
+    ctx.save(); ctx.beginPath();
+    pts.forEach(([h, p], i) => i ? ctx.lineTo(g.X(h), g.Y(p)) : ctx.moveTo(g.X(h), g.Y(p)));
+    ctx.closePath(); ctx.globalAlpha = alpha; ctx.fillStyle = couleur; ctx.fill(); ctx.restore();
+  };
+  const liq = d.map(r => [r[0], r[2]]), vap = d.map(r => [r[1], r[2]]);
+  zone([[h0, p0], [d[0][0], p0], ...liq, [haut[1], pc], [h0, pc]], C.liquide, .10);
+  zone([[d[0][1], p0], ...vap, [haut[1], pc], [h1, pc], [h1, p0]], C.refoul, .07);
+  zone([[d[0][0], p0], ...liq, [haut[1], pc], ...vap.reverse(), [d[0][1], p0]], C.diphasique, .10);
+  zone([[h0, pc], [h1, pc], [h1, p1], [h0, p1]], C.ref, .12);
+
+  const opt = (couleur) => ({couleur, taille: 11, gras: true, align: "center", va: "middle"});
+  const sous = (couleur) => ({couleur, taille: 9.5, align: "center", va: "middle"});
+  const lab = (h, p, titre, detail, couleur) => {
+    texte(ctx, titre, g.X(h), g.Y(p) - 6, opt(couleur));
+    texte(ctx, detail, g.X(h), g.Y(p) + 7, sous(couleur));
+  };
+  lab(165, 27, "LIQUIDE", "sous-refroidi", C.liquide);
+  lab((hSat(0, 1.9) + hSat(1, 1.9)) / 2, 1.9, "MÉLANGE LIQUIDE + VAPEUR", "diphasique : T fixée par p", C.diphasique);
+  const pV = 2.6;
+  lab((hSat(1, pV) + h1) / 2 + 10, pV, "VAPEUR", "surchauffée", C.refoul);
+  texte(ctx, "x = 0 liquide saturé", g.X(hSat(0, 1.08)) + 4, g.Y(1.08), {couleur: C.muted, taille: 9, va: "middle"});
+  texte(ctx, "vapeur saturée x = 1", g.X(hSat(1, 1.08)) - 4, g.Y(1.08), {couleur: C.muted, taille: 9, va: "middle", align: "right"});
+  ctx.beginPath(); ctx.arc(g.X(haut[1]), g.Y(pc), 3, 0, 2 * Math.PI); ctx.fillStyle = C.ink; ctx.fill();
+  texte(ctx, `● point critique (96.7 °C, ${fmt(pc, 1)} bar) : au-dessus, supercritique`, g.X(h0) + 4, g.Y(pc) + 2,
+        {couleur: C.muted, taille: 9, va: "top"});
+}
+
 function dessinerPH() {
   const g = gPH;
-  g.debut({xlim: [30, 760], ylim: [0.9, 45], ylog: true, titre: "Diagramme P-h du propane (R290) et cycle courant",
+  g.debut({xlim: [30, 760], ylim: [0.9, 45], ylog: true, titre: "Diagramme P-h du propane (R290)",
            xlabel: "Enthalpie h (kJ/kg)", ylabel: "Pression p (bar)"});
+  zonesPH(g);
   for (const [T, p] of STAT.isothermes) {
     g.courbe([30, 760], [p, p], {couleur: C.line, epaisseur: .8});
     texte(g.ctx, `${T} °C`, g.X(36), g.Y(p) - 2, {couleur: C.muted, taille: 9.5, va: "bottom"});
@@ -529,8 +923,21 @@ function dessinerPH() {
   g.courbe([...d.map(r => r[0]), haut[1], ...d.map(r => r[1]).reverse()],
            [...d.map(r => r[2]), haut[2], ...d.map(r => r[2]).reverse()], {couleur: C.ink, epaisseur: 1.1});
   if (S && S.marche) {
+    const nom = S.params.mode === "chauffage" ? "COP" : "EER", ref = S.cycles_ref || {}, leg = [];
+    leg.push({label: `Cycle courant : ${nom} cycle ${fmt(S.etat.COP_cycle, 2)}, unité ${fmt(S.cop_eff, 2)}`, couleur: C.refoul});
     const pts = S.etat.points_ph, h = pts.map(q => q[0]), p = pts.map(q => q[1]);
     g.courbe(h, p, {couleur: C.refoul, epaisseur: 2.2, fermer: true, remplir: C.fill});
+    if (ref.ideal) {
+      g.courbe(ref.ideal.points.map(q => q[0]), ref.ideal.points.map(q => q[1]),
+               {couleur: C.p, epaisseur: 2, tirets: [2, 4], fermer: true});
+      leg.push({label: `Idéal (airs, isentropique) : ${nom} ${fmt(ref.ideal.cop, 1)}`, couleur: C.p, tirets: [2, 4]});
+    }
+    if (ref.comp_parfait) {
+      g.courbe(ref.comp_parfait.points.map(q => q[0]), ref.comp_parfait.points.map(q => q[1]),
+               {couleur: C.accent, epaisseur: 2, tirets: [7, 4], fermer: true});
+      leg.push({label: `Te/Tc réels, compresseur parfait : ${nom} ${fmt(ref.comp_parfait.cop, 2)}`, couleur: C.accent, tirets: [7, 4]});
+    }
+    g.legende(leg, "haut-droite", 16);
     const cles = [pts[0], pts[5], pts[9], pts[10]], decal = [[-8, .82], [8, 1.05], [-24, 1.05], [-24, .82]];
     cles.forEach(([hh, pp], i) => {
       g.point(hh, pp, {couleur: C.ink, r: 3.5});
@@ -862,13 +1269,14 @@ function construireCommandes() {
   document.getElementById("hypotheses").textContent = texteHypotheses();
 }
 
-function texteHypotheses(k_UA = {}) {
+function texteHypotheses(k_UA = {}, conc = null) {
   const hyp = ["Multiplicateurs (à valider) :"];
   for (const [k, v] of Object.entries(STAT.technologies))
     hyp.push(` ${k}`, `   UA ×${(k_UA[k] ?? v.k_UA).toFixed(2)}  vent. ×${v.k_vent.toFixed(2)}`,
              `   vol. ×${v.k_vol.toFixed(2)}  givre ×${v.k_givre.toFixed(2)}`);
-  hyp.push("", "Compresseur rotatif BLDC 16 cm³,", "15-110 Hz. EEV surchauffe 5 K,",
-           "sous-refroid. 4 K. Ventilateurs EC", "asservis à la fréquence.");
+  const c = conc || STAT.conception_defaut;
+  hyp.push("", `Compresseur rotatif BLDC ${c.cylindree_cm3} cm³,`, `${c.f_min}-${c.f_max} Hz. EEV surchauffe ${c.surchauffe} K,`,
+           `sous-refroid. ${c.sous_refroid} K. Ventilateurs EC`, "asservis à la fréquence.");
   return hyp.join("\n");
 }
 
@@ -888,7 +1296,7 @@ function synchroniserCommandes() {
     if (!(enAttente.k_UA && nom in enAttente.k_UA) && document.activeElement !== nombre) nombre.value = k;
     abs.textContent = `int. ${Math.round(STAT.UA_ref.int * k)} W/K · ext. ${Math.round(STAT.UA_ref.ext * k)} W/K (débit nominal)`;
   }
-  const hyp = texteHypotheses(p.k_UA), pre = document.getElementById("hypotheses");
+  const hyp = texteHypotheses(p.k_UA, p.conception), pre = document.getElementById("hypotheses");
   if (pre.textContent !== hyp) pre.textContent = hyp;
   for (const [nom, val] of [["mode", p.mode], ["auto", p.auto ? "1" : "0"], ["techno", p.techno],
                             ["ventil_auto", p.ventil_auto ? "1" : "0"]])
@@ -1117,15 +1525,16 @@ function hypothesesDim() {
 
 function changerOnglet(nom) {
   for (const b of document.querySelectorAll(".onglets button")) b.setAttribute("aria-selected", b.dataset.onglet === nom);
-  document.getElementById("vue-sim").hidden = nom !== "sim";
-  document.getElementById("vue-dim").hidden = nom !== "dim";
+  for (const v of ["sim", "sim2", "dim", "glo", "pri"]) document.getElementById(`vue-${v}`).hidden = nom !== v;
   try { localStorage.setItem("onglet", nom); } catch {}
   grapheAJour = true;
-  if (nom === "dim") dessinerDim();
+  if (nom === "dim") { dessinerDim(); majGyro(); }
+  if (nom === "sim2") majSim2();
+  if (nom === "pri") majPrincipes();
 }
 for (const b of document.querySelectorAll(".onglets button")) b.addEventListener("click", () => changerOnglet(b.dataset.onglet));
 document.getElementById("btn-optim").addEventListener("click", lancerOptim);
-window.addEventListener("resize", () => dessinerDim());
+window.addEventListener("resize", () => { dessinerDim(); if (!document.getElementById("vue-dim").hidden) dessinerProfilGyro(); });
 
 async function initDim() {
   DIM.hyp = await (await fetch("/api/optim/hypotheses")).json();
@@ -1134,8 +1543,856 @@ async function initDim() {
   suivreOptim();
   let onglet = "sim";
   try { onglet = localStorage.getItem("onglet") || "sim"; } catch {}
-  if (location.hash === "#dim" || location.hash === "#sim") onglet = location.hash.slice(1);
+  if (["#dim", "#sim", "#sim2", "#glo", "#pri"].includes(location.hash)) onglet = location.hash.slice(1);
   changerOnglet(onglet);
+}
+
+// ------------------------------- onglet Dimensionnement : échangeur gyroïde 3D + simulation
+// Paramètres des deux batteries gyroïdes -> POST /api/gyroide (cycle complet) ->
+// vue 3D (isosurfaces du gyroïde colorées par la température), profil T et résultats.
+const GYRO = {hyp: null, res: null, cote: "int", enCours: false};
+
+// Échelle de couleur froid → chaud (bleu, cyan, jaune, orange, rouge)
+const GYRO_STOPS = [[0, [37, 99, 235]], [0.3, [34, 184, 207]], [0.55, [250, 210, 60]], [0.78, [245, 130, 40]], [1, [214, 40, 40]]];
+function couleurT(u) {
+  u = Math.min(Math.max(u, 0), 1);
+  let i = 1; while (i < GYRO_STOPS.length - 1 && GYRO_STOPS[i][0] < u) i++;
+  const [ua, ca] = GYRO_STOPS[i - 1], [ub, cb] = GYRO_STOPS[i], t = (u - ua) / (ub - ua);
+  return ca.map((c, k) => c + (cb[k] - c) * t);
+}
+
+// Profil de températures le long d'une batterie, à contre-courant, en fonction de la part
+// de chaleur échangée s (0 = entrée d'air, 1 = sortie d'air). e : état (points du cycle).
+function profilBatterie(e, mode, T_int, T_ext, cote) {
+  if (!e || !e.points || !e.points["3"] || !e.points["3"].hl) return null;
+  const P = e.points, chauf = mode === "chauffage";
+  const cond = (cote === "int") === chauf;   // cette batterie est-elle le condenseur ?
+  const Tin = cote === "int" ? T_int : T_ext;
+  const Tout = cote === "int" ? e.T_air_int_out : e.T_air_ext_out;
+  let hOut, hIn, troncons;
+  if (cond) {
+    const {hl, hv, Tsat} = P["3"];
+    hOut = P["3"].h; hIn = P["2"].h;
+    troncons = [[hOut, P["3"].T, Math.min(hl, hIn), Tsat, "liquide sous-refroidi"],
+                [Math.max(hl, hOut), Tsat, hv, Tsat, "condensation"],
+                [hv, Tsat, hIn, P["2"].T, "désurchauffe"]];
+  } else {
+    const {hv, Tsat} = P["4"];
+    hOut = P["1"].h; hIn = P["4"].h;
+    troncons = [[hOut, P["1"].T, hv, Tsat, "surchauffe"], [hv, Tsat, hIn, Tsat, "évaporation"]];
+  }
+  troncons = troncons.filter(t => Math.abs(t[2] - t[0]) > 1e-6 && (t[2] - t[0]) * (hIn - hOut) > 0);
+  const sDe = h => (h - hOut) / (hIn - hOut);
+  const zones = troncons.map(([ha, Ta, hb, Tb, nom]) => ({s0: sDe(ha), s1: sDe(hb), Ta, Tb, nom}));
+  const ref = s => {
+    for (const z of zones) if (s <= z.s1 + 1e-9) return z.Ta + (z.Tb - z.Ta) * (s - z.s0) / (z.s1 - z.s0 || 1);
+    return zones.length ? zones[zones.length - 1].Tb : NaN;
+  };
+  const air = s => Tin + (Tout - Tin) * s;
+  let pinc = Infinity, sPinc = 0;
+  for (let i = 0; i <= 200; i++) {
+    const s = i / 200, d = (ref(s) - air(s)) * (cond ? 1 : -1);
+    if (d < pinc) { pinc = d; sPinc = s; }
+  }
+  const Ts = [Tin, Tout, ...zones.flatMap(z => [z.Ta, z.Tb])];
+  return {cond, chauf, Tin, Tout, air, ref, zones, pinc, sPinc, Q: e.m_dot * Math.abs(hIn - hOut) * 1e3,
+          Tref_in: ref(1), Tref_out: ref(0), Tmin: Math.min(...Ts), Tmax: Math.max(...Ts)};
+}
+
+function profilCourant() {
+  const r = GYRO.res;
+  if (!r || !r.ok) return null;
+  return profilBatterie(r.etat, r.params.mode, r.params.T_int, r.params.T_ext, GYRO.cote);
+}
+
+// ---- formulaire
+function construireFormGyro() {
+  const H = GYRO.hyp, d = H.defaut, f = document.getElementById("gy-form");
+  const num = (id, v, mn, mx, pas) => `<input type="number" id="${id}" value="${v}" min="${mn}" max="${mx}" step="${pas}">`;
+  let html = `<div class="gy-cond">
+    <label>Mode<select id="gy-mode"><option value="chauffage">Chauffage</option><option value="clim">Climatisation</option></select></label>
+    <label>T ext. (°C)${num("gy-T_ext", d.T_ext, -25, 46, 0.5)}</label>
+    <label>T int. (°C)${num("gy-T_int", d.T_int, 10, 32, 0.5)}</label>
+    <label>Puissance (kW)${num("gy-puissance_kW", d.puissance_kW, 0.3, 6, 0.1)}</label>
+    <label class="large">Matériau imprimé<select id="gy-materiau">${H.materiaux.map(m =>
+      `<option${m === d.materiau ? " selected" : ""}>${m}</option>`).join("")}</select></label>
+  </div>
+  <table class="gy-params"><thead><tr><th></th><th>Intérieure</th><th>Extérieure</th></tr></thead><tbody>`;
+  for (const [k, lib, unite, mn, mx, pas] of H.parametres)
+    html += `<tr><td>${lib}${unite ? ` <span class="discret">(${unite})</span>` : ""}</td>` +
+      ["int", "ext"].map(c => `<td>${num(`gy-${c}-${k}`, d[c][k], mn, mx, pas)}</td>`).join("") + "</tr>";
+  html += `</tbody></table>
+  <p class="discret gy-aide">Niveaux du gyroïde F = sin x cos y + sin y cos z + sin z cos x : air où F &gt; niveau air,
+    propane où F &lt; niveau propane, paroi entre les deux. Baisser le niveau propane réduit le canal propane (et la charge) ;
+    rapprocher les deux niveaux amincit la paroi.</p>
+  <div class="gy-actions"><button type="button" id="gy-lancer" class="principal">Générer la simulation</button>
+    <button type="button" id="gy-reprendre">Conditions du simulateur temps réel</button>
+    <span id="gy-statut" class="discret"></span></div>`;
+  f.innerHTML = html;
+  document.getElementById("gy-mode").value = d.mode;
+  document.getElementById("gy-lancer").addEventListener("click", lancerGyro);
+  document.getElementById("gy-reprendre").addEventListener("click", () => {
+    if (!S) return;
+    const p = S.params;
+    document.getElementById("gy-mode").value = p.mode;
+    document.getElementById("gy-T_ext").value = p.T_ext;
+    document.getElementById("gy-T_int").value = p.T_int;
+    if (S.marche && S.q_eff) document.getElementById("gy-puissance_kW").value = (S.etat.Q_utile / 1000).toFixed(2);
+  });
+}
+
+function lireFormGyro() {
+  const v = id => parseFloat(document.getElementById(id).value);
+  const req = {mode: document.getElementById("gy-mode").value, T_ext: v("gy-T_ext"), T_int: v("gy-T_int"),
+               puissance_kW: v("gy-puissance_kW"), materiau: document.getElementById("gy-materiau").value};
+  for (const c of ["int", "ext"]) {
+    req[c] = {};
+    for (const [k] of GYRO.hyp.parametres) req[c][k] = v(`gy-${c}-${k}`);
+  }
+  return req;
+}
+
+async function lancerGyro() {
+  if (GYRO.enCours) return;
+  GYRO.enCours = true;
+  const btn = document.getElementById("gy-lancer"), st = document.getElementById("gy-statut");
+  btn.disabled = true; st.textContent = "Calcul du cycle en cours (quelques secondes)…";
+  try {
+    GYRO.res = await (await fetch("/api/gyroide", {method: "POST", body: JSON.stringify(lireFormGyro())})).json();
+    st.textContent = GYRO.res.ok ? "Simulation à jour." : (GYRO.res.message || "Échec de la simulation.");
+  } catch (err) {
+    st.textContent = "Serveur injoignable.";
+  }
+  btn.disabled = false; GYRO.enCours = false;
+  majGyro();
+}
+
+// ---- affichage
+function majGyro() {
+  if (document.getElementById("vue-dim").hidden) return;
+  dessinerProfilGyro();
+  majResultatsGyro();
+  majVue3D();
+}
+
+function majVue3D() {
+  const msg = document.getElementById("gy-3d-msg"), P = profilCourant(), r = GYRO.res;
+  if (!window.GY3D) { msg.textContent = "Chargement de la vue 3D…"; return; }
+  if (!P) { msg.textContent = r && !r.ok ? (r.message || "Échec de la simulation.") : "Générer la simulation pour afficher l'échangeur."; return; }
+  msg.textContent = "";
+  const g = r.params[GYRO.cote];
+  const u = T => (T - P.Tmin) / Math.max(P.Tmax - P.Tmin, 1e-6);
+  const info = window.GY3D.afficher({
+    L: g.L_mm, n_air: g.niveau_air, n_propane: g.niveau_propane, profondeur: g.profondeur_mm,
+    couleurAir: s => couleurT(u(P.air(s))).map(c => c / 255),
+    couleurRef: s => couleurT(u(P.ref(s))).map(c => c / 255),
+  });
+  document.getElementById("gy-barre-min").textContent = `${fmt(P.Tmin, 1)} °C`;
+  document.getElementById("gy-barre-max").textContent = `${fmt(P.Tmax, 1)} °C`;
+  document.getElementById("gy-3d-note").textContent = info.tronque
+    ? `Bloc affiché : ${info.nx} cellules sur ${fmt(g.profondeur_mm / g.L_mm, 1)} dans la profondeur (tronqué pour l'affichage), 2 × 2 cellules en section.`
+    : `Bloc affiché : toute la profondeur (${fmt(g.profondeur_mm / g.L_mm, 1)} cellules de ${fmt(g.L_mm, 1)} mm), 2 × 2 cellules en section.`;
+}
+
+function dessinerProfilGyro() {
+  const cv = document.getElementById("cv-gyro");
+  const [ctx, w, h] = preparer(cv);
+  const P = profilCourant();
+  if (!P) return;
+  const gx = 64, gw = w - gx - 150, py0 = 22, py1 = h - 30;
+  const Y = T => py1 - (T - P.Tmin) / Math.max(P.Tmax - P.Tmin, 1e-6) * (py1 - py0);
+  ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+  for (const T of graduations(P.Tmin, P.Tmax, 4)) {
+    ctx.beginPath(); ctx.moveTo(gx, Y(T)); ctx.lineTo(gx + gw, Y(T)); ctx.stroke();
+    texte(ctx, `${T} °C`, gx - 6, Y(T), {couleur: C.muted, taille: 9.5, align: "right", va: "middle"});
+  }
+  ctx.setLineDash([4, 3]); ctx.strokeStyle = C.muted;
+  for (const z of P.zones.slice(1)) {
+    const x = gx + z.s0 * gw;
+    ctx.beginPath(); ctx.moveTo(x, py0); ctx.lineTo(x, py1); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for (const z of P.zones) {
+    const xa = gx + z.s0 * gw, xb = gx + z.s1 * gw;
+    if (xb - xa > 60) texte(ctx, z.nom, (xa + xb) / 2, py0 - 16, {couleur: C.muted, taille: 9.5, align: "center"});
+  }
+  const trace = (f, coul, ep) => {
+    ctx.strokeStyle = coul; ctx.lineWidth = ep; ctx.beginPath();
+    for (let i = 0; i <= 200; i++) { const x = gx + i / 200 * gw, y = Y(f(i / 200)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+  };
+  trace(P.air, C.accent, 2); trace(P.ref, C.refoul, 2.4);
+  const xp = gx + P.sPinc * gw, aG = P.sPinc > 0.6;
+  ctx.setLineDash([2, 3]); ctx.strokeStyle = C.ink;
+  ctx.beginPath(); ctx.moveTo(xp, Y(P.air(P.sPinc))); ctx.lineTo(xp, Y(P.ref(P.sPinc))); ctx.stroke(); ctx.setLineDash([]);
+  texte(ctx, `pincement ${fmt(P.pinc, 1)} K`, xp + (aG ? -6 : 6), (Y(P.air(P.sPinc)) + Y(P.ref(P.sPinc))) / 2,
+        {taille: 10, va: "bottom", align: aG ? "right" : "left", gras: true, couleur: P.pinc < 0 ? C.danger : C.ink});
+  texte(ctx, "entrée d'air", gx, py1 + 6, {couleur: C.muted, taille: 10});
+  texte(ctx, "sortie d'air", gx + gw, py1 + 6, {couleur: C.muted, taille: 10, align: "right"});
+  texte(ctx, "part de la chaleur échangée (≈ profondeur) →", gx + gw / 2, py1 + 6, {couleur: C.muted, taille: 10, align: "center"});
+  texte(ctx, `— air ${fmt(P.Tin)} → ${fmt(P.Tout)} °C`, gx + gw + 8, py0 + 4, {couleur: C.accent, taille: 10, gras: true});
+  texte(ctx, `— propane`, gx + gw + 8, py0 + 20, {couleur: C.refoul, taille: 10, gras: true});
+  texte(ctx, `${fmt(P.Tref_in)} → ${fmt(P.Tref_out)} °C`, gx + gw + 8, py0 + 34, {couleur: C.refoul, taille: 10});
+}
+
+function majResultatsGyro() {
+  const div = document.getElementById("gy-resultats"), r = GYRO.res;
+  if (!r) { div.innerHTML = ""; return; }
+  if (!r.ok) { div.innerHTML = `<p style="color:var(--danger)">${r.message || "Échec de la simulation."}</p>`; return; }
+  const e = r.etat, ref = r.reference, B = r.batteries, nom = r.params.mode === "chauffage" ? "COP" : "EER";
+  const P = profilCourant();
+  const ligne = (lib, a, b, fort) => `<tr${fort ? ' class="fort"' : ""}><td>${lib}</td><td>${a}</td><td>${b}</td></tr>`;
+  const ch = e.charge_g, chCls = ch > 297 ? "danger" : ch > 152 ? "attention" : "";
+  let html = `<div class="deux">
+  <div><h3 class="gy-h3">Machine complète, ${fmt(e.Q_utile / 1000, 2)} kW à ${fmt(r.params.T_ext)} / ${fmt(r.params.T_int)} °C</h3>
+  <table class="gy-res"><thead><tr><th></th><th>Gyroïde</th><th>Référence tube-ailettes</th></tr></thead><tbody>` +
+    ligne(nom + " unité", fmt(e.COP, 2), fmt(ref.COP, 2), true) +
+    ligne("T évaporation Te", `${fmt(e.Te)} °C`, `${fmt(ref.Te)} °C`) +
+    ligne("T condensation Tc", `${fmt(e.Tc)} °C`, `${fmt(ref.Tc)} °C`) +
+    ligne("Fréquence compresseur", `${fmt(e.freq, 0)} Hz`, `${fmt(ref.freq, 0)} Hz`) +
+    ligne("Puissance compresseur", `${fmt(e.P_comp, 0)} W`, "") +
+    ligne("Puissance ventilateurs", `${fmt(e.P_vent, 0)} W`, `${fmt(ref.P_vent, 0)} W`) +
+    ligne("Charge propane estimée", `<span class="${chCls}">${fmt(ch, 0)} g</span>`, `${fmt(ref.charge_g, 0)} g`) +
+    ligne(`${nom} max (Carnot airs)`, fmt(e.COP_carnot, 1), "") +
+    `</tbody></table>
+  <p class="discret">Charge : seuil m1 = 152 g, maximum 297 g pour 50 m² (IEC 60335-2-40). Référence : machine du simulateur
+    temps réel (16 cm³, batteries tube-ailettes), mêmes conditions et même puissance.</p>
+  ${r.alerte_f ? `<p class="attention">${r.alerte_f}</p>` : ""}
+  ${e.alarmes && e.alarmes.length ? `<p class="attention">${e.alarmes.join(" · ")}</p>` : ""}
+  ${P && P.pinc < 0 ? `<p class="attention">Batterie affichée : les courbes air / propane se croisent (${P.cond ? "sous-refroidissement" : "surchauffe"} imposé par le modèle, non atteignable à contre-courant).</p>` : ""}
+  </div>
+  <div><h3 class="gy-h3">Batteries</h3>
+  <table class="gy-res"><thead><tr><th></th><th>Intérieure</th><th>Extérieure</th></tr></thead><tbody>`;
+  const b2 = (lib, f) => ligne(lib, f(B.int), f(B.ext));
+  html += b2("UA", b => `${fmt(b.UA, 0)} W/K`) +
+    b2("Vitesse frontale", b => `${fmt(b.u_face, 2)} m/s`) +
+    b2("Perte de charge", b => `${fmt(b.dp, 0)} Pa`) +
+    b2("Puissance ventilateur", b => `${fmt(b.P_vent, 0)} W`) +
+    b2("h côté air", b => `${fmt(b.h_air, 0)} W/m²K`) +
+    b2("Part de résistance côté air", b => `${fmt(b.part_R_air * 100, 0)} %`) +
+    b2("Re air (domaine Leeds 20–8000)", b => fmt(b.Re, 0)) +
+    b2("Surface côté air", b => `${fmt(b.A_air, 2)} m²`) +
+    b2("Diamètre hydraulique air / propane", b => `${fmt(b.Dh_air_mm, 2)} / ${fmt(b.Dh_propane_mm, 2)} mm`) +
+    b2("Volume air / propane / paroi", b => `${fmt(b.phi_air * 100, 0)} / ${fmt(b.phi_propane * 100, 0)} / ${fmt(b.phi_paroi * 100, 0)} %`) +
+    b2("Épaisseur moyenne de paroi", b => `<span class="${b.paroi_trop_fine ? "danger" : ""}">${fmt(b.paroi_mm, 2)} mm</span>`) +
+    b2("Volume de propane", b => `${fmt(b.volume_propane_L, 2)} L`) +
+    b2("Masse de métal", b => `${fmt(b.masse_kg, 2)} kg`);
+  html += `</tbody></table>`;
+  const al = [...new Set([...B.int.alertes.map(a => "int. : " + a), ...B.ext.alertes.map(a => "ext. : " + a)])];
+  if (B.int.paroi_trop_fine || B.ext.paroi_trop_fine) al.push("paroi plus fine que le minimum imprimable du matériau");
+  if (al.length) html += `<p class="attention">${al.join(" · ")}</p>`;
+  html += `<p class="discret">h côté air : corrélation j de Leeds établie avec de l'eau, estimation basse pour l'air en laminaire.
+    h côté propane : valeur imposée (aucune corrélation diphasique gyroïde connue).</p></div></div>`;
+  div.innerHTML = html;
+}
+
+async function initGyro() {
+  try {
+    GYRO.hyp = await (await fetch("/api/gyroide/hypotheses")).json();
+  } catch { return; }
+  construireFormGyro();
+  for (const r of document.querySelectorAll('input[name="gyro-cote"]'))
+    r.addEventListener("change", () => { GYRO.cote = r.value; majGyro(); });
+  window.addEventListener("gy3d-pret", () => majVue3D());
+  await lancerGyro();
+}
+
+// ---------------------------------------- onglet Dimensionnement : comparateur de surfaces
+const COMP = {hyp: null, etat: null, minuterie: null};
+
+function construireComparateur() {
+  const H = COMP.hyp, d = H.defaut, f = document.getElementById("cmp-form");
+  const num = (id, v, pas = "any") => `<input type="number" id="${id}" value="${v}" step="${pas}">`;
+  const sel = (id, opts, v) => `<select id="${id}">${opts.map(o => `<option${o === v ? " selected" : ""}>${o}</option>`).join("")}</select>`;
+  const env = [["largeur_mm", "Largeur (mm)"], ["hauteur_mm", "Hauteur (mm)"], ["profondeur_mm", "Profondeur (mm)"], ["debit_m3h", "Débit d'air (m³/h)"]];
+  f.innerHTML = `
+  <fieldset><legend>Conditions</legend><div class="cmp-grille">
+    <label>Mode<select id="cmp-mode"><option value="chauffage">Chauffage</option><option value="clim">Climatisation</option></select></label>
+    <label>T ext. (°C)${num("cmp-T_ext", d.T_ext)}</label><label>T int. (°C)${num("cmp-T_int", d.T_int)}</label>
+    <label>Puissance (kW)${num("cmp-puissance_kW", d.puissance_kW)}</label><label>η ventilateurs${num("cmp-eta_vent", d.eta_vent)}</label>
+  </div></fieldset>
+  <fieldset><legend>Enveloppe commune à tous les candidats</legend>
+    <table class="gy-params"><thead><tr><th></th><th>Intérieure</th><th>Extérieure</th></tr></thead><tbody>
+    ${env.map(([k, l]) => `<tr><td>${l}</td><td>${num(`cmp-int-${k}`, d.int[k])}</td><td>${num(`cmp-ext-${k}`, d.ext[k])}</td></tr>`).join("")}
+    </tbody></table></fieldset>
+  <fieldset><legend>TPMS (feuillet et hybride)</legend><div class="cmp-grille">
+    <label>Porosité air${num("cmp-tpms-phi_air", d.tpms.phi_air)}</label><label>Dh air (mm)${num("cmp-tpms-Dh_mm", d.tpms.Dh_mm)}</label>
+    <label>Feuillet : fraction propane${num("cmp-tpms-phi_propane", d.tpms.phi_propane)}</label>
+    <label>h propane (W/m²K)${num("cmp-tpms-h_propane", d.tpms.h_propane)}</label>
+    <label>Hybride : Ø tubes (mm)${num("cmp-tpms-d_tube_mm", d.tpms.d_tube_mm)}</label><label>Hybride : pas (mm)${num("cmp-tpms-pas_tube_mm", d.tpms.pas_tube_mm)}</label>
+    <label class="large">Matériau${sel("cmp-tpms-materiau", H.materiaux_tpms, d.tpms.materiau)}</label>
+  </div></fieldset>
+  <fieldset><legend>Tubes nus (quinconce)</legend><div class="cmp-grille">
+    <label>Ø extérieur (mm)${num("cmp-tubes-d_mm", d.tubes.d_mm)}</label><label>Épaisseur (mm)${num("cmp-tubes-e_mm", d.tubes.e_mm)}</label>
+    <label>Pas transversal / Ø${num("cmp-tubes-a", d.tubes.a)}</label><label>Pas longitudinal / Ø${num("cmp-tubes-b", d.tubes.b)}</label>
+    <label>h propane (W/m²K)${num("cmp-tubes-h_propane", d.tubes.h_propane)}</label>
+    <label>Matériau${sel("cmp-tubes-materiau", H.materiaux_tubes, d.tubes.materiau)}</label>
+  </div></fieldset>
+  <fieldset><legend>Candidats</legend><div class="cmp-cands">
+    ${H.candidats.map(([id, nom]) => `<label><input type="checkbox" value="${id}" checked> ${nom}</label>`).join("")}
+  </div></fieldset>
+  <div class="gy-actions"><button type="button" id="cmp-lancer" class="principal">Comparer</button>
+    <span id="cmp-statut" class="discret"></span></div>`;
+  document.getElementById("cmp-mode").value = d.mode;
+  document.getElementById("cmp-lancer").addEventListener("click", lancerComparaison);
+}
+
+function lireComparateur() {
+  const v = id => parseFloat(document.getElementById(id).value), d = COMP.hyp.defaut;
+  const req = {mode: document.getElementById("cmp-mode").value};
+  for (const k of ["T_ext", "T_int", "puissance_kW", "eta_vent"]) req[k] = v(`cmp-${k}`);
+  for (const g of ["int", "ext", "tpms", "tubes"]) {
+    req[g] = {};
+    for (const k of Object.keys(d[g])) {
+      const el = document.getElementById(`cmp-${g}-${k}`);
+      if (el) req[g][k] = el.tagName === "SELECT" ? el.value : parseFloat(el.value);
+    }
+  }
+  req.candidats = [...document.querySelectorAll(".cmp-cands input:checked")].map(i => i.value);
+  return req;
+}
+
+async function lancerComparaison() {
+  await fetch("/api/comparer", {method: "POST", body: JSON.stringify(lireComparateur())});
+  suivreComparaison();
+}
+
+async function suivreComparaison() {
+  clearTimeout(COMP.minuterie);
+  try { COMP.etat = await (await fetch("/api/comparer")).json(); } catch { return; }
+  const e = COMP.etat, st = document.getElementById("cmp-statut");
+  document.getElementById("cmp-lancer").disabled = e.statut === "en cours";
+  st.textContent = e.statut === "en cours" ? `Calcul ${Math.round(e.progression * 100)} % : ${e.message}` :
+    e.statut === "terminé" ? `${e.resultats.length} candidats évalués.` : "";
+  afficherComparaison();
+  if (e.statut === "en cours") COMP.minuterie = setTimeout(suivreComparaison, 500);
+}
+
+function afficherComparaison() {
+  const div = document.getElementById("cmp-resultats"), e = COMP.etat;
+  if (!e || !e.resultats.length) { div.innerHTML = ""; return; }
+  const p = e.params, nom = p.mode === "chauffage" ? "COP" : "EER";
+  const ref = e.resultats.find(r => r.id === "reference" && r.ok);
+  const ok = e.resultats.filter(r => r.ok).sort((a, b) => b.COP - a.COP);
+  const autres = e.resultats.filter(r => !r.ok);
+  const copMax = Math.max(...ok.map(r => r.COP), 1);
+  const B = (r, c, k, f) => r.batteries ? f(r.batteries[c][k]) : "–";
+  const ch = g => `<span class="${g > 297 ? "danger" : g > 152 ? "attention" : ""}">${fmt(g, 0)} g</span>`;
+  let h = `<p class="discret">${p.mode === "chauffage" ? "Chauffage" : "Climatisation"} ${fmt(p.T_ext)} / ${fmt(p.T_int)} °C,
+    ${fmt(p.puissance_kW, 2)} kW ; batteries ${p.int.largeur_mm}×${p.int.hauteur_mm}×${p.int.profondeur_mm} mm (int., ${p.int.debit_m3h} m³/h)
+    et ${p.ext.largeur_mm}×${p.ext.hauteur_mm}×${p.ext.profondeur_mm} mm (ext., ${p.ext.debit_m3h} m³/h). Charge : seuil 152 g, max 297 g.</p>
+  <div class="cmp-defile"><table class="gy-res cmp-table"><thead><tr><th>Candidat</th><th>${nom}</th><th>vs réf.</th><th>Te / Tc</th>
+    <th>P vent.</th><th>Charge</th><th>UA int. / ext.</th><th>Δp int. / ext.</th><th>Masse int. + ext.</th><th>Données côté air</th></tr></thead><tbody>`;
+  for (const r of ok) {
+    const gain = ref ? (r.COP / ref.COP - 1) * 100 : null;
+    const al = r.batteries ? [...r.batteries.int.alertes, ...r.batteries.ext.alertes] : [];
+    h += `<tr${r.id === "reference" ? ' class="cmp-ref"' : ""}><td>${r.nom}</td>
+      <td><span class="cmp-barre"><i style="width:${(r.COP / copMax * 100).toFixed(0)}%"></i></span><b>${fmt(r.COP, 2)}</b></td>
+      <td>${gain === null || r.id === "reference" ? "" : `${gain >= 0 ? "+" : ""}${fmt(gain, 0)} %`}</td>
+      <td>${fmt(r.Te)} / ${fmt(r.Tc)} °C</td><td>${fmt(r.P_vent, 0)} W</td><td>${ch(r.charge_g)}</td>
+      <td>${B(r, "int", "UA", v => fmt(v, 0))} / ${B(r, "ext", "UA", v => fmt(v, 0))} W/K</td>
+      <td>${B(r, "int", "dp", v => fmt(v, 0))} / ${B(r, "ext", "dp", v => fmt(v, 0))} Pa</td>
+      <td>${r.batteries ? fmt(r.batteries.int.masse_kg + r.batteries.ext.masse_kg, 1) + " kg" : "–"}</td>
+      <td class="discret">${r.source}${al.length ? `<br><span class="attention">${[...new Set(al)].join(" · ")}</span>` : ""}${r.alerte_f ? `<br><span class="attention">${r.alerte_f}</span>` : ""}</td></tr>`;
+  }
+  for (const r of autres)
+    h += `<tr class="cmp-off"><td>${r.nom}</td><td colspan="8">${r.a_calibrer ? "à calibrer" : "échec"}</td><td class="discret">${r.source}</td></tr>`;
+  h += `</tbody></table></div>`;
+  div.innerHTML = h;
+}
+
+async function initComparateur() {
+  try { COMP.hyp = await (await fetch("/api/comparer/hypotheses")).json(); } catch { return; }
+  construireComparateur();
+  suivreComparaison();
+}
+
+// ---------------------------------------------- onglet Principes de design
+// Valeurs du point courant sous chaque principe.
+function majPrincipes() {
+  if (document.getElementById("vue-pri").hidden) return;
+  const L = n => document.querySelector(`#vue-pri [data-live="${n}"]`);
+  if (!S || !S.marche || !S.detail_cop) {
+    for (let n = 1; n <= 5; n++) L(n).textContent = "Au point courant : machine à l'arrêt.";
+    return;
+  }
+  const p = S.params, e = S.etat, d = S.detail_cop, chauf = p.mode === "chauffage", nom = chauf ? "COP" : "EER";
+  const cA = carnotAir(p, p.T_ext), cR = carnot(p.mode, e.Tc, e.Te), b = v => `<b>${v}</b>`;
+  const [Tch, Tfr] = chauf ? [p.T_int, p.T_ext] : [p.T_ext, p.T_int];
+  L(1).innerHTML = `Au point courant : ${fmt(Tch)} °C / ${fmt(Tfr)} °C → ${nom} max ${b(cA === null ? "∞" : fmt(cA, 1))} ; ` +
+    `${nom} effectif ${b(fmt(S.cop_eff, 2))}, soit ${b(cA ? fmt(S.cop_eff / cA * 100, 0) + " %" : "–")} du maximum.`;
+  L(2).innerHTML = `Au point courant : airs ${fmt(p.T_ext)} / ${fmt(p.T_int)} °C (écart ${b(fmt(Math.abs(p.T_int - p.T_ext), 1) + " K")}) ; ` +
+    `Te ${fmt(e.Te)} °C, Tc ${fmt(e.Tc)} °C (écart ${b(fmt(e.Tc - e.Te, 1) + " K")}) → Carnot réfrigérant ${b(fmt(cR, 1))} au lieu de ${fmt(cA, 1)}.`;
+  const dTi = chauf ? e.Tc - p.T_int : p.T_int - e.Te, dTe = chauf ? p.T_ext - e.Te : e.Tc - p.T_ext;
+  L(3).innerHTML = `Au point courant : air intérieur ${b(fmt(e.debit_int, 0) + " m³/h")}, extérieur ${b(fmt(e.debit_ext, 0) + " m³/h")}, ` +
+    `ventilateurs ${b(fmt(d.P_vent, 0) + " W")} ; écart réfrigérant/air entrant : ${b(fmt(dTi, 1) + " K")} à l'intérieur, ${b(fmt(dTe, 1) + " K")} à l'extérieur.`;
+  L(4).innerHTML = `Au point courant : ${b(fmt(e.freq, 0) + " Hz")} (plage ${fmt(p.conception.f_min, 0)}–${fmt(p.conception.f_max, 0)} Hz), ` +
+    `besoin ${b(fmt(S.besoin / 1000, 2) + " kW")}, statut ${b(S.statut)}, facteur de cyclage ${b(fmt(S.k_cyc, 3))}.`;
+  L(5).innerHTML = `Au point courant : taux de compression ${b(fmt(d.PR, 2))}, η<sub>is</sub> ${b(fmt(d.eta_is, 2))}, η<sub>mot</sub> ${b(fmt(d.eta_mot, 2))}, ` +
+    `η<sub>var</sub> ${b(fmt(d.eta_var, 2))} → facteur ${b(fmt(1 / (d.eta_is * d.eta_mot * d.eta_var), 2))} sur la consommation.`;
+}
+
+// ------------------------------------------------------- onglet Glossaire
+// [terme, alias / sigles, définition (HTML autorisé)] regroupés par catégorie.
+const GLOSSAIRE = [
+  ["Principe et cycle frigorifique", [
+    ["PAC", "pompe à chaleur", "Machine qui déplace de la chaleur d'un milieu froid vers un milieu chaud en consommant de l'électricité. Une PAC réversible chauffe en hiver et climatise en été en inversant le sens du cycle (voir V4V)."],
+    ["Cycle frigorifique", "cycle à compression de vapeur", "Boucle fermée parcourue par le réfrigérant : <b>1</b> aspiration (vapeur BP) → compression → <b>2</b> refoulement (vapeur chaude HP) → condensation → <b>3</b> sortie condenseur (liquide HP) → détente → <b>4</b> entrée évaporateur (mélange BP) → évaporation → retour en 1."],
+    ["R290", "propane", "Réfrigérant naturel (C₃H₈). Très bon rendement thermodynamique et effet de serre quasi nul (PRG ≈ 3), mais inflammable (classe A3) : la charge est donc limitée par la norme IEC 60335-2-40."],
+    ["Réfrigérant", "fluide frigorigène", "Fluide qui circule dans la boucle et transporte la chaleur en changeant de phase : il absorbe de la chaleur en s'évaporant et la restitue en se condensant."],
+    ["Évaporateur", "", "Échangeur où le réfrigérant bout à basse pression et <b>prend</b> la chaleur de l'air. En chauffage : batterie extérieure. En climatisation : batterie intérieure."],
+    ["Condenseur", "", "Échangeur où le réfrigérant se condense à haute pression et <b>cède</b> sa chaleur à l'air. En chauffage : batterie intérieure. En climatisation : batterie extérieure."],
+    ["BP", "basse pression", "Pression côté évaporateur et aspiration du compresseur. Elle fixe Te."],
+    ["HP", "haute pression", "Pression côté refoulement et condenseur. Elle fixe Tc."],
+    ["Te", "température d'évaporation", "Température à laquelle le réfrigérant bout dans l'évaporateur, fixée par la BP. Elle est toujours <b>plus froide</b> que l'air qui traverse l'évaporateur, sinon la chaleur ne passerait pas. <span class=\"ex\">Ex. : air extérieur 7 °C → Te ≈ 3,8 °C (BP 5,16 bar).</span>"],
+    ["Tc", "température de condensation", "Température à laquelle le réfrigérant se condense dans le condenseur, fixée par la HP. Elle est toujours <b>plus chaude</b> que l'air qui traverse le condenseur. <span class=\"ex\">Ex. : pièce à 20 °C → Tc ≈ 29,9 °C (HP 10,9 bar).</span>"],
+    ["Écart Te/Tc", "lift, élévation de température", "Tc − Te : la « marche » de température (donc de pression) que le compresseur doit faire franchir au réfrigérant. Plus il est grand, plus le travail par kg de réfrigérant est élevé et plus le COP baisse. C'est le paramètre n° 1 du COP."],
+    ["Saturation", "T sat., température de saturation", "Tant que le réfrigérant est un mélange liquide + vapeur, sa température est imposée par sa pression (et inversement). C'est pour cela que le simulateur affiche « HP 10,9 bar (29,9 °C sat.) »."],
+    ["Diphasique", "mélange liquide-vapeur", "État où liquide et vapeur coexistent, à température constante pour une pression donnée (intérieur du dôme sur le diagramme P-h)."],
+    ["Titre", "x, titre en vapeur", "Fraction massique de vapeur dans un mélange diphasique : x = 0 liquide saturé, x = 1 vapeur saturée. Au point 4, après détente, x vaut typiquement 0,2 à 0,3."],
+    ["Surchauffe", "SH, superheat", "Écart entre la température réelle de la vapeur à l'aspiration et Te. Quelques kelvins (5 K ici) garantissent que le compresseur n'aspire pas de liquide. Réglée par l'EEV."],
+    ["Sous-refroidissement", "SC, subcooling", "Écart entre Tc et la température du liquide en sortie de condenseur. Il augmente la chaleur utile par kg, mais le liquide ne peut pas descendre sous la température de l'air entrant."],
+    ["Désurchauffe", "", "Première partie du condenseur, où la vapeur très chaude sortant du compresseur refroidit jusqu'à Tc avant de commencer à condenser."],
+    ["T refoulement", "T refoul., T2", "Température du gaz à la sortie du compresseur (point 2), bien au-dessus de Tc. Limitée (110 °C ici) pour protéger l'huile et le moteur."],
+    ["Taux de compression", "PR, pressure ratio", "Rapport HP / BP. Plus il est élevé, plus le compresseur travaille et plus ses rendements se dégradent."],
+    ["Débit massique", "ṁ, g/s", "Masse de réfrigérant qui circule par seconde. Elle fixe la puissance : Q = ṁ × Δh. Elle augmente avec la fréquence et la cylindrée du compresseur."],
+    ["Pertes de charge", "Δp, dT aspiration / refoulement", "Chute de pression due au frottement dans les tubes, la V4V et les batteries. Côté réfrigérant, elles éloignent encore les pressions vues par le compresseur ; côté air, elles déterminent la puissance des ventilateurs."],
+  ]],
+  ["Thermodynamique et diagramme P-h", [
+    ["Diagramme P-h", "diagramme de Mollier", "Graphe pression (échelle log) en fonction de l'enthalpie. Le cycle y apparaît comme un quadrilatère : les longueurs horizontales donnent directement les énergies échangées par kg de réfrigérant."],
+    ["Enthalpie", "h, kJ/kg", "Énergie contenue dans 1 kg de réfrigérant. Les écarts d'enthalpie donnent les échanges : chaleur au condenseur = h2 − h3, froid à l'évaporateur = h1 − h4, travail du compresseur = h2 − h1."],
+    ["Entropie", "s, kJ/(kg·K)", "Grandeur qui mesure les irréversibilités. Une compression parfaite se fait à entropie constante (isentropique)."],
+    ["Dôme de saturation", "courbe de saturation", "Courbe en cloche du diagramme P-h : à gauche liquide saturé (x = 0), à droite vapeur saturée (x = 1), à l'intérieur mélange diphasique."],
+    ["Isotherme", "", "Ligne de température constante. Dans le dôme, elle est horizontale : la température ne dépend que de la pression."],
+    ["Isentropique", "compression parfaite", "Transformation sans frottement ni échange de chaleur (entropie constante). C'est la référence du compresseur parfait ; un compresseur réel consomme Δh_is / η_is."],
+    ["Points 1, 2, 3, 4", "", "<b>1</b> aspiration compresseur, <b>2</b> refoulement, <b>3</b> sortie condenseur, <b>4</b> sortie détendeur (entrée évaporateur). Affichés aux coins du schéma de l'onglet 2 et sur le diagramme P-h."],
+    ["Cycle idéal", "", "Cycle de référence tracé en pointillés violets sur le P-h : évaporation et condensation aux températures des airs, compression isentropique. Il montre le COP atteignable avec des échangeurs et un compresseur parfaits."],
+    ["Cycle compresseur parfait", "", "Cycle de référence tracé en tirets bleus : Te et Tc réels, mais compression isentropique. L'écart avec le cycle courant est dû uniquement au compresseur."],
+    ["Kelvin", "K", "Unité de température absolue (T[K] = T[°C] + 273,15). Un écart de 1 K = un écart de 1 °C. Les formules de Carnot utilisent des kelvins."],
+  ]],
+  ["Performance et efficacité", [
+    ["COP", "coefficient de performance", "En chauffage : chaleur utile fournie / électricité consommée. COP 4 = 4 kWh de chaleur pour 1 kWh électrique. Dans ce simulateur, l'électricité comprend compresseur + ventilateurs + électronique."],
+    ["EER", "energy efficiency ratio", "Équivalent du COP en climatisation : froid utile / électricité consommée."],
+    ["COP cycle", "COP arbre", "COP calculé avec le seul travail fourni au réfrigérant, sans pertes moteur, variateur ni ventilateurs."],
+    ["COP unité", "", "Chaleur utile / puissance électrique totale (compresseur + ventilateurs + veille), en régime établi."],
+    ["COP effectif", "", "COP unité corrigé du dégivrage et du cyclage marche/arrêt : c'est le COP réellement vu par l'utilisateur au point courant. Cliquer sur la tuile dans l'onglet 2 pour le détail du calcul."],
+    ["Carnot", "COP de Carnot", "COP maximal théorique entre deux températures : T_chaud / (T_chaud − T_froid) en chauffage, T_froid / (T_chaud − T_froid) en froid (en kelvins). Aucune machine ne peut le dépasser."],
+    ["Carnot (airs)", "limite absolue", "Carnot calculé avec la température de la pièce et celle de l'extérieur. <span class=\"ex\">Ex. : 20 °C / 7 °C → 293,15 / 13 = 22,5.</span>"],
+    ["Carnot réfrigérant", "Carnot Te/Tc", "Carnot calculé avec Tc et Te. L'écart avec Carnot (airs) mesure la perte due aux échangeurs. <span class=\"ex\">Ex. : 29,9 °C / 3,8 °C → 11,6.</span>"],
+    ["Lorenz", "COP de Lorenz", "Variante de Carnot qui tient compte du fait que l'air se réchauffe ou se refroidit en traversant la batterie (températures moyennes logarithmiques). Limite plus réaliste que Carnot pour une machine air/air."],
+    ["Rendement exergétique", "% de Carnot", "COP réel / COP de Carnot (airs). Indique quelle part du maximum théorique la machine atteint."],
+    ["Cascade des pertes", "où partent les pertes", "Graphe en barres qui part de Carnot (airs) et applique une par une les imperfections (échangeurs, pertes de charge, cycle, compresseur, moteur, ventilateurs, dégivrage, cyclage) jusqu'au COP effectif."],
+    ["SCOP / SEER", "COP / EER saisonnier", "Efficacité moyenne sur une saison selon EN 14825, pondérée par les heures passées à chaque température extérieure et charge partielle. Plus représentatif de la consommation réelle que le COP à un seul point."],
+    ["Puissance thermique", "puissance nominale, capacité, Q", "Chaleur (ou froid) livrée à la pièce, en W ou kW. C'est la puissance annoncée par les fabricants. Puissance électrique = puissance thermique / COP."],
+    ["Puissance électrique", "P élec, P totale", "Puissance consommée au réseau : compresseur + ventilateurs + veille."],
+    ["BTU/h", "", "Unité américaine de puissance thermique. 1 kW ≈ 3 412 BTU/h ; 9 000 BTU/h ≈ 2,64 kW."],
+    ["Charge partielle", "PLR, part load ratio", "Besoin de la pièce / puissance que la machine fournirait en continu. PLR = 1 : la machine tourne à fond ou module ; PLR < 1 à fréquence minimale : elle doit cycler."],
+    ["Cyclage", "Cd, k_cyc", "Quand le besoin est inférieur à la puissance minimale, la machine s'arrête et redémarre. Chaque démarrage gaspille de l'énergie : k_cyc = 1 − Cd × (1 − PLR), avec Cd = 0,15."],
+  ]],
+  ["Composants", [
+    ["Compresseur", "rotatif BLDC", "Cœur de la machine : aspire la vapeur BP et la refoule en HP. Ici un rotatif à moteur sans balais (BLDC) à vitesse variable."],
+    ["Inverter", "variateur de fréquence", "Électronique qui fait varier la vitesse du compresseur pour suivre le besoin (modulation), au lieu de fonctionner en tout-ou-rien."],
+    ["Fréquence", "f, Hz, tr/s", "Vitesse de rotation du compresseur. Plus elle est élevée, plus le débit et la puissance sont grands. f_min / f_max : bornes ; f_nom : fréquence nominale ; f_opt : fréquence de meilleur rendement."],
+    ["Cylindrée", "cm³", "Volume aspiré par tour de compresseur. Avec la fréquence, elle fixe le débit : ṁ = ρ × cylindrée × f × η_v."],
+    ["V4V", "vanne 4 voies", "Vanne qui inverse le sens de circulation pour passer du chauffage à la climatisation (et pour dégivrer). L'inversion impose une égalisation des pressions de quelques secondes."],
+    ["EEV", "détendeur électronique", "Vanne de détente pilotée qui fait chuter la pression de HP à BP (point 3 → 4) et règle la surchauffe."],
+    ["Batterie", "échangeur air/réfrigérant", "Échangeur où l'air traverse un faisceau de tubes ou de canaux parcourus par le réfrigérant. Batterie intérieure côté pièce, extérieure côté dehors."],
+    ["Tube-ailettes", "Cu/Al", "Technologie classique d'échangeur : tubes en cuivre sertis dans des ailettes en aluminium."],
+    ["Microcanaux", "MCHX", "Échangeur en aluminium à tubes plats percés de petits canaux : plus compact, moins de réfrigérant, meilleur échange."],
+    ["TPMS", "gyroïde, impression 3D métal", "Surfaces minimales triplement périodiques (ex. gyroïde) imprimées en 3D : très grande surface d'échange par volume, géométrie impossible à usiner."],
+    ["Ventilateur", "P vent", "Fait circuler l'air à travers chaque batterie. Sa puissance croît environ comme le cube du débit (loi des ventilateurs)."],
+    ["Carter", "pertes carter", "Enveloppe du compresseur. Une partie de l'énergie part en chaleur vers l'extérieur au lieu d'aller au réfrigérant (7 % ici)."],
+    ["IHX", "échangeur interne", "Échangeur entre la ligne liquide et la ligne d'aspiration : augmente le sous-refroidissement. Pas encore modélisé."],
+    ["Injection de vapeur", "EVI", "Technique qui injecte de la vapeur à pression intermédiaire dans le compresseur pour garder puissance et COP par grand froid. Pas encore modélisée."],
+    ["Charge", "charge de réfrigérant, g", "Masse de propane contenue dans la machine. Limitée par la norme pour des raisons de sécurité."],
+    ["Collecteur", "header, manifold, nourrice", "Tube de distribution aux extrémités d'un échangeur à nombreux petits tubes : le collecteur d'entrée répartit le réfrigérant entre tous les tubes, celui de sortie le rassemble. Son volume compte dans la charge, et il conditionne la bonne répartition du réfrigérant. L'impression 3D permet de l'intégrer à l'échangeur."],
+    ["Mauvaise distribution", "maldistribution", "Répartition inégale du réfrigérant entre les tubes d'un échangeur, surtout avec un mélange liquide + vapeur (entrée d'évaporateur) : certains tubes sont noyés de liquide, d'autres ne reçoivent que de la vapeur. Une partie de la batterie devient inutile, Te baisse et le COP chute (cause principale de l'échec de l'essai réel du Maryland)."],
+    ["Passe", "passe de réfrigérant, circuit", "Traversée de l'échangeur par le réfrigérant. Plusieurs passes en série (reliées par des coudes ou des collecteurs intermédiaires) allongent le parcours ; chaque passe peut avoir sa propre géométrie (échangeur à géométrie variable)."],
+    ["Contre-courant", "contre-courant croisé", "Disposition où le réfrigérant circule globalement en sens inverse de l'air : il entre côté sortie d'air et sort côté entrée d'air. C'est l'arrangement qui rapproche le plus les températures du réfrigérant de celles de l'air, donc le plus favorable au COP."],
+    ["Tubes nus profilés", "NURBS tube HX, NTHX, tubes non ronds", "Échangeur sans ailettes, fait de petits tubes (≈ 1-3 mm) à profil optimisé (goutte d'eau, lentille). En sec : perte de charge −40 à −50 % et charge −50 à −64 % face au tube-ailettes (Université du Maryland). Sensible aux ponts de condensat en humide."],
+    ["Pont de condensat", "bridging, rétention d'eau", "En régime humide, gouttes d'eau qui relient deux tubes voisins et restent piégées entre eux : elles bouchent le passage de l'air (perte de charge ×2 à ×2,5 mesurée sur tubes nus fins). Les tubes verticaux drainent mieux que les horizontaux."],
+  ]],
+  ["Rendements et modèle du compresseur", [
+    ["η_v", "rendement volumétrique", "Débit réellement aspiré / débit théorique (cylindrée × fréquence). Baisse quand le taux de compression augmente (gaz résiduel de l'espace mort, fuites)."],
+    ["η_is", "rendement isentropique", "Travail d'une compression parfaite / travail réel fourni au gaz. η_is = 0,70 : 30 % de travail en plus que l'idéal. Dépend du taux de compression et de la fréquence."],
+    ["η_is max", "", "Meilleur rendement isentropique du compresseur, atteint à PR_opt et f_opt."],
+    ["η_mot", "rendement moteur", "Puissance mécanique / puissance électrique du moteur du compresseur."],
+    ["η_var", "rendement variateur", "Rendement de l'électronique de l'inverter (0,97 ici)."],
+    ["Espace mort", "ε", "Petit volume de gaz comprimé qui reste dans le cylindre et se ré-détend : réduit η_v."],
+    ["PR_opt", "", "Taux de compression pour lequel le compresseur a son meilleur η_is."],
+    ["Carte compresseur", "EN 12900, AHRI 540, polynômes à 10 coefficients", "Données constructeur donnant débit et puissance en fonction des températures d'évaporation et de condensation. Plus fiable que le modèle générique ; utilisable avec <code>--carte</code> en mode <code>--tk</code>."],
+  ]],
+  ["Échangeurs et air", [
+    ["UA", "W/K", "Conductance de l'échangeur : puissance transférée par kelvin d'écart entre air et réfrigérant. U = coefficient d'échange, A = surface. Plus UA est grand, plus Te et Tc se rapprochent des températures d'air."],
+    ["UA nominal", "UA_ref, k_UA", "UA au débit d'air nominal. Il varie avec le débit (∝ débit^0,6) et est multiplié par k_UA selon la technologie."],
+    ["Pincement", "pinch, approche", "Plus petit écart de température entre l'air et le réfrigérant dans un échangeur. Un pincement faible signifie que l'échangeur est déjà bien exploité ; la limite vient alors du débit d'air."],
+    ["Débit d'air", "m³/h", "Volume d'air soufflé à travers une batterie. Plus de débit = l'air change moins de température pour la même puissance, donc Te et Tc plus favorables, mais plus de puissance ventilateur."],
+    ["Réchauffement de l'air", "ΔT air", "Écart entre l'air entrant et sortant d'une batterie : ΔT = Q / (débit × ρ × cp). Le condenseur doit être plus chaud que l'air <b>sortant</b>."],
+    ["Soufflé / rejeté", "", "Air soufflé : air sortant de la batterie intérieure vers la pièce. Air rejeté : air sortant de la batterie extérieure vers l'extérieur."],
+    ["Kays & London", "", "Ouvrage de référence de corrélations de perte de charge et d'échange pour les échangeurs compacts, utilisé par le modèle aéraulique."],
+    ["Courbe ventilateur", "point de fonctionnement", "Pression fournie par le ventilateur en fonction du débit. Son croisement avec la perte de charge de la batterie donne le débit réel."],
+    ["HR", "humidité relative, %", "Quantité de vapeur d'eau dans l'air par rapport au maximum possible à cette température."],
+    ["Chaleur sensible / latente", "", "Sensible : change la température de l'air. Latente : condense ou évapore de l'eau (déshumidification en climatisation, givre en chauffage)."],
+    ["Point de rosée", "", "Température sous laquelle la vapeur d'eau de l'air se condense. Si la batterie est plus froide, elle ruisselle (ou givre sous 0 °C)."],
+    ["Givrage", "", "En chauffage par temps froid et humide, l'eau de l'air gèle sur la batterie extérieure et bouche le passage d'air."],
+    ["Dégivrage", "", "Inversion périodique du cycle pour faire fondre le givre. Il consomme de l'énergie et interrompt le chauffage, ce qui fait baisser le COP effectif."],
+  ]],
+  ["Pièce et régulation", [
+    ["Déperditions", "H, W/K", "Chaleur perdue par la pièce par kelvin d'écart avec l'extérieur. Besoin de chauffage ≈ H × (T int − T ext) − apports."],
+    ["Apports", "W", "Chaleur gratuite dans la pièce : occupants, appareils, soleil. Réduit le besoin de chauffage, augmente le besoin de froid."],
+    ["Besoin", "besoin sensible", "Puissance que la pièce demande pour rester à la consigne."],
+    ["Modulation", "", "La fréquence du compresseur s'ajuste pour que la puissance fournie égale le besoin. Statut « cyclage » quand le besoin est sous la puissance à f_min."],
+    ["Veille", "P veille", "Consommation de l'électronique de commande (4 W ici), comptée dans le COP."],
+  ]],
+  ["Normes, sécurité et conditions d'essai", [
+    ["IEC 60335-2-40", "", "Norme de sécurité des pompes à chaleur et climatiseurs ; fixe la charge maximale de réfrigérant inflammable selon la surface de la pièce et la hauteur d'installation."],
+    ["LFL", "lower flammability limit", "Concentration minimale de propane dans l'air pour qu'il puisse s'enflammer : 0,038 kg/m³."],
+    ["m1", "", "Seuil de charge = 4 × LFL = 152 g de propane. En dessous, peu de contraintes d'installation."],
+    ["m_max", "", "Charge maximale autorisée pour une pièce donnée (297 g pour 50 m² et h0 = 1 m)."],
+    ["h0", "hauteur d'installation", "Hauteur de la machine par rapport au sol, utilisée dans le calcul de la charge maximale."],
+    ["A3", "classe de sécurité", "Classe des réfrigérants peu toxiques et très inflammables (propane, isobutane)."],
+    ["PRG", "GWP, potentiel de réchauffement global", "Effet de serre d'un gaz comparé au CO₂. R290 ≈ 3, R32 ≈ 675, R410A ≈ 2 088."],
+    ["R32", "", "Réfrigérant HFC utilisé par Gradient et Midea. Moins inflammable (A2L) mais PRG bien plus élevé que le propane."],
+    ["EN 14511", "", "Norme européenne d'essai des PAC : définit comment mesurer puissance et COP aux points nominaux (ex. 7 °C / 20 °C)."],
+    ["EN 14825", "", "Norme européenne de calcul du SCOP / SEER à partir d'essais à charge partielle."],
+    ["AHRI", "AHRI 210/240, AHRI 540", "Normes américaines d'essai et de cartes compresseur. Points de chauffage 47 °F (8,3 °C), 17 °F (−8,3 °C), 5 °F (−15 °C) ; froid 95 °F (35 °C) ; intérieur 70 °F (21,1 °C) en chauffage, 80 °F (26,7 °C) en froid."],
+  ]],
+];
+
+function construireGlossaire() {
+  const liste = document.getElementById("glo-liste"), cats = document.getElementById("glo-cats");
+  GLOSSAIRE.forEach(([cat, termes], i) => {
+    const id = `glo-c${i}`;
+    cats.insertAdjacentHTML("beforeend", `<a href="#${id}" data-cat="${id}">${cat}</a>`);
+    const lignes = termes.map(([t, a, d]) =>
+      `<dt>${t}${a ? `<span class="alias">${a}</span>` : ""}</dt><dd>${d}</dd>`).join("");
+    liste.insertAdjacentHTML("beforeend", `<section class="card" id="${id}"><h2>${cat}</h2><dl>${lignes}</dl></section>`);
+  });
+  for (const a of cats.querySelectorAll("a")) a.addEventListener("click", ev => {
+    ev.preventDefault(); document.getElementById(a.dataset.cat).scrollIntoView({behavior: "smooth"});
+  });
+  for (const dd of liste.querySelectorAll("dd")) dd.dataset.html = dd.innerHTML;
+  for (const dt of liste.querySelectorAll("dt")) dt.dataset.html = dt.innerHTML;
+  document.getElementById("glo-recherche").addEventListener("input", filtrerGlossaire);
+  filtrerGlossaire();
+}
+
+function filtrerGlossaire() {
+  const norm = x => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const q = norm(document.getElementById("glo-recherche").value.trim());
+  const surligner = el => {
+    el.innerHTML = el.dataset.html;
+    if (!q) return;
+    const marcheur = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), noeuds = [];
+    while (marcheur.nextNode()) noeuds.push(marcheur.currentNode);
+    for (const n of noeuds) {
+      const i = norm(n.data).indexOf(q);
+      if (i < 0) continue;
+      const m = document.createElement("mark"), fin = n.splitText(i);
+      fin.splitText(q.length); m.textContent = fin.data; fin.replaceWith(m);
+    }
+  };
+  // Priorité aux termes et sigles ; on ne cherche dans les définitions que si aucun terme ne correspond.
+  const dts = [...document.querySelectorAll("#glo-liste dt")];
+  const dansTerme = dts.some(dt => norm(dt.textContent).includes(q));
+  let total = 0;
+  for (const sec of document.querySelectorAll("#glo-liste section")) {
+    let vus = 0;
+    for (const dt of sec.querySelectorAll("dt")) {
+      const dd = dt.nextElementSibling;
+      const ok = !q || norm(dansTerme ? dt.textContent : dt.textContent + " " + dd.textContent).includes(q);
+      dt.hidden = dd.hidden = !ok;
+      if (ok) { vus++; surligner(dt); surligner(dd); }
+    }
+    sec.hidden = vus === 0; total += vus;
+  }
+  document.getElementById("glo-compte").textContent = `${total} terme${total > 1 ? "s" : ""}` +
+    (q && !dansTerme && total ? " (trouvés dans les définitions)" : "");
+}
+
+// ------------------------------------------ onglet Simulateur temps réel 2
+// Schéma de la machine : chaque bloc porte les paramètres de conception de son composant.
+const S2 = {champs: {}, params: {}};
+
+// sens d'écoulement par segment : [nature, inversé] (géométrie des chemins : voir le SVG)
+const SEGMENTS2 = {
+  chauffage: {A: ["refoul", 0], B: ["liquide", 0], C: ["diphasique", 0], D: ["aspiration", 0],
+              E: ["refoul", 0], F: ["aspiration", 0]},
+  clim: {A: ["aspiration", 1], B: ["diphasique", 1], C: ["liquide", 1], D: ["refoul", 1],
+         E: ["refoul", 0], F: ["aspiration", 0]},
+};
+
+// point du cycle -> [nom, nature du fluide pour la couleur]
+const POINTS2 = {
+  "1": ["Aspiration", "aspiration"],
+  "2": ["Refoulement", "refoul"],
+  "3": ["Sortie condenseur", "liquide"],
+  "4": ["Après détente", "diphasique"],
+};
+
+function champNombre(input, lo, hi, envoyer) {
+  input.addEventListener("change", () => {
+    if (input.value === "" || !Number.isFinite(+input.value)) return;
+    const v = Math.min(Math.max(+input.value, lo), hi);
+    input.value = v;
+    envoyer(v);
+  });
+  input.addEventListener("keydown", ev => { if (ev.key === "Enter") input.blur(); });
+}
+
+function construireSim2() {
+  for (const path of document.querySelectorAll("#s2-tuyaux path[data-seg]")) {  // fond gris + tracé animé
+    const fond = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    fond.setAttribute("d", path.getAttribute("d"));
+    fond.setAttribute("class", "tuyau-fond");
+    path.before(fond);
+    path.classList.add("flux");
+  }
+  for (const [comp, k, label, unite, lo, hi, pas] of STAT.conception) {
+    const ligne = document.createElement("label");
+    ligne.className = "p2";
+    ligne.innerHTML = `<span title="${esc(label)}">${esc(label)}</span>` +
+      `<input type="number" min="${lo}" max="${hi}" step="${pas}" aria-label="${esc(label)}"><i>${esc(unite)}</i>`;
+    document.querySelector(`#schema2 [data-composant=${comp}]`).appendChild(ligne);
+    const input = ligne.querySelector("input");
+    champNombre(input, lo, hi, v => { enAttente.conception = {...(enAttente.conception || {}), [k]: v}; });
+    S2.champs[k] = {input, ligne};
+  }
+  for (const input of document.querySelectorAll("#schema2 input[data-param]")) {
+    const k = input.dataset.param, [, , lo, hi] = STAT.reglages.find(r => r[0] === k);
+    input.min = lo; input.max = hi;
+    champNombre(input, lo, hi, v => { enAttente[k] = v; });
+    S2.params[k] = input;
+  }
+  const sel = document.querySelector("#schema2 select[data-param=auto]");
+  sel.addEventListener("change", () => { enAttente.auto = sel.value === "1"; });
+  S2.params.auto = sel;
+  for (const r of document.querySelectorAll("input[name=mode2]"))
+    r.addEventListener("change", () => { enAttente.mode = r.value; });
+  S2.detail = false;
+  document.getElementById("s2-bilan").addEventListener("click", ev => {
+    if (!ev.target.closest("#s2-cop")) return;
+    S2.detail = !S2.detail;
+    majSim2();
+  });
+  document.getElementById("s2-detail").addEventListener("click", ev => {
+    if (ev.target.id === "s2-detail-fermer") { S2.detail = false; majSim2(); }
+  });
+  document.getElementById("s2-reset").addEventListener("click", () => {
+    enAttente.conception = {...STAT.conception_defaut};
+  });
+}
+
+// ------------------------------------------- détail du calcul du COP effectif
+const V = (s, i = "") => `<i>${s}</i>${i ? `<sub>${i}</sub>` : ""}`;   // symbole avec indice
+const n = (v, d = 2) => fmt(v, d);
+
+function afficherDetailCOP() {
+  const box = document.getElementById("s2-detail");
+  const d = S && S.marche ? S.detail_cop : null;
+  box.hidden = !S2.detail || !d;
+  if (box.hidden) return;
+  const chaud = d.mode === "chauffage", g = d.m * 1e3;
+  const etapes = [
+    ["État à l'aspiration", `${V("T", "1")} = ${V("T", "e")} − ΔT${"<sub>asp</sub>"} + SH ; ${V("p", "1")} = ${V("p", "sat")}(${V("T", "e")} − ΔT${"<sub>asp</sub>"})`,
+     `${n(d.Te, 1)} − ${n(d.dT_asp, 1)} + ${n(d.surchauffe, 1)} °C ; ρ₁ par CoolProp (propane)`,
+     `${n(d.Te - d.dT_asp + d.surchauffe, 1)} °C · ${n(d.p_asp)} bar<br>ρ₁ = ${n(d.rho1)} kg/m³`],
+    ["Taux de compression", `PR = ${V("p", "ref")} / ${V("p", "asp")}`,
+     `${n(d.p_ref)} / ${n(d.p_asp)} bar`, n(d.PR, 3)],
+    ["Rendement volumétrique", `${V("η", "v")} = (1 + ε − ε·PR<sup>1/n</sup>) · (1 − ${V("k", "f")}(PR − 1)√(${V("f", "nom")}/f))`,
+     `ε = ${d.espace_mort}, n = ${d.n_poly}, ${V("k", "f")} = ${d.k_fuite}, ${V("f", "nom")} = ${d.f_nom} Hz`, n(d.eta_v, 3)],
+    ["Débit massique", `${V("ṁ")} = ρ₁ · ${V("V", "cyl")} · f · ${V("η", "v")}`,
+     `${n(d.rho1)} × ${n(d.V_cyl, 1)}·10⁻⁶ m³ × ${n(d.f, 1)} Hz × ${n(d.eta_v, 3)}`, `${n(g, 3)} g/s`],
+    ["Rendement isentropique", `${V("η", "is")} = ${V("η", "is,max")}·(1 − 0.012(PR − ${V("PR", "opt")})²)·(1 − 0.08((f − ${V("f", "opt")})/${V("f", "opt")})²)`,
+     `${V("η", "is,max")} = ${d.eta_is_max}, ${V("PR", "opt")} = ${d.PR_opt}, ${V("f", "opt")} = ${d.f_opt} Hz`, n(d.eta_is, 3)],
+    ["Travail spécifique", `w = (${V("h", "2s")} − ${V("h", "1")}) / ${V("η", "is")}`,
+     `(${n(d.h2s, 1)} − ${n(d.h1, 1)}) / ${n(d.eta_is, 3)} kJ/kg<span class="note">${V("h", "2s")} = h(${V("p", "ref")}, ${V("s", "1")}) : compression isentropique</span>`,
+     `${n(d.w, 1)} kJ/kg`],
+    ["Puissance sur l'arbre", `${V("W", "arbre")} = ${V("ṁ")} · w`, `${n(g, 3)} g/s × ${n(d.w, 1)} kJ/kg`, `${n(d.W_arbre, 1)} W`],
+    ["Enthalpie au refoulement", `${V("h", "2")} = ${V("h", "1")} + (1 − ${V("x", "carter")}) · w`,
+     `${n(d.h1, 1)} + (1 − ${d.pertes_carter}) × ${n(d.w, 1)}<span class="note">${V("x", "carter")} : part du travail perdue par le carter vers l'ambiance</span>`,
+     `${n(d.h2, 1)} kJ/kg`],
+    ["Puissance électrique compresseur", `${V("P", "comp")} = ${V("W", "arbre")} / (${V("η", "mot")} · ${V("η", "var")})`,
+     `${n(d.W_arbre, 1)} / (${n(d.eta_mot, 3)} × ${n(d.eta_var, 2)})<span class="note">${V("η", "mot")} = 0.935 − 0.06((f − 70)/70)² ; ${V("η", "var")} : variateur</span>`,
+     `${n(d.P_comp, 1)} W`],
+    ["Puissance absorbée totale", `${V("P", "tot")} = ${V("P", "comp")} + ${V("P", "vent")} + ${V("P", "veille")}`,
+     `${n(d.P_comp, 1)} + ${n(d.P_vent, 1)} + ${n(d.P_veille, 1)} W`, `${n(d.P_tot, 1)} W`],
+    [chaud ? "Chaleur livrée (condenseur)" : "Froid produit (évaporateur)",
+     chaud ? `${V("Q", "utile")} = ${V("ṁ")} · (${V("h", "2")} − ${V("h", "3")})` : `${V("Q", "utile")} = ${V("ṁ")} · (${V("h", "1")} − ${V("h", "3")})`,
+     `${n(g, 3)} g/s × (${n(chaud ? d.h2 : d.h1, 1)} − ${n(d.h3, 1)}) kJ/kg<span class="note">${V("h", "3")} = h(${V("p", "c")}, ${V("T", "c")} − SC), SC = ${n(d.sous_refroid, 1)} K, ${V("T", "c")} = ${n(d.Tc, 1)} °C</span>`,
+     `${n(d.Q_utile, 1)} W`],
+    [chaud ? "COP de l'unité" : "EER de l'unité", `COP = ${V("Q", "utile")} / ${V("P", "tot")}`,
+     `${n(d.Q_utile, 1)} / ${n(d.P_tot, 1)}`, n(d.COP, 3)],
+    ["Dégivrage", d.givre ? `${V("COP", "int")} = ${V("Q", "moy")} / ${V("P", "moy")} (cycle givrage + dégivrage)` : `${V("COP", "int")} = COP`,
+     d.givre ? `${n(d.Q_integre, 1)} / ${n(d.P_integre, 1)} W ; dégivrage ${n(d.frac_degivrage * 100, 1)} % du temps (${d.duree_degivrage} s à ${d.P_degivrage} W)`
+             : (chaud ? "pas de givre : batterie extérieure au-dessus de 0 °C ou air trop sec" : "pas de dégivrage en climatisation"),
+     n(d.COP_integre, 3)],
+    ["Cyclage marche / arrêt", `${V("k", "cyc")} = 1 − ${V("C", "d")} · (1 − PLR)`,
+     `${V("C", "d")} = ${d.Cd}, PLR = ${n(d.PLR, 3)}<span class="note">${d.statut === "cyclage"
+       ? `besoin ${n(d.besoin, 0)} W inférieur à la puissance à f min : la machine cycle`
+       : "PLR = 1 : l'inverter suit le besoin sans s'arrêter"}</span>`, n(d.k_cyc, 3)],
+  ];
+  const params = [
+    ["Réglables dans ce schéma", [
+      ["Cylindrée V<sub>cyl</sub>", `${n(d.V_cyl, 1)} cm³`], ["η<sub>is,max</sub>", n(d.eta_is_max, 2)],
+      ["Surchauffe SH", `${n(d.surchauffe, 1)} K`], ["Sous-refroidissement SC", `${n(d.sous_refroid, 1)} K`],
+      ["Fréquence f", `${n(d.f, 1)} Hz`]]],
+    ["Résultats de l'équilibre des échangeurs", [
+      ["T évaporation T<sub>e</sub>", `${n(d.Te, 2)} °C`], ["T condensation T<sub>c</sub>", `${n(d.Tc, 2)} °C`],
+      ["P ventilateurs P<sub>vent</sub>", `${n(d.P_vent, 1)} W`], ["Besoin de la pièce", `${n(d.besoin, 0)} W`]]],
+    ["Constantes du modèle (non réglables ici)", [
+      ["Perte de charge aspiration ΔT<sub>asp</sub>", `${d.dT_asp} K`], ["Perte de charge refoulement ΔT<sub>ref</sub>", `${d.dT_ref} K`],
+      ["Espace mort ε", d.espace_mort], ["Exposant polytropique n", d.n_poly], ["Coefficient de fuite k<sub>f</sub>", d.k_fuite],
+      ["PR<sub>opt</sub> / f<sub>opt</sub>", `${d.PR_opt} / ${d.f_opt} Hz`], ["Pertes carter x<sub>carter</sub>", d.pertes_carter],
+      ["Rendement variateur η<sub>var</sub>", n(d.eta_var, 2)], ["Électronique en veille P<sub>veille</sub>", `${d.P_veille} W`],
+      ["Coefficient de dégradation C<sub>d</sub>", d.Cd]]],
+  ];
+  const html = `<h3>Calcul du ${chaud ? "COP" : "EER"} effectif = ${n(d.cop_eff, 2)}` +
+    `<button type="button" class="secondaire" id="s2-detail-fermer">Fermer</button></h3>` +
+    `<p class="discret">Toutes les valeurs sont celles du pas de calcul en cours. Les propriétés du propane viennent de CoolProp.` +
+    (d.carte ? " Compresseur défini par carte constructeur : ṁ et P<sub>comp</sub> viennent des polynômes, pas des étapes 3 à 9." : "") + `</p>` +
+    `<div class="table-defile"><table><tr><th></th><th>Étape</th><th>Équation</th><th>Application numérique</th><th style="text-align:right">Résultat</th></tr>` +
+    etapes.map(([nom, eq, an, res], i) => `<tr><td class="n">${i + 1}</td><td>${nom}</td><td class="eq">${eq}</td><td class="an">${an}</td><td class="res">${res}</td></tr>`).join("") +
+    `<tr class="final"><td class="n">${etapes.length + 1}</td><td>${chaud ? "COP" : "EER"} effectif</td>` +
+    `<td class="eq">${V("COP", "eff")} = ${V("COP", "int")} · ${V("k", "cyc")}</td>` +
+    `<td class="an">${n(d.COP_integre, 3)} × ${n(d.k_cyc, 3)}</td><td class="res">${n(d.cop_eff, 3)}</td></tr></table></div>` +
+    `<div class="params">` + params.map(([titre, l]) => `<h4>${titre}</h4>` +
+      l.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join("")).join("") + `</div>`;
+  if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
+}
+
+function mesures(bloc, lignes) {
+  const dl = document.querySelector(`#${bloc} .mes2`);
+  dl.innerHTML = lignes.map(([k, v, cls = ""]) => `<dt>${k}</dt><dd class="${cls}">${v}</dd>`).join("");
+}
+
+function majSim2() {
+  if (document.getElementById("vue-sim2").hidden || !S) return;
+  const p = S.params, e = S.etat, marche = S.marche, mode = p.mode, chaud = mode === "chauffage";
+  const conc = p.conception, pend = enAttente.conception || {};
+
+  // champs : on ne réécrit pas un champ en cours de saisie ou en attente d'envoi
+  for (const [k, {input, ligne}] of Object.entries(S2.champs)) {
+    if (!(k in pend) && document.activeElement !== input) input.value = conc[k];
+    ligne.classList.toggle("modifie", Math.abs(conc[k] - STAT.conception_defaut[k]) > 1e-9);
+  }
+  for (const [k, el] of Object.entries(S2.params)) {
+    if (k in enAttente || document.activeElement === el) continue;
+    el.value = k === "auto" ? (p.auto ? "1" : "0") : p[k];
+  }
+  S2.params.freq.disabled = p.auto;
+  if (!("mode" in enAttente))
+    for (const r of document.querySelectorAll("input[name=mode2]")) r.checked = r.value === mode;
+
+  // tuyauterie : couleur par état du fluide, sens selon la V4V, vitesse selon le débit massique
+  const sch = document.getElementById("schema2");
+  sch.classList.toggle("arret", !marche);
+  const duree = marche ? Math.min(Math.max(0.6 / (e.m_dot * 1e3 * Math.sqrt(p.vitesse) / 4.5), 0.08), 3) : 1;
+  for (const path of document.querySelectorAll("#s2-tuyaux path.flux")) {
+    const [nature, inv] = SEGMENTS2[mode][path.dataset.seg];
+    path.style.stroke = C[nature];
+    path.classList.toggle("inverse", !!inv);
+    const d = parseFloat(path.style.animationDuration) || 0;
+    if (Math.abs(d - duree) / duree > 0.1) path.style.animationDuration = `${duree.toFixed(2)}s`;
+  }
+
+  // états du réfrigérant aux quatre coins du circuit (numéros du diagramme P-h)
+  const coinPoint = chaud ? {TL: "2", BL: "3", BR: "4", TR: "1"} : {TL: "1", BL: "4", BR: "3", TR: "2"};
+  for (const [coin, n] of Object.entries(coinPoint)) {
+    const [nom, nature] = POINTS2[n];
+    document.querySelector(`#schema2 .num2[data-coin=${coin}] text`).textContent = n;
+    const el = document.querySelector(`.pt2[data-coin=${coin}]`);
+    el.style.borderLeftColor = marche ? C[nature] : C.off;
+    const q = marche && e.points ? e.points[n] : null;
+    if (!q) { el.innerHTML = `<b>${n} · ${nom}</b><span class="discret">machine à l'arrêt</span>`; continue; }
+    const extra = {
+      "1": `vapeur, surchauffe ${fmt(conc.surchauffe)} K`,
+      "2": `gaz chaud, Tsat ${fmt(e.Tc)} °C`,
+      "3": `liquide, sous-refr. ${fmt(conc.sous_refroid)} K`,
+      "4": `diphasique, titre ${fmt(q.x, 2)}`,
+    }[n];
+    el.innerHTML = `<b title="${nom}">${n} · ${nom}</b>` +
+      `<span class="tp">${fmt(q.T)} °C · ${fmt(q.p, 2)} bar</span><br>` +
+      `<span class="discret">h ${fmt(q.h, 0)} kJ/kg<br>${extra}</span>`;
+  }
+
+  // batteries
+  const coul = T => coolwarm((T + 25) / 95);
+  const kUA = p.k_UA[p.techno];
+  const batterie = (id, cote) => {
+    const cond = (cote === "int") === chaud;      // cette batterie est-elle le condenseur ?
+    const bloc = document.getElementById(id);
+    bloc.querySelector(".role").textContent = cond ? "condenseur" : "évaporateur";
+    bloc.querySelector(".role").style.color = cond ? C.refoul : C.diphasique;
+    const Tair = cote === "int" ? p.T_int : p.T_ext;
+    if (!marche) {
+      bloc.style.borderTopColor = C.off;
+      mesures(id, [["Air", `${fmt(Tair)} °C`], ["Compresseur", S.delai > 0 ? "inversion V4V" : "arrêt"]]);
+      return;
+    }
+    const Tsat = cond ? e.Tc : e.Te, Q = cond ? e.Q_cond : e.Q_evap;
+    const debit = cote === "int" ? e.debit_int : e.debit_ext;
+    const nom = cote === "int" ? conc.debit_int_nom : conc.debit_ext_nom;
+    const UAref = cote === "int" ? conc.UA_int_ref : conc.UA_ext_ref;
+    const Pnom = cote === "int" ? conc.P_vent_int_nom : conc.P_vent_ext_nom;
+    const r = debit / nom, kv = STAT.technologies[p.techno].k_vent;
+    const Tout = cote === "int" ? e.T_air_int_out : e.T_air_ext_out;
+    bloc.style.borderTopColor = coul(Tsat);
+    const l = [
+      ["T réfrigérant (sat.)", `${fmt(Tsat)} °C`, cond ? "chaud" : "froid"],
+      [cond ? "Chaleur rejetée" : "Chaleur absorbée", `${fmt(Q / 1e3, 2)} kW`],
+      ["Air entrée → sortie", `${fmt(Tair)} → ${fmt(Tout)} °C`],
+      ["Débit d'air", `${fmt(debit, 0)} m³/h (${fmt(r * 100, 0)} %)`],
+      ["UA effectif", `${fmt(UAref * kUA * r ** 0.6, 0)} W/K`],
+      ["Ventilateur (estim.)", `${fmt(Pnom * kv * r ** 3, 1)} W`],
+    ];
+    if (!cond && e.Q_lat > 0) l.push(["dont latent", `${fmt(e.Q_lat / 1e3, 2)} kW`]);
+    if (cote === "ext" && e.givre) l.push(["Givrage", `oui · ${fmt(e.frac_degivrage * 100, 0)} % dégivrage`, "froid"]);
+    mesures(id, l);
+  };
+  batterie("b2-int", "int");
+  batterie("b2-ext", "ext");
+
+  // compresseur et détendeur
+  const comp = document.getElementById("b2-comp");
+  comp.style.borderTopColor = marche ? coul(e.T_refoul) : C.off;
+  if (marche) {
+    mesures("b2-comp", [
+      ["Fréquence", `${fmt(e.freq, 1)} Hz (cible ${fmt(S.f_cible, 1)})`],
+      ["Puissance élec.", `${fmt(e.P_comp, 0)} W`],
+      ["Débit R290", `${fmt(e.m_dot * 1e3, 2)} g/s`],
+      ["T refoulement", `${fmt(e.T_refoul, 1)} °C`, "chaud"],
+      ["Taux compression", fmt(e.PR, 2)],
+      ["η vol · η is", `${fmt(e.eta_v, 2)} · ${fmt(e.eta_is, 2)}`],
+    ]);
+  } else {
+    mesures("b2-comp", [["État", S.delai > 0 ? `inversion V4V (${fmt(S.delai, 0)} s)` : "arrêt"]]);
+  }
+  document.getElementById("b2-eev").style.borderTopColor = marche ? C.diphasique : C.off;
+  mesures("b2-eev", marche ? [
+    ["HP → BP", `${fmt(e.p_hp / 1e5, 2)} → ${fmt(e.p_bp / 1e5, 2)} bar`],
+    ["T sat. HP / BP", `${fmt(e.Tc)} / ${fmt(e.Te)} °C`],
+  ] : [["État", "fermé"]]);
+
+  // bilan
+  const tuiles = marche ? [
+    [fmt(S.cop_eff, 2), chaud ? "COP effectif" : "EER effectif"],
+    [`${fmt(S.q_eff / 1e3, 2)} kW`, chaud ? "chauffage livré" : "froid livré"],
+    [`${fmt(S.besoin / 1e3, 2)} kW`, "besoin de la pièce"],
+    [`${fmt(e.P_tot, 0)} W`, "puissance absorbée"],
+    [`${fmt(e.charge_g, 0)} g`, `charge R290 (max ${fmt(S.iec.m_max, 0)} g)`],
+  ] : [["—", "machine à l'arrêt"]];
+  document.getElementById("s2-bilan").innerHTML = tuiles.map(([v, l], i) => i === 0 && marche
+    ? `<button type="button" class="tuile" id="s2-cop" aria-expanded="${S2.detail}" aria-controls="s2-detail">` +
+      `<b>${v}</b><span>${l} · <span class="plus">${S2.detail ? "masquer le calcul ▴" : "voir le calcul ▾"}</span></span></button>`
+    : `<div class="tuile"><b>${v}</b><span>${l}</span></div>`).join("");
+  afficherDetailCOP();
+  const alertes = [...(marche ? e.alarmes : [])];
+  if (marche && e.charge_g > S.iec.m_max) alertes.push("charge supérieure à la limite IEC");
+  if (S.statut === "capacité insuffisante") alertes.push("capacité insuffisante");
+  const st = document.getElementById("s2-statut");
+  st.textContent = alertes.length ? `⚠ ${alertes.join(" · ")}` : `régulation : ${S.statut || "—"} · t = ${fmt(S.t_sim / 60, 1)} min`;
+  st.style.color = alertes.length ? C.danger : "";
 }
 
 // ------------------------------------------------------------ boucles
@@ -1157,6 +2414,8 @@ async function pas() {
     synchroniserCommandes();
     panneau();
     tablePertes();
+    majSim2();
+    majPrincipes();
     grapheAJour = true;
   } catch (err) {
     enAttente = {...regler, ...enAttente};
@@ -1171,24 +2430,172 @@ function image(t) {
   const dt = Math.min((t - derniereImage) / 1000, 0.1);
   derniereImage = t;
   if (S && S.marche) phaseFlux += S.etat.m_dot * 1e3 * 0.012 * Math.sqrt(S.params.vitesse) * dt / 0.1;
+  // la boucle est reprogrammée d'abord : une erreur de dessin ne doit pas l'arrêter définitivement
+  requestAnimationFrame(image);
+  // onglet masqué : canvas de taille nulle, rien à dessiner (on redessinera au retour sur l'onglet)
+  if (document.getElementById("vue-sim").hidden) return;
   dessinerSchema();
   if (S && grapheAJour) {
-    dessinerPH(); dessinerCOP(); dessinerHist(); dessinerPertes();
     grapheAJour = false;
+    dessinerPH(); dessinerCOP(); dessinerHist(); dessinerPertes();
   }
-  requestAnimationFrame(image);
 }
 
 window.addEventListener("resize", () => { grapheAJour = true; });
 
 (async () => {
+  construireGlossaire();
   lireCouleurs();
   STAT = await (await fetch("/api/statique")).json();
   construireCommandes();
+  construireSim2();
   initDim();
+  initGyro();
+  initComparateur();
   pas();
   requestAnimationFrame(image);
 })();
+</script>
+<script type="module">
+// Vue 3D de l'échangeur gyroïde (three.js local, /vendor). Isosurfaces F = niveau propane
+// (canaux propane, opaques) et F = niveau air (paroi côté air, translucide), extraites par
+// marching tetrahedra, colorées par la température locale (fonction de la profondeur).
+import * as THREE from "three";
+import {OrbitControls} from "/vendor/OrbitControls.js";
+
+const boite = document.getElementById("gy-3d");
+const rendu = new THREE.WebGLRenderer({antialias: true, alpha: true});
+rendu.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+boite.appendChild(rendu.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 500);
+const controles = new OrbitControls(camera, rendu.domElement);
+controles.enableDamping = false;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6));
+const soleil = new THREE.DirectionalLight(0xffffff, 1.6);
+soleil.position.set(5, 8, 6);
+scene.add(soleil);
+const groupe = new THREE.Group();
+scene.add(groupe);
+
+function taille() {
+  const w = boite.clientWidth, h = boite.clientHeight;
+  if (!w || !h) return;
+  rendu.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  dessiner();
+}
+function dessiner() { rendu.render(scene, camera); }
+controles.addEventListener("change", dessiner);
+new ResizeObserver(taille).observe(boite);
+
+// Coins du cube et découpage en 6 tétraèdres autour de la diagonale 0-6
+const COINS = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+const TETRAS = [[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]];
+const DPI = 2 * Math.PI;
+const champ = (x, y, z) => Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
+const gradient = (x, y, z) => [Math.cos(x) * Math.cos(y) - Math.sin(z) * Math.sin(x),
+                               -Math.sin(x) * Math.sin(y) + Math.cos(y) * Math.cos(z),
+                               -Math.sin(y) * Math.sin(z) + Math.cos(z) * Math.cos(x)];
+
+// Isosurface F = niveau sur [0,nx]×[0,ny]×[0,nz] cellules, n points par cellule.
+// sens = +1 : normales vers F croissant ; couleur(s) avec s = x / nx.
+function isosurface(nx, ny, nz, n, niveau, sens, couleur) {
+  const Nx = Math.round(nx * n), Ny = Math.round(ny * n), Nz = Math.round(nz * n);
+  const val = new Float32Array((Nx + 1) * (Ny + 1) * (Nz + 1));
+  const id = (i, j, k) => (k * (Ny + 1) + j) * (Nx + 1) + i;
+  for (let k = 0; k <= Nz; k++) for (let j = 0; j <= Ny; j++) for (let i = 0; i <= Nx; i++)
+    val[id(i, j, k)] = champ(i / n * DPI, j / n * DPI, k / n * DPI) - niveau;
+  const pos = [], nor = [], col = [];
+  const p = new Array(4), v = new Array(4);
+  const sommet = (a, b) => {   // intersection sur l'arête a-b (coordonnées en cellules)
+    const t = v[a] / (v[a] - v[b]);
+    return [p[a][0] + t * (p[b][0] - p[a][0]), p[a][1] + t * (p[b][1] - p[a][1]), p[a][2] + t * (p[b][2] - p[a][2])];
+  };
+  const tri = (A, B, Cc) => {
+    // orientation cohérente avec le gradient (normales lisses analytiques)
+    const g = gradient(...[0, 1, 2].map(c => (A[c] + B[c] + Cc[c]) / 3 * DPI));
+    const u = [B[0] - A[0], B[1] - A[1], B[2] - A[2]], w = [Cc[0] - A[0], Cc[1] - A[1], Cc[2] - A[2]];
+    const nf = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    if ((nf[0] * g[0] + nf[1] * g[1] + nf[2] * g[2]) * sens < 0) [B, Cc] = [Cc, B];
+    for (const P of [A, B, Cc]) {
+      pos.push(P[0], P[1], P[2]);
+      const gg = gradient(P[0] * DPI, P[1] * DPI, P[2] * DPI), l = Math.hypot(...gg) || 1;
+      nor.push(sens * gg[0] / l, sens * gg[1] / l, sens * gg[2] / l);
+      const c = couleur(P[0] / nx);
+      col.push(c[0], c[1], c[2]);
+    }
+  };
+  for (let k = 0; k < Nz; k++) for (let j = 0; j < Ny; j++) for (let i = 0; i < Nx; i++) {
+    for (const T of TETRAS) {
+      let dedans = 0;
+      for (let q = 0; q < 4; q++) {
+        const [a, b, c] = COINS[T[q]];
+        v[q] = val[id(i + a, j + b, k + c)];
+        p[q] = [(i + a) / n, (j + b) / n, (k + c) / n];
+        if (v[q] > 0) dedans++;
+      }
+      if (dedans === 0 || dedans === 4) continue;
+      const ins = [0, 1, 2, 3].filter(q => v[q] > 0), out = [0, 1, 2, 3].filter(q => v[q] <= 0);
+      if (dedans === 1 || dedans === 3) {
+        const [a, o] = dedans === 1 ? [ins[0], out] : [out[0], ins];
+        tri(sommet(a, o[0]), sommet(a, o[1]), sommet(a, o[2]));
+      } else {
+        const [a, b] = ins, [c, d] = out;
+        const P1 = sommet(a, c), P2 = sommet(a, d), P3 = sommet(b, d), P4 = sommet(b, c);
+        tri(P1, P2, P3); tri(P1, P3, P4);
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  return geo;
+}
+
+function fleche(dir, origine, longueur, couleur) {
+  return new THREE.ArrowHelper(new THREE.Vector3(...dir).normalize(), new THREE.Vector3(...origine),
+                               longueur, couleur, 0.35, 0.22);
+}
+
+let cleCache = null, voile = null;
+document.getElementById("gy-voile").addEventListener("change", ev => { if (voile) { voile.visible = ev.target.checked; dessiner(); } });
+function afficher(o) {
+  const NX_MAX = 10, ny = 2, nz = 2;
+  const nxReel = o.profondeur / o.L, nx = Math.max(1, Math.min(nxReel, NX_MAX));
+  const n = nx > 6 ? 10 : 12;   // points par cellule
+  for (const m of [...groupe.children]) { groupe.remove(m); m.geometry && m.geometry.dispose(); m.material && m.material.dispose(); }
+  const prop = isosurface(nx, ny, nz, n, o.n_propane, -1, s => o.couleurRef(s));
+  const air = isosurface(nx, ny, nz, n, o.n_air, 1, s => o.couleurAir(s));
+  const mProp = new THREE.Mesh(prop, new THREE.MeshStandardMaterial({vertexColors: true, roughness: 0.45, metalness: 0.1, side: THREE.DoubleSide}));
+  const mAir = new THREE.Mesh(air, new THREE.MeshStandardMaterial({vertexColors: true, roughness: 0.6, metalness: 0.0,
+    transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide}));
+  mAir.visible = document.getElementById("gy-voile").checked;
+  groupe.add(mProp, mAir);
+  voile = mAir;
+  const cadre = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(nx, ny, nz)),
+                                       new THREE.LineBasicMaterial({color: 0x888888}));
+  cadre.position.set(nx / 2, ny / 2, nz / 2);
+  groupe.add(cadre);
+  groupe.add(fleche([1, 0, 0], [-0.2, ny + 0.45, nz / 2], nx + 0.4, 0x1c7ed6));
+  groupe.add(fleche([-1, 0, 0], [nx + 0.2, -0.45, nz / 2], nx + 0.4, 0xd62728));
+  groupe.position.set(-nx / 2, -ny / 2, -nz / 2);
+  const cle = `${nx.toFixed(2)}`;
+  if (cle !== cleCache) {   // recadrage seulement si la taille du bloc change
+    cleCache = cle;
+    const d = Math.max(nx, 3) * 1.9;
+    camera.position.set(d * 0.55, d * 0.55, d * 0.95);
+    controles.target.set(0, 0, 0);
+    controles.update();
+  }
+  taille();
+  return {nx: Math.round(nx * 10) / 10, tronque: nxReel > NX_MAX};
+}
+
+window.GY3D = {afficher};
+window.dispatchEvent(new Event("gy3d-pret"));
 </script>
 </body>
 </html>

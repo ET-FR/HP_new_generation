@@ -35,6 +35,25 @@ REGLAGES = [
     ("vitesse", "Accélération du temps (x)", 1, 120, 20.0, 1),
 ]
 
+# Paramètres de conception réglables par composant (onglet « Simulateur temps réel 2 »).
+# (composant, clé de Conception, libellé, unité, min, max, pas). Valeur initiale : défaut de Conception.
+CONCEPTION_REGLABLE = [
+    ("compresseur", "cylindree_cm3", "Cylindrée", "cm³", 4, 40, 0.5),
+    ("compresseur", "f_min", "Fréquence min", "Hz", 10, 40, 1),
+    ("compresseur", "f_max", "Fréquence max", "Hz", 70, 140, 1),
+    ("compresseur", "eta_is_max", "η isentropique max", "", 0.40, 0.85, 0.01),
+    ("bat_int", "UA_int_ref", "UA nominal", "W/K", 60, 1000, 10),
+    ("bat_int", "debit_int_nom", "Débit d'air nominal", "m³/h", 150, 1200, 10),
+    ("bat_int", "P_vent_int_nom", "Ventilateur nominal", "W", 5, 150, 1),
+    ("bat_int", "V_bat_int", "Volume interne", "L", 0.10, 3.0, 0.05),
+    ("bat_ext", "UA_ext_ref", "UA nominal", "W/K", 60, 1500, 10),
+    ("bat_ext", "debit_ext_nom", "Débit d'air nominal", "m³/h", 300, 2500, 10),
+    ("bat_ext", "P_vent_ext_nom", "Ventilateur nominal", "W", 5, 250, 1),
+    ("bat_ext", "V_bat_ext", "Volume interne", "L", 0.10, 4.0, 0.05),
+    ("detendeur", "surchauffe", "Surchauffe", "K", 1, 15, 0.5),
+    ("detendeur", "sous_refroid", "Sous-refroidissement", "K", 0, 15, 0.5),
+]
+
 
 def _json(v):
     """Remplace NaN / inf par None pour une sérialisation JSON stricte."""
@@ -62,7 +81,8 @@ class Moteur:
                     for t, v in TECHNOLOGIES.items()}
         self.params = {k: v for k, _, _, _, v, _ in REGLAGES}
         self.params.update(mode="chauffage", techno="Impression 3D métal (TPMS)", auto=True, ventil_auto=True,
-                           k_UA={t: v["k_UA"] for t, v in TECHNOLOGIES.items()})
+                           k_UA={t: v["k_UA"] for t, v in TECHNOLOGIES.items()},
+                           conception={k: float(getattr(Conception, k)) for _, k, *_ in CONCEPTION_REGLABLE})
         self.t_sim = 0.0
         self.f_reel = 0.0
         self.f_cible = 0.0
@@ -95,12 +115,30 @@ class Moteur:
                         val = min(max(float(val), self.K_UA_MIN), self.K_UA_MAX)
                         p[k][t] = self.pac[t].c.multiplicateurs["k_UA"] = val
                 self._cache_cle = None
+            elif k == "conception":
+                self._regler_conception(v)
             elif k in ("auto", "ventil_auto"):
                 p[k] = bool(v)
             else:
                 lo, hi = next((a, b) for c, _, a, b, _, _ in REGLAGES if c == k)
                 p[k] = min(max(float(v), lo), hi)
         self.dirty = True
+
+    def _regler_conception(self, modifs: dict):
+        """Applique des paramètres de conception à toutes les machines (une par technologie)."""
+        bornes = {k: (lo, hi) for _, k, _, _, lo, hi, _ in CONCEPTION_REGLABLE}
+        c = self.params["conception"]
+        for k, val in modifs.items():
+            if k not in bornes:
+                continue
+            lo, hi = bornes[k]
+            c[k] = float(min(max(float(val), lo), hi))
+        c["f_min"] = min(c["f_min"], Conception.f_nom - 5)  # ratio_ventilation divise par f_nom - f_min
+        c["f_max"] = max(c["f_max"], Conception.f_nom + 5)
+        for pac in self.pac.values():
+            for k, val in c.items():
+                setattr(pac.c, k, val)
+        self._cache_cle = None
 
     # --------------------------------------------------------------- calculs
     def conditions(self, f=None) -> Conditions:
@@ -194,8 +232,10 @@ class Moteur:
         cascade = None
         if marche:
             cascade = pac.cascade_pertes(self.conditions(), e) + [("cyclage", cop_eff)]
+        detail_cop = self._detail_cop(pac, e, k_cyc, cop_eff) if marche else None
+        cycles_ref = pac.cycles_reference(self.conditions(), e) if marche else None
         return _json(dict(
-            cascade=cascade,
+            cascade=cascade, detail_cop=detail_cop, cycles_ref=cycles_ref,
             params=self.params, t_sim=self.t_sim, f_reel=self.f_reel, f_cible=self.f_cible,
             PLR=self.PLR, statut=self.statut, besoin=self.besoin, delai=self.delai,
             marche=marche, k_cyc=k_cyc, cop_eff=cop_eff, q_eff=q_eff, p_eff=p_eff,
@@ -203,6 +243,33 @@ class Moteur:
             courbe=self.courbe, courbe_complete=self._courbe_iter is None,
             iec=dict(m_max=m_max, m1=m1, h0=pac.c.h0_installation, surface=pac.c.surface_piece),
         ))
+
+    def _detail_cop(self, pac, e, k_cyc, cop_eff) -> dict:
+        """Grandeurs intermédiaires du calcul du COP effectif, pour l'affichage pas à pas."""
+        c, fl = pac.c, pac.fl
+        k = pac.compresseur(e.Te, e.Tc, e.freq)
+        p1 = e.points["1"]
+        rho1 = fl.pT(k["p_asp"], p1["T"])[2]
+        h2s = k["h1"] + k["w"] * k["eta_is"]
+        P_integre = e.Q_integre / e.COP_integre if e.COP_integre else float("nan")
+        return dict(
+            carte=c.carte is not None, mode=e.mode,
+            rho1=rho1, V_cyl=c.cylindree_cm3, f=e.freq, eta_v=e.eta_v, m=e.m_dot,
+            h1=k["h1"] / 1e3, h2s=h2s / 1e3, h2=k["h2"] / 1e3, h3=e.points["3"]["h"],
+            eta_is=e.eta_is, w=k["w"] / 1e3, pertes_carter=c.pertes_carter, W_arbre=e.W_arbre,
+            eta_mot=e.eta_mot, eta_var=k["eta_var"], P_comp=e.P_comp,
+            P_vent=e.P_vent, P_veille=c.P_veille, P_tot=e.P_tot,
+            Q_utile=e.Q_utile, COP=e.COP,
+            givre=e.givre, frac_degivrage=e.frac_degivrage, Q_integre=e.Q_integre,
+            P_integre=P_integre, COP_integre=e.COP_integre, duree_degivrage=c.duree_degivrage,
+            P_degivrage=c.P_degivrage,
+            Cd=c.Cd, PLR=self.PLR, k_cyc=k_cyc, cop_eff=cop_eff, besoin=self.besoin, statut=self.statut,
+            surchauffe=c.surchauffe, sous_refroid=c.sous_refroid, Te=e.Te, Tc=e.Tc,
+            p_asp=k["p_asp"] / 1e5, p_ref=k["p_ref"] / 1e5,
+            dT_asp=c.dT_aspiration, dT_ref=c.dT_refoulement, PR=e.PR,
+            eta_is_max=c.eta_is_max, PR_opt=c.PR_opt, f_opt=c.f_opt, f_nom=c.f_nom,
+            espace_mort=c.espace_mort, n_poly=c.n_poly, k_fuite=c.k_fuite,
+        )
 
     def statique(self) -> dict:
         """Données fixes : cloche de saturation, réglages, technologies."""
@@ -215,7 +282,8 @@ class Moteur:
         isothermes = [(t, fl.psat(t) / 1e5) for t in (-20, 0, 20, 40, 60)]
         return _json(dict(
             dome=dome, isothermes=isothermes, technologies=TECHNOLOGIES,
-            reference=TECHNO_REFERENCE, reglages=REGLAGES,
+            reference=TECHNO_REFERENCE, reglages=REGLAGES, conception=CONCEPTION_REGLABLE,
+            conception_defaut={k: float(getattr(Conception, k)) for _, k, *_ in CONCEPTION_REGLABLE},
             UA_ref=dict(int=Conception.UA_int_ref, ext=Conception.UA_ext_ref),
             k_UA_bornes=(self.K_UA_MIN, self.K_UA_MAX),
             T_ext_courbe={m: list(map(float, v)) for m, v in self.T_EXT_COURBE.items()},
