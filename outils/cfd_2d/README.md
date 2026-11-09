@@ -160,6 +160,8 @@ Durées mesurées (4 cœurs) : plaques 20 s ; faisceau de tubes ronds 28 min ; t
 - Paroi à température imposée : valable pour un tube à paroi épaisse et un propane en
   changement de phase ; à revoir pour des ailettes (conduction dans le métal).
 - Faisceaux : pas de couches de mailles aplaties contre les tubes (seulement des triangles
-  fins) ; à vérifier par une étude de convergence en maillage.
+  fins). Étude de convergence (faisceau rond, 3 maillages) : perte de charge convergée, mais
+  échange non convergé au maillage de référence (−3,8 % entre référence et fin, écart qui
+  grandit) ; incertitude sur Nu d'environ ±8 %. Voir `docs/resultats_niveau0.md`, section 4.
 - Tampon aval à mailles de 1 mm : les tourbillons y sont amortis trop vite (sans effet sur
   les mesures, prises dans le noyau et à la sortie).

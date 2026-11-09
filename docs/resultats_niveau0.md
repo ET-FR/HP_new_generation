@@ -106,6 +106,40 @@ profilées sont probablement un peu surestimées.
 
 Figure : `docs/resultat_niveau0_tube_isole.png`.
 
+## 4. Convergence en maillage (faisceau de tubes ronds)
+
+Trois maillages de même règle de construction (`maillage.py`, paramètre `finesse` 0,667 / 1 /
+1,5), rapport de raffinement linéaire ≈ 1,4 à 1,5. Méthode GCI de Celik et al. (2008),
+`outils/cfd_2d/convergence.py` (vérifiée sur l'exemple de l'article : p = 1,53, GCI 2,2 %).
+
+| Grandeur | Grossier (8 412) | Référence (17 480) | Fin (38 286) | R = e21/e32 | Verdict |
+|---|---|---|---|---|---|
+| Δp (Pa) | 4,272 | 4,396 | 4,397 | 0,01 | **convergé** : référence / fin 0,03 % |
+| Nu (Ø 6 mm) | 14,93 | 14,75 | 14,20 | 3,1 | **non convergé** : référence / fin −3,8 % |
+| T de sortie | 0,284 | 0,281 | 0,272 | 3,2 | non convergé : −3,2 % |
+| h (W/m²·K) | 64,4 | 63,6 | 61,2 | 3,1 | non convergé : −3,8 % |
+
+Durées : grossier 41 min (deux fois plus de pas de temps que la référence, à cause de petites
+mailles déformées là où les tubes touchent les bords haut et bas), référence 28 min, fin 59 min.
+
+Lecture :
+- La **perte de charge** est convergée dès le maillage de référence.
+- L'**échange** ne l'est pas : il baisse quand on raffine, et l'écart grandit (R > 1), signe
+  que la couche limite thermique contre les tubes est encore insuffisamment résolue par des
+  triangles de 0,08 mm. On n'est pas dans le domaine asymptotique : le GCI et la valeur
+  extrapolée ne sont pas utilisables pour Nu. Le maillage de référence surestime l'échange
+  d'au moins 4 %, probablement 5 à 8 % par rapport à la valeur convergée.
+- Nu reste dans la fourchette de Zukauskas sur les trois maillages ; la validation du
+  niveau 0 tient, mais la marge d'incertitude sur l'échange doit être portée à environ ±8 %.
+
+Pistes pour le niveau 1 : mailler plus finement près des parois (le maillage « fin » coûte
+environ 1 h par forme), ou ajouter des couches de quadrilatères contre les tubes (comme pour
+le tube isolé), ce qui suppose de régler le défaut rencontré là où les couches des tubes coupés
+rejoignent le raccordement haut / bas (165 faces à près de 90°).
+
+Figure : `docs/convergence_faisceau_rond.png` ; données : `docs/resultats_niveau0/convergence_faisceau_rond.json` ;
+archives : `resultats_cfd/convergence/`.
+
 ## Données conservées
 
 Le conteneur de calcul est temporaire. Chaque cas terminé est archivé dans

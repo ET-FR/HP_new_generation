@@ -6,6 +6,8 @@ Celik et al. (ASME J. Fluids Eng. 130, 2008), sur trois maillages (grossier, moy
 Pour chaque grandeur φ : rapports de raffinement r = (N_fin / N_moyen)^(1/2) en 2D, ordre
 apparent p (résolution itérative), valeur extrapolée φ_ext (Richardson), erreurs relatives et
 GCI_fin = 1,25 |(φ_fin - φ_moyen) / φ_fin| / (r_21^p - 1).
+Le GCI n'a de sens qu'en convergence monotone (0 < R < 1, R = e21 / e32) ; sinon le régime
+est signalé et l'ordre p, la valeur extrapolée et le GCI ne doivent pas être utilisés.
 
     python convergence.py cas_grossier cas_moyen cas_fin [--json sortie.json]
 (chaque dossier doit contenir cas.json et resultat.json produits par creer_cas.py / extraire.py)
@@ -28,7 +30,10 @@ def gci(phi3, phi2, phi1, N3, N2, N1, dim=2):
     r32 = (N2 / N3) ** (1 / dim)
     e21, e32 = phi2 - phi1, phi3 - phi2
     if e21 == 0 or e32 == 0:
-        return dict(p=float("nan"), monotone=False)
+        return dict(p=float("nan"), monotone=False, R=float("nan"), regime="identique")
+    R = e21 / e32                        # Celik : 0 < R < 1 convergence monotone (asymptotique)
+    regime = ("monotone" if 0 < R < 1 else "oscillante" if R < 0 else
+              "non asymptotique (l'écart grandit avec le raffinement)")
     s = math.copysign(1, e32 / e21)
     p = 2.0
     for _ in range(100):
@@ -39,7 +44,7 @@ def gci(phi3, phi2, phi1, N3, N2, N1, dim=2):
         p = p_nouv
     ext = (r21 ** p * phi1 - phi2) / (r21 ** p - 1)
     ea21 = abs((phi1 - phi2) / phi1)
-    return dict(r21=r21, r32=r32, p=p, monotone=s > 0, phi_ext=ext,
+    return dict(r21=r21, r32=r32, R=R, regime=regime, p=p, monotone=0 < R < 1, phi_ext=ext,
                 ecart_fin_moyen=ea21, ecart_fin_extrapole=abs((ext - phi1) / ext),
                 GCI_fin=1.25 * ea21 / (r21 ** p - 1),
                 GCI_moyen=1.25 * abs((phi2 - phi3) / phi2) / (r32 ** p - 1))
@@ -70,6 +75,6 @@ if __name__ == "__main__":
         print(f"{g['nom']:40s} {g['grossier']:9.4f} {g['moyen']:9.4f} {g['fin']:9.4f}  "
               f"p={g['p']:.2f}  extrapolé={g.get('phi_ext', float('nan')):9.4f}  "
               f"GCI fin={100 * g.get('GCI_fin', float('nan')):.2f} %  GCI moyen={100 * g.get('GCI_moyen', float('nan')):.2f} %"
-              f"{'' if g.get('monotone') else '  (convergence oscillante)'}")
+              f"  R={g.get('R', float('nan')):.2f} : {g.get('regime')}")
     if a.json:
         Path(a.json).write_text(json.dumps(e, indent=1, ensure_ascii=False))
