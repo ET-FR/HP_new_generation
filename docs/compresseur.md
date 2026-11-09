@@ -334,9 +334,35 @@ charger les cartes dans le simulateur (`--carte`).
 | Encombrement | hauteur ≤ 260 mm, masse ≤ 8 kg (à confirmer avec le dessin du boîtier) |
 | Données à fournir | carte EN 12900 (polynômes 10 coefficients, débit massique et puissance électrique) à au moins 3 vitesses dont 20 à 30 tr/s ; conditions de référence ; rendement du variateur recommandé |
 | Variateur | référence du variateur et de l'algorithme de commande (sans capteur, FOC) compatibles |
+| Huile (pour plus tard) | taux de circulation d'huile en fonction de la vitesse ; vitesse minimale pour garantir le retour d'huile ; besoin éventuel de cycles de retour d'huile ; vitesse minimale du gaz dans les tubes d'aspiration |
 
 La carte reçue se branche directement :
 `python simulateur.py --carte cartes/xxx.json` (voir README).
+
+## 5 bis. Huile dans le circuit (noté, non pris en compte pour le moment)
+
+Le propane qui circule contient environ 0,5 à 3 % d'huile en masse (taux de
+circulation d'huile d'un rotatif) ; l'essentiel de l'huile reste dans le
+carter. Effets connus, **volontairement ignorés dans le simulateur et dans
+les études actuelles** :
+
+* **Retour d'huile** : seule la vitesse du gaz ramène l'huile au compresseur.
+  À basse vitesse (là où le COP est le meilleur), l'huile peut rester piégée
+  dans l'évaporateur ou les tubes montants. La vitesse minimale du
+  compresseur pourrait être fixée par ce critère plutôt que par la puissance
+  minimale.
+* **Échange de chaleur** : un film d'huile dans l'évaporateur réduit
+  l'échange de quelques pourcents (jusqu'à 10 à 20 % en cas d'accumulation)
+  et augmente un peu les pertes de charge.
+* **Surchauffe** : le mélange huile et propane finit de s'évaporer à une
+  température un peu plus haute que le propane pur, ce qui fausse légèrement
+  la mesure de surchauffe.
+* **Échangeurs en gyroïde** : la géométrie complexe risque de retenir l'huile ;
+  à vérifier sur les prototypes (vitesse côté propane, orientation des
+  sorties).
+
+Seul le propane dissous dans l'huile du carter est déjà pris en compte, dans
+l'estimation de la charge (`masse_huile`, `solubilite_huile`).
 
 ## 6. Étapes suivantes
 

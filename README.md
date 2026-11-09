@@ -123,6 +123,10 @@ nécessaire pour atteindre un objectif de COP.
   constructeur (voir ci-dessous) dès qu'un compresseur R290 est sélectionné.
 * Pas encore : recirculation d'air chaud au droit de la fenêtre, bruit,
   limitation de Te en clim pour garantir la déshumidification.
+* Huile en circulation (retour d'huile à basse vitesse, film d'huile dans
+  l'évaporateur) : notée dans `docs/compresseur.md`, volontairement non
+  modélisée pour le moment. Seul le propane dissous dans le carter compte
+  dans la charge.
 
 ## Étude du compresseur
 
