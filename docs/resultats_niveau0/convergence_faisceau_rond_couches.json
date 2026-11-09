@@ -1,0 +1,77 @@
+{
+ "cellules": {
+  "grossier": 17868,
+  "moyen": 32042,
+  "fin": 56802
+ },
+ "grandeurs": {
+  "dp_Pa": {
+   "r21": 1.3314412432710383,
+   "r32": 1.3391272146022168,
+   "R": -1.9427542556118258,
+   "regime": "oscillante",
+   "p": 2.351305730071552,
+   "monotone": false,
+   "phi_ext": 4.689688895733683,
+   "ecart_fin_moyen": 0.04464251672163719,
+   "ecart_fin_extrapole": 0.044423652984166014,
+   "GCI_fin": 0.058111072342488294,
+   "GCI_moyen": 0.030462088699743615,
+   "nom": "perte de charge Δp (Pa)",
+   "grossier": 4.384273780816865,
+   "moyen": 4.281296783119788,
+   "fin": 4.481355783625913
+  },
+  "Nu_D6": {
+   "r21": 1.3314412432710383,
+   "r32": 1.3391272146022168,
+   "R": 2.3074978302594493,
+   "regime": "non asymptotique (l'écart grandit avec le raffinement)",
+   "p": 3.0253139507102476,
+   "monotone": false,
+   "phi_ext": 14.033205549732262,
+   "ecart_fin_moyen": 0.01403632754084967,
+   "ecart_fin_extrapole": 0.010294917580372097,
+   "GCI_fin": 0.012737515305219368,
+   "GCI_moyen": 0.0052834561435516035,
+   "nom": "Nu sur Ø 6 mm",
+   "grossier": 14.462920439611967,
+   "moyen": 14.376678751787665,
+   "fin": 14.177676244255176
+  },
+  "T_sortie": {
+   "r21": 1.3314412432710383,
+   "r32": 1.3391272146022168,
+   "R": 2.31486955691124,
+   "regime": "non asymptotique (l'écart grandit avec le raffinement)",
+   "p": 3.0366019776610735,
+   "monotone": false,
+   "phi_ext": 0.2693363440762472,
+   "ecart_fin_moyen": 0.011902401720810975,
+   "ecart_fin_extrapole": 0.008667312399411677,
+   "GCI_fin": 0.010741044510991659,
+   "GCI_moyen": 0.004450322061177591,
+   "nom": "température de sortie (efficacité)",
+   "grossier": 0.2763011548193435,
+   "moyen": 0.274904300907304,
+   "fin": 0.27167076631087145
+  },
+  "h": {
+   "r21": 1.3314412432710383,
+   "r32": 1.3391272146022168,
+   "R": 2.3074978302594302,
+   "regime": "non asymptotique (l'écart grandit avec le raffinement)",
+   "p": 3.0253139507102182,
+   "monotone": false,
+   "phi_ext": 60.4882411359006,
+   "ecart_fin_moyen": 0.014036327540849594,
+   "ecart_fin_extrapole": 0.010294917580372445,
+   "GCI_fin": 0.012737515305219485,
+   "GCI_moyen": 0.005283456143551695,
+   "nom": "h (W/m²·K)",
+   "grossier": 62.34046925203667,
+   "moyen": 61.968736080268016,
+   "fin": 61.11096259297639
+  }
+ }
+}

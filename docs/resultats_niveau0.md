@@ -140,6 +140,43 @@ rejoignent le raccordement haut / bas (165 faces à près de 90°).
 Figure : `docs/convergence_faisceau_rond.png` ; données : `docs/resultats_niveau0/convergence_faisceau_rond.json` ;
 archives : `resultats_cfd/convergence/`.
 
+### 4 bis. Maillage à anneaux de couches (`maillage_couches.py`)
+
+Autour de chaque tube, anneau structuré de quadrilatères (1re couche 0,01 mm, raison 1,15,
+15 couches, 0,48 mm), puis triangles ; demi-anneaux coupés net sur les bords périodiques.
+Qualité : non-orthogonalité max 27 à 33° (contre 43°), déformation max 0,5 (contre 2,1).
+Trois finesses (0,7 / 1 / 1,4) :
+
+| Grandeur | Couches grossier (17 868) | Couches moyen (32 042) | Couches fin (56 802) |
+|---|---|---|---|
+| Δp (Pa) | 4,384 | 4,281 | 4,481 |
+| Nu (Ø 6 mm) | 14,46 | 14,38 | 14,18 |
+| T de sortie | 0,276 | 0,275 | 0,272 |
+| Durée de calcul | 15 min | 37 min | 1 h 48 |
+
+Lecture :
+- **Échange** : les deux familles de maillages, construites différemment, aboutissent à la même
+  valeur sur leur maillage le plus fin (14,20 en triangles, 14,18 en couches). L'échange est
+  donc établi à **Nu ≈ 14,2 ± 0,2** (±1,5 %). Le maillage de couches moyen le surestime de
+  1,4 %, le grossier de 2 % ; le maillage de triangles de référence, lui, de 4 %.
+- **Perte de charge** : toutes les valeurs (deux familles, six maillages) sont entre 4,28 et
+  4,48 Pa, sans tendance nette (convergence « oscillante » au sens de Celik). Les écarts sont
+  du niveau des fluctuations de l'écoulement instationnaire (écart-type de Δp sur 0,1 s :
+  0,2 à 0,3 Pa) ; sur le maillage le plus fin, la moyenne bouge encore de 2 % entre les deux
+  moitiés de la fenêtre. **Δp ≈ 4,4 ± 0,1 Pa** (±2,5 %), soit −12 % par rapport aux abaques
+  de Zukauskas, dans leur incertitude.
+- Le GCI de Celik ne s'applique pas ici (régime non asymptotique ou oscillant) ; la conclusion
+  repose sur l'accord des deux familles de maillages et sur l'amplitude des écarts.
+
+**Conclusion** : avec les anneaux de couches, l'échange et la perte de charge sont connus à
+±2,5 % près dès le maillage moyen, contre ±8 % pour l'échange avec les triangles seuls. Le
+maillage de couches est retenu pour la suite ; le choix entre finesse grossière (15 min par
+cas, ±2,5 %) et moyenne (37 min, ±2 %) reste à faire pour le niveau 1.
+
+Figure : `docs/convergence_faisceau_rond.png` (les deux familles) ; données :
+`docs/resultats_niveau0/convergence_faisceau_rond_couches.json` ; archives :
+`resultats_cfd/convergence/rond_couches_*.tar.xz`.
+
 ## Données conservées
 
 Le conteneur de calcul est temporaire. Chaque cas terminé est archivé dans

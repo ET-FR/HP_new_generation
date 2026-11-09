@@ -159,9 +159,10 @@ Durées mesurées (4 cœurs) : plaques 20 s ; faisceau de tubes ronds 28 min ; t
 - Air sec, propriétés constantes : pas de condensation ni de givre.
 - Paroi à température imposée : valable pour un tube à paroi épaisse et un propane en
   changement de phase ; à revoir pour des ailettes (conduction dans le métal).
-- Faisceaux : pas de couches de mailles aplaties contre les tubes (seulement des triangles
-  fins). Étude de convergence (faisceau rond, 3 maillages) : perte de charge convergée, mais
-  échange non convergé au maillage de référence (−3,8 % entre référence et fin, écart qui
-  grandit) ; incertitude sur Nu d'environ ±8 %. Voir `docs/resultats_niveau0.md`, section 4.
+- Faisceaux, convergence en maillage (tubes ronds) : avec les triangles seuls, l'échange
+  n'est pas convergé (±8 %). Avec les anneaux de couches (`--couches`, `maillage_couches.py`),
+  échange et perte de charge sont connus à ±2,5 % (Nu ≈ 14,2, Δp ≈ 4,4 Pa) ; les écarts
+  restants sont du niveau des fluctuations de l'écoulement instationnaire. Voir
+  `docs/resultats_niveau0.md`, sections 4 et 4 bis.
 - Tampon aval à mailles de 1 mm : les tourbillons y sont amortis trop vite (sans effet sur
   les mesures, prises dans le noyau et à la sortie).
