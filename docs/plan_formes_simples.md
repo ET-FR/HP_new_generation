@@ -118,6 +118,14 @@ du critère.
 Pour ces cas seulement, quelques vitesses supplémentaires (0,5 et 2 m/s) pour vérifier
 la tendance face aux corrélations.
 
+Maillages prêts (9 novembre 2026, `outils/cfd_2d/cas_validation.py`, figure
+`docs/maillages_validation.png`) :
+- plaques : écartement 2 mm (Dh = 4 mm), longueur 200 mm, 40 × 800 quadrilatères
+  resserrés vers les parois ;
+- tube isolé : Ø 6 mm, domaine 40 Ø × 20 Ø (blocage 5 %), 20 couches de quadrilatères
+  contre la paroi (1re couche 0,01 mm, raison 1,15), sillage raffiné sur 12 Ø ;
+- faisceau de tubes ronds : cas « rond » du niveau 1 (`docs/maillages_formes_simples.png`).
+
 **Niveau 1 : forme du tube** à 1 m/s, critère d'équité de la section 2 : rond, carré,
 losange, triangle pointe face à l'air, triangle base face à l'air, ellipses 2:1 et 3:1,
 rectangle plat, goutte, lentille.
