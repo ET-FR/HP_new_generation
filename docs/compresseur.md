@@ -122,6 +122,70 @@ Lecture :
 * Le bicylindre réduit vibrations et bruit (important pour une fenêtre) au
   prix d'un peu de rendement à basse vitesse.
 
+## 4 bis. Catalogue GMCC des rotatifs (édition 2024) : données R290 inverter
+
+Source : catalogue « Rotary Compressor Product Catalog » de GMCC (pages
+« Green refrigerant compressor » et « Refrigerating capacity test condition »).
+La page produit du site gmcc-welling.com est construite en JavaScript depuis
+un autre domaine et n'a pas pu être lue dans cette session.
+
+**Conditions d'essai « SEER60 »** des compresseurs inverter du catalogue :
+
+| Condensation | Liquide | Évaporation | Aspiration | Ambiance | Vitesse | Puissance |
+|---|---|---|---|---|---|---|
+| 42,3 °C | 34,3 °C | 2,7 °C | 12,8 °C | 35 °C | 60 tr/s | variateur inclus |
+
+Ce point est très proche de notre point de chauffage 7 / 20 °C à pleine
+charge (simulateur : Te 1,8 °C, Tc 40,1 °C, PR 2,9). Taux de compression du
+point SEER60 avec R290 : 2,80.
+
+**Rotatifs R290 inverter du catalogue** (220-240 V, 50 Hz, essais SEER60).
+η_v et η global recalculés ici à partir de la puissance frigorifique et de
+la puissance absorbée (propriétés CoolProp) :
+
+| Modèle | Type | Cylindrée (cm³) | Froid (W) | Absorbé (W) | COP | η_v | η global |
+|---|---|---|---|---|---|---|---|
+| DSM165D19UDZ | monocylindre | 16,5 | 2885 | 725 | 3,98 | 0,90 | 0,665 |
+| DSM180D19UDZ | monocylindre | 17,9 | 3150 | 788 | 4,00 | 0,91 | 0,668 |
+| DSN180D54UEZ3 (en développement) | monocylindre | 18,0 | 3120 | 735 | 4,24 | 0,89 | 0,709 |
+| DSN210D54UEZ3 (en développement) | monocylindre | 21,0 | 3705 | 872 | 4,25 | 0,91 | 0,710 |
+| DTN180D32UFZ | bicylindre | 18,1 | 3180 | 785 | 4,05 | 0,90 | 0,677 |
+| DTN210D32UFZ | bicylindre | 20,9 | 3680 | 897 | 4,10 | 0,91 | 0,686 |
+| DTN210D54UEZ3 | bicylindre | 20,9 | 3675 | 882 | 4,17 | 0,90 | 0,696 |
+| DTN250D32UFZ | bicylindre | 25,0 | 4380 | 1085 | 4,04 | 0,90 | 0,675 |
+
+η global = débit × (h2s - h1) / puissance absorbée, variateur compris.
+
+Lecture :
+
+* **Le modèle générique du simulateur est validé en ordre de grandeur** :
+  aux mêmes conditions, il donne η_v 0,91 et η global 0,65 (contre 0,67 à
+  0,71 pour GMCC). Il est légèrement pessimiste, de 2 à 9 %.
+* **Le meilleur R290 du catalogue atteint η global 0,71** (nouvelle série
+  « N...D54 », en développement). C'est la valeur retenue comme « meilleur
+  de sa catégorie » plus haut, et elle suffit, avec les échangeurs
+  améliorés, pour un COP d'environ 5,5 à pleine charge.
+* **Pas de R290 inverter sous 16,5 cm³** dans ce catalogue. Le 13,3 cm³
+  R290 (DSM135V11VDZ, COP 4,39 en conditions GX) est à vitesse fixe. Les
+  cylindrées recommandées (12 à 14 cm³) sont donc à demander à GMCC ;
+  sinon, 16,5 à 18 cm³ avec une vitesse minimale aussi basse que possible
+  (12 tr/s est annoncé pour l'EDTN210D32EFZ).
+* Les données SEER60 ne sont qu'**un seul point à 60 tr/s**. Le rendement à
+  20 à 30 tr/s, qui compte le plus pour l'objectif, reste à obtenir (carte
+  EN 12900 à plusieurs vitesses).
+* Hauteurs indiquées dans le catalogue : 290 mm pour les DSM, 250 mm pour les
+  DSN, 280 mm pour les DTN.
+
+**Candidats à demander en priorité** :
+
+1. **DSN180D54UEZ3** : meilleur rendement (0,71), cylindrée la plus proche
+   du besoin, plus bas (250 mm). En développement en 2024, disponibilité à
+   vérifier.
+2. **DTN180D32UFZ** : bicylindre, donc moins de vibrations à basse vitesse
+   (important pour une fenêtre), η 0,68, disponible.
+3. **DSM165D19UDZ** : plus petite cylindrée R290 inverter du catalogue,
+   η 0,665.
+
 ## 5. Cahier des charges à envoyer aux fabricants
 
 | Critère | Exigence |
@@ -151,6 +215,8 @@ La carte reçue se branche directement :
    échangeur interne liquide / aspiration (peu utile avec R290, à vérifier).
 
 ## Sources
+
+* GMCC, Rotary Compressor Product Catalog (2024), via [hvacrcompressor.com](https://www.hvacrcompressor.com/downloadpdf/GMCC-rotary-compressor-catalogue.pdf)
 
 * [Area Cooling, GMCC EDTN210D32EFZ](https://areacooling.com/p/edtn210d32efz/)
 * [Area Cooling, GMCC DSM180D19UDZ](https://areacooling.com/p/dsm180d19udz/)
