@@ -248,6 +248,9 @@ La carte reçue se branche directement :
 
 ## 6. Étapes suivantes
 
+Bibliographie sur les pertes en fonction de la vitesse :
+[`bibliographie_compresseur.md`](bibliographie_compresseur.md).
+
 1. Demander les cartes EN 12900 de 2 ou 3 compresseurs 12 à 16 cm³ (GMCC,
    Highly, Landa).
 2. Les charger et refaire cette étude avec des données réelles.
