@@ -203,3 +203,9 @@ python simulateur.py --aero config_air/EXEMPLE_gyroide.json
 python outils/balayage_gyroide.py --debit 520 --UA 416 --dp-max 40
 python tests/test_gyroide.py
 ```
+
+## CFD 2D côté air : formes simples (`outils/cfd_2d/`)
+
+Chaîne OpenFOAM v2606 pour comprendre l'effet de la forme des tubes sur l'échange et la perte
+de charge, à charge de propane égale, et valider la CFD sur des cas connus. Entrées, sorties,
+démarche et résultats : [`outils/cfd_2d/README.md`](outils/cfd_2d/README.md).
