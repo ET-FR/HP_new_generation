@@ -10,8 +10,8 @@ des contraintes et des variables mixtes (continues et choix discrets).
 
 - Outil : **Ax** (Meta) construit sur **BoTorch** (Python, libre). Gère variables mixtes,
   multi-objectif, contraintes, multi-fidélité.
-- Fidélités : modèle analytique (`pac_fenetre/`, fraction de seconde) → CFD 2D périodique
-  grossière (OpenFOAM, ~1 min) → CFD fine ou 3D.
+- Fidélités : modèle analytique (`pac_fenetre/`, fraction de seconde) → CFD d'une cellule
+  périodique (OpenFOAM, ~7 min sur 4 cœurs, mesuré ci-dessous) → CFD fine ou batterie 3D.
 - Objectif cible : performance saisonnière de la machine dans les deux modes (chauffage 7 °C
   et -7 °C avec givre, clim 35 °C), calculée par le simulateur ; contrainte charge R290 ≤ 152 g
   et encombrement de fenêtre.
@@ -41,6 +41,54 @@ des contraintes et des variables mixtes (continues et choix discrets).
 - Multi-fidélité bayésienne sur un brûleur en CFD : -57 % de temps de calcul ; 313 → 122 h CPU
   en multi-objectif (arXiv 2511.23140).
 - Multi-objectif bayésien vs NSGA-II (autres domaines) : 100 à 200 évaluations contre des milliers.
+
+## Étape 1 : base initiale de simulations
+
+Décidé le 9 novembre 2026 : avant l'optimisation bayésienne, constituer une base tirée au
+hasard (hypercube latin). Elle sert de fidélité « moyenne » pour la multi-fidélité, à recaler
+le modèle analytique, à comprendre l'influence de chaque paramètre, et de premier noyau pour
+un futur modèle génératif.
+
+### Coût mesuré d'un cas (9 novembre 2026)
+
+Cas `outils/cfd_tpms` : gyroïde, Dh 4 mm, porosité 0,6, profondeur 24 mm, Re 200 (laminaire),
+finesse 8, raffinement 2, 3 000 itérations. Conteneur cloud 4 cœurs, OpenFOAM v1912 (Ubuntu).
+
+| Étape | Durée |
+|---|---|
+| blockMesh + snappyHexMesh (136 000 cellules) | 55 s |
+| simpleFoam, 4 cœurs, 3 000 itérations (0,12 s / itération) | 6 min 14 s |
+| **Total par cas** | **≈ 7,5 min** |
+
+Coupe du maillage : `docs/coupe_cfd_gyroide.png`. Réserves : fonctions de mesure retirées
+(défaut de la v1912 Ubuntu, pas du code) ; durée à recontrôler en v2412 ; les cas turbulents
+(k-ω SST, Re > 300) coûteront environ 30 % de plus (deux équations de plus).
+
+Ordres de grandeur pour 400 cas : ≈ 50 h sur 4 cœurs ; ≈ 25 h sur 8 cœurs (2 cas × 4 cœurs) ;
+≈ 3 à 4 h sur une machine cloud de 64 cœurs.
+
+### Contenu proposé (à valider)
+
+| Variable | Plage |
+|---|---|
+| Surface | gyroïde, Diamond, FKS, I-WP, Primitive |
+| Porosité côté air | 0,5 à 0,8 |
+| Dh air | 2 à 6 mm |
+| Profondeur du noyau | 12 à 36 mm |
+| Re | 100 à 1 600 |
+
+Environ 300 à 500 cas, tirés par hypercube latin dans chaque famille de surface.
+Sorties : j, f, h, Δp, plus la fluctuation (écoulement oscillant au-delà de Re ≈ 150).
+
+### Vérifications avant de lancer la base
+
+1. Convergence en maillage (finesse, raffinement) à Re bas et haut.
+2. Couches limites (`addLayers`, aujourd'hui désactivé) pour les cas k-ω SST à Re élevé.
+3. Résidus : ils plafonnent vers 4e-3 (écoulement oscillant, valeurs moyennées sur le dernier
+   quart). Tester si 1 000 à 1 500 itérations donnent les mêmes j et f : jusqu'à 2 à 3 fois
+   moins de calcul.
+4. Format de stockage réutilisable (paramètres + résultats + métadonnées de maillage), pour
+   l'optimisation bayésienne puis un éventuel modèle génératif.
 
 ## Prochaine étape
 
