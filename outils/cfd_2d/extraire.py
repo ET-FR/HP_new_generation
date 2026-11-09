@@ -49,6 +49,17 @@ def moyenne(a: np.ndarray, t0: float, col=1):
     return moy, sd / abs(moy) if moy else 0.0
 
 
+def stabilite(a: np.ndarray, t0: float, col=1) -> float:
+    """Écart relatif entre la moyenne de la 1re et de la 2e moitié de la fenêtre de moyenne.
+    Moins de 1 % : durée simulée suffisante ; sinon prolonger le calcul (reprise possible)."""
+    m = a[:, 0] >= t0
+    t = a[m, 0]
+    tm = 0.5 * (t[0] + t[-1])
+    m1, _ = moyenne(a[(a[:, 0] >= t0) & (a[:, 0] < tm)], t0, col)
+    m2, _ = moyenne(a[a[:, 0] >= tm], tm, col)
+    return abs(m2 - m1) / abs(0.5 * (m1 + m2)) if (m1 + m2) else 0.0
+
+
 def k_air(air):
     return air["rho"] * air["cp"] * air["nu"] / air["Pr"]
 
@@ -73,6 +84,10 @@ def batterie(cas: Path, m: dict) -> dict:
     T_out, sd_T = moyenne(serie(cas, "TSortie"), t0)
     Qv, _ = moyenne(serie(cas, "debit"), t0)
     flux, sd_f = moyenne(serie(cas, "fluxParoi"), t0)
+    pin_s, pout_s = serie(cas, "pEntree"), serie(cas, "pSortie")
+    dp_s = np.c_[pin_s[:, 0], pin_s[:, 1] - np.interp(pin_s[:, 0], pout_s[:, 0], pout_s[:, 1])]
+    stab = dict(dp=stabilite(dp_s, t0), T_sortie=stabilite(serie(cas, "TSortie"), t0),
+                flux_paroi=stabilite(serie(cas, "fluxParoi"), t0))
     Qv = abs(Qv)                                   # m³/s par épaisseur dz (flux entrant)
     dp = (p_in - p_out) * air["rho"]
     mcp = air["rho"] * Qv * air["cp"]
@@ -95,7 +110,8 @@ def batterie(cas: Path, m: dict) -> dict:
              dp_Pa=dp, fluct_p=sd_pi, T_sortie=T_out, fluct_T=sd_T, NTU=NTU, h=h, Nu_D6=Nu_D, j=j, f_par_rang=f_rang, j_sur_f=j / f_rang,
              Q_W_par_K=Q_bilan, ecart_bilan=(Q_paroi - Q_bilan) / Q_bilan, fluct_flux=sd_f,
              P_vent_sur_Q=P_vent / Q_bilan, profondeur_mm=(m["x_noyau"][1] - m["x_noyau"][0]) * 1e3,
-             A_air=A_air)
+             A_air=A_air, stabilite_moyenne=stab,
+             duree_suffisante=max(stab.values()) < 0.01)
     if m.get("forme") == "rond":
         r["zukauskas"] = zukauskas(Re_max, air["Pr"], m["Pt"] / m["Pl"], m["rangs"])
     return r
@@ -124,6 +140,7 @@ def tube_isole(cas: Path, m: dict) -> dict:
     f_tourb = float(fr[1:][np.argmax(sp[1:])])
     St = f_tourb * D / U
     flux, sd_f = moyenne(serie(cas, "fluxParoi"), t0)
+    stab = dict(Cd=stabilite(c, t0, iCd), Nu=stabilite(serie(cas, "fluxParoi"), t0))
     Nu = abs(flux) / (math.pi * dz)               # Nu = ∫grad(T)·n dA / (π dz), ΔT = 1
     Re, Pr = U * D / air["nu"], air["Pr"]
     hilpert = 0.683 * Re ** 0.466 * Pr ** (1 / 3)
@@ -132,7 +149,8 @@ def tube_isole(cas: Path, m: dict) -> dict:
     roshko = 0.212 * (1 - 12.7 / Re)
     return dict(cas=cas.name, Re=Re, Cd=Cd, Cl_eff=Cl_eff, f_Hz=f_tourb, St=St, St_Roshko=roshko,
                 Nu=Nu, fluct_Nu=sd_f, Nu_Hilpert=hilpert, Nu_Churchill_Bernstein=cb,
-                periodes_moyennees=(t[-1] - t[0]) * f_tourb)
+                periodes_moyennees=(t[-1] - t[0]) * f_tourb, stabilite_moyenne=stab,
+                duree_suffisante=max(stab.values()) < 0.01)
 
 
 # ------------------------------------------------------------------ plaques
