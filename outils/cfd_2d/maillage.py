@@ -16,6 +16,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from geometrie import FORMES, batterie  # noqa: E402
+from export_gmsh import extraire  # noqa: E402
 
 TAILLE_PAROI = 0.08   # mm, taille des mailles contre la paroi
 TAILLE_LOIN = 0.6     # mm, dans le noyau loin des parois
@@ -23,7 +24,7 @@ TAILLE_TAMPON = 1.0   # mm, dans les tampons amont / aval
 DIST_TRANSITION = 2.0  # mm, distance sur laquelle la maille grossit
 
 
-def mailler(forme: str, sortie: str | None = None, voir=False, **kw):
+def mailler(forme: str, sortie: str | None = None, voir=False, avec_bords=False, **kw):
     b = batterie(forme, **kw)
     gmsh.initialize()
     gmsh.option.setNumber("General.Terminal", 0)
@@ -76,17 +77,13 @@ def mailler(forme: str, sortie: str | None = None, voir=False, **kw):
     gmsh.option.setNumber("Mesh.Algorithm", 6)
     gmsh.model.mesh.generate(2)
 
-    _, noeuds, _ = gmsh.model.mesh.getNodes()
-    xyz = noeuds.reshape(-1, 3)
-    tags, _, _ = gmsh.model.mesh.getNodes()
-    idx = {t: i for i, t in enumerate(tags)}
-    _, _, conn = gmsh.model.mesh.getElements(2)
-    tri = np.array([idx[n] for n in conn[0]]).reshape(-1, 3)
+    xy, cellules, bords = extraire()
+    tri = np.array(cellules)
     if sortie:
         Path(sortie).parent.mkdir(parents=True, exist_ok=True)
         gmsh.write(sortie)
     gmsh.finalize()
-    return b, xyz[:, :2], tri
+    return (b, xy, tri, bords) if avec_bords else (b, xy, tri)
 
 
 if __name__ == "__main__":

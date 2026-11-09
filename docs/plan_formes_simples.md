@@ -136,7 +136,23 @@ transversal et longitudinal, nombre de rangs (1, 2, 4, 8).
 **Plus tard** : ailettes (plate, ondulée, persiennée, décalée, picots, en 3D), puis TPMS
 avec orientation de la cellule, sous les mêmes règles.
 
-## 7. À construire
+## 7. Calcul
+
+Décidé le 9 novembre 2026 : niveaux 0 et 1 calculés dans le conteneur cloud de la session
+(4 cœurs), avec **OpenFOAM v2606** compilé depuis les sources
+(`outils/openfoam/installer_v2606.sh`, 2 à 3 h). AWS envisagé plus tard pour la 3D et
+l'optimisation bayésienne. Résultats (tableaux, figures, paramètres) poussés au fil de l'eau ;
+champs bruts hors dépôt (recalculables).
+
+Chaîne : `outils/cfd_2d/` — `geometrie.py` (formes, critère d'équité), `maillage.py` et
+`cas_validation.py` (gmsh), `polymesh.py` (maillage OpenFOAM extrudé d'une maille, raccordement
+cyclique haut / bas), `creer_cas.py` (cas complet : conditions aux limites, solveur, mesures).
+
+Durées physiques simulées (instationnaire) : traversée du domaine + environ 25 périodes de
+lâcher de tourbillons, moyenne temporelle après la phase de démarrage. Tube isolé : 0,99 s
+(moyenne à partir de 0,39 s) ; batterie de tubes ronds : 0,63 s (moyenne à partir de 0,25 s).
+
+## 8. À construire
 
 - Chaîne 2D paramétrée : forme quelconque (contour intérieur + paroi), dimensionnement
   automatique selon la section 2, maillage, cas OpenFOAM, extraction, campagne avec reprise.
@@ -148,7 +164,7 @@ Ordre de grandeur : niveaux 0 à 2, environ 60 à 120 cas 2D, de quelques second
 quelques minutes chacun en stationnaire, nettement plus en instationnaire (à mesurer sur
 le cas de référence).
 
-## 8. Points validés et restant ouverts
+## 9. Points validés et restant ouverts
 
 Validés le 9 novembre 2026 : paroi de 1 mm, batterie de référence, liste des formes du
 niveau 1 (provisoire).

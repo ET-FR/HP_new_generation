@@ -22,29 +22,28 @@ import math
 from pathlib import Path
 
 import gmsh
+import sys
+
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from export_gmsh import extraire  # noqa: E402
 
 ECART = 2.0          # mm, écartement des plaques
 L_PLAQUE = 200.0     # mm
 D_TUBE = 6.0         # mm
 
 
-def _resultat(sortie):
-    tags, xyz, _ = gmsh.model.mesh.getNodes()
-    idx = {t: i for i, t in enumerate(tags)}
-    elems = []
-    types, _, conn = gmsh.model.mesh.getElements(2)
-    for t, c in zip(types, conn):
-        n = {2: 3, 3: 4}[t]
-        elems += [[idx[k] for k in c[i:i + n]] for i in range(0, len(c), n)]
+def _resultat(sortie, avec_bords=False):
+    xy, elems, bords = extraire()
     if sortie:
         Path(sortie).parent.mkdir(parents=True, exist_ok=True)
         gmsh.write(sortie)
     gmsh.finalize()
-    return xyz.reshape(-1, 3)[:, :2], elems
+    return (xy, elems, bords) if avec_bords else (xy, elems)
 
 
-def maillage_plaques(sortie=None, n_travers=40, n_long=800, resserrement=0.08):
+def maillage_plaques(sortie=None, n_travers=40, n_long=800, resserrement=0.08, avec_bords=False):
     """Maillage structuré en quadrilatères, resserré vers les deux parois."""
     gmsh.initialize(); gmsh.option.setNumber("General.Terminal", 0)
     gmsh.model.add("plaques")
@@ -62,11 +61,11 @@ def maillage_plaques(sortie=None, n_travers=40, n_long=800, resserrement=0.08):
         gmsh.model.setPhysicalName(1, gmsh.model.addPhysicalGroup(1, cs), nom)
     gmsh.model.setPhysicalName(2, gmsh.model.addPhysicalGroup(2, [s]), "air")
     gmsh.model.mesh.generate(2)
-    return _resultat(sortie)
+    return _resultat(sortie, avec_bords)
 
 
 def maillage_tube_isole(sortie=None, premiere_couche=0.01, n_couches=20, raison=1.15,
-                        taille_paroi=0.06, taille_sillage=0.25, taille_loin=2.0):
+                        taille_paroi=0.06, taille_sillage=0.25, taille_loin=2.0, avec_bords=False):
     """Couches de quadrilatères contre la paroi, sillage raffiné, triangles ailleurs."""
     D = D_TUBE
     x0, x1, h = -10 * D, 30 * D, 20 * D
@@ -111,7 +110,7 @@ def maillage_tube_isole(sortie=None, premiere_couche=0.01, n_couches=20, raison=
         gmsh.option.setNumber(f"Mesh.{o}", 0)
     gmsh.option.setNumber("Mesh.Algorithm", 6)
     gmsh.model.mesh.generate(2)
-    return _resultat(sortie)
+    return _resultat(sortie, avec_bords)
 
 
 if __name__ == "__main__":
