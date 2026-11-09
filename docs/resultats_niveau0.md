@@ -15,11 +15,15 @@ passif (entrée 0, paroi 1), écoulement laminaire.
 | Plaques parallèles | Nu (échange établi) | 7,529 | 7,541 (exact) | −0,2 % | validé |
 | Faisceau de tubes ronds | Nu sur Ø 6 mm | 14,75 | Zukauskas : 11,25 à 15,54 | dans la fourchette, −5 % de la loi faisceau | validé |
 | Faisceau de tubes ronds | bilan d'énergie air / paroi | 0,07 % | 0 | | validé |
-| Tube isolé | Cd, Strouhal, Nu | en cours | Hilpert, Churchill-Bernstein, Roshko | | en cours |
+| Tube isolé | Nu | 10,72 | Hilpert 9,89 ; Churchill-Bernstein 10,09 | +8 % ; +6 % | validé |
+| Tube isolé | Strouhal (fréquence des tourbillons) | 0,220 (36,7 Hz) | Roshko 0,205 | +7 % | validé |
+| Tube isolé | Cd (traînée) | 1,45 | essais ≈ 1,1 à 1,2 | surestimé, attendu en 2D | cohérent |
 
-Conclusion à ce stade : la chaîne (géométrie, maillage gmsh, conversion OpenFOAM, conditions
+Conclusion : la chaîne (géométrie, maillage gmsh, conversion OpenFOAM, conditions
 aux limites, solveurs, mesures) reproduit la solution exacte d'un écoulement laminaire établi
-et la corrélation de référence d'un faisceau de tubes. Elle peut servir au niveau 1.
+et les corrélations de référence d'un faisceau de tubes et d'un tube isolé (échange et
+fréquence des tourbillons à moins de 10 %, dans l'incertitude des corrélations). Elle peut
+servir au niveau 1. Reste à comparer la perte de charge du faisceau à une corrélation publiée.
 
 ## 1. Plaques parallèles (ailette plate idéale)
 
@@ -68,7 +72,28 @@ Figure : `docs/resultat_niveau0_faisceau_rond.png`.
 
 ## 3. Tube rond isolé
 
-En cours (pimpleFoam, 0,99 s simulées, environ 2 h 30 de calcul).
+Tube Ø 6 mm seul, domaine 40 Ø × 20 Ø (blocage 5 %), Re = 396, instationnaire (pimpleFoam),
+86 929 mailles dont 20 couches de quadrilatères contre la paroi. 0,99 s simulées, moyenne sur
+les 0,60 dernières secondes (22 périodes), 1 h 38 de calcul.
+
+| Grandeur | CFD | Référence | Écart |
+|---|---|---|---|
+| Nu moyen | 10,72 | Hilpert 9,89 ; Churchill-Bernstein 10,09 | +8 % ; +6 % |
+| Strouhal | 0,220 (36,7 Hz) | Roshko 0,205 | +7 % |
+| Cd moyen | 1,45 | essais ≈ 1,1 à 1,2 | surestimé |
+| Cl efficace | 0,78 | | |
+| Stabilité de la moyenne | Cd 0,07 % ; Nu 0,02 % | | |
+
+Lecture : allée de tourbillons de Bénard-von Kármán régulière (un seul pic de fréquence),
+zone de recirculation derrière le tube, chaleur emportée par paquets dans les tourbillons.
+L'échange et la fréquence sont à moins de 10 % des corrélations, dans leur incertitude. La
+traînée est surestimée, comme toujours en 2D au-delà de Re ≈ 190 : le sillage réel devient
+tridimensionnel et moins organisé, ce qu'un calcul 2D ne peut pas représenter ; le blocage de
+5 % y contribue un peu. Conséquence pour la suite : les comparaisons **entre formes** en 2D
+restent valables, mais les valeurs absolues de traînée et de perte de charge des formes non
+profilées sont probablement un peu surestimées.
+
+Figure : `docs/resultat_niveau0_tube_isole.png`.
 
 ## Données conservées
 

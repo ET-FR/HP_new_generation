@@ -26,7 +26,7 @@ on étudie des formes simples pour :
 
 | Niveau | Contenu | État |
 |---|---|---|
-| 0 | Validation : plaques parallèles (solution exacte), faisceau de tubes ronds (Zukauskas), tube isolé (Hilpert, Roshko) | plaques et faisceau validés, tube isolé en cours |
+| 0 | Validation : plaques parallèles (solution exacte), faisceau de tubes ronds (Zukauskas), tube isolé (Hilpert, Roshko) | terminé, validé (perte de charge du faisceau encore à comparer) |
 | 1 | Comparaison de 10 formes de tubes à charge de propane égale | maillages prêts |
 | 2 | Agencement (aligné / quinconce, pas, nombre de rangs) avec les meilleures formes | à faire |
 | plus tard | Ailettes (3D), puis surfaces TPMS | hors de ce dossier |
@@ -106,7 +106,9 @@ résultats sont fiables) :
 | Faisceau de tubes ronds | Nu (Ø 6 mm) | 14,75 | Zukauskas 11,25 à 15,54 (±15 à 25 %) | dans la fourchette |
 | Faisceau de tubes ronds | Δp (4 rangs) | 4,40 Pa | non encore comparée | à faire |
 | Faisceau de tubes ronds | bilan d'énergie | 0,07 % | | |
-| Tube isolé | Cd, St, Nu | en cours | Hilpert, Churchill-Bernstein, Roshko | |
+| Tube isolé | Nu | 10,72 | Hilpert 9,89 ; Churchill-Bernstein 10,09 | +8 % ; +6 % |
+| Tube isolé | Strouhal | 0,220 | Roshko 0,205 | +7 % |
+| Tube isolé | Cd | 1,45 | essais ≈ 1,1 à 1,2 | surestimé (2D) |
 
 Détails, figures et interprétation : `docs/resultats_niveau0.md`.
 
@@ -147,8 +149,8 @@ python outils/cfd_2d/archiver.py cas/rond resultats_cfd/niveau1/rond.tar.xz
 
 Cas disponibles : `--cas plaques`, `--cas tube_isole`, `--cas batterie --forme <forme>`.
 
-Durées mesurées (4 cœurs) : plaques 17 s ; faisceau de tubes ronds 28 min ; tube isolé
-environ 2 h 30.
+Durées mesurées (4 cœurs) : plaques 20 s ; faisceau de tubes ronds 28 min ; tube isolé
+1 h 38.
 
 ## 8. Limites connues
 

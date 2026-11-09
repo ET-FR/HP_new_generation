@@ -1,0 +1,43 @@
+{
+ "parametres": {
+  "cas": "tube_isole",
+  "U": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 1.0,
+  "nproc": 4,
+  "D": 0.006,
+  "Re": 395.77836411609496,
+  "instationnaire": true,
+  "fin": 0.99,
+  "debut_moyenne": 0.39,
+  "maillage": {
+   "cellules": 86929,
+   "faces": 307739,
+   "internes": 133206
+  }
+ },
+ "resultats": {
+  "cas": "tube_isole",
+  "Re": 395.77836411609496,
+  "Cd": 1.4468432306575245,
+  "Cl_eff": 0.7836752100594723,
+  "f_Hz": 36.66463586612008,
+  "St": 0.21998781519672048,
+  "St_Roshko": 0.20519720266666666,
+  "Nu": 10.717846743622271,
+  "fluct_Nu": 0.011722734089502392,
+  "Nu_Hilpert": 9.891287110238574,
+  "Nu_Churchill_Bernstein": 10.089305045830516,
+  "periodes_moyennees": 21.998657226556464,
+  "stabilite_moyenne": {
+   "Cd": 0.0007478812611376791,
+   "Nu": 0.00017700480300624104
+  },
+  "duree_suffisante": true
+ }
+}
