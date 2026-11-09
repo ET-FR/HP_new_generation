@@ -114,6 +114,14 @@ def batterie(cas: Path, m: dict) -> dict:
              duree_suffisante=max(stab.values()) < 0.01)
     if m.get("forme") == "rond":
         r["zukauskas"] = zukauskas(Re_max, air["Pr"], m["Pt"] / m["Pl"], m["rangs"])
+        try:   # perte de charge : abaques de Zukauskas (1972) numérisés par la bibliothèque ht
+            from ht.conv_tube_bank import dP_Zukauskas
+            dpz = dP_Zukauskas(Re=Re_max, n=m["rangs"], ST=m["Pt"], SL=m["Pl"], D=D,
+                               rho=air["rho"], Vmax=Umax)
+            r["zukauskas"].update(dp_Pa=dpz, f_par_rang=dpz / (m["rangs"] * 0.5 * air["rho"] * Umax ** 2),
+                                  ecart_dp=dp / dpz - 1)
+        except ImportError:
+            pass
     return r
 
 

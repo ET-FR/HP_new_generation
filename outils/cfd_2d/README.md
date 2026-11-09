@@ -26,7 +26,7 @@ on étudie des formes simples pour :
 
 | Niveau | Contenu | État |
 |---|---|---|
-| 0 | Validation : plaques parallèles (solution exacte), faisceau de tubes ronds (Zukauskas), tube isolé (Hilpert, Roshko) | terminé, validé (perte de charge du faisceau encore à comparer) |
+| 0 | Validation : plaques parallèles (solution exacte), faisceau de tubes ronds (Zukauskas), tube isolé (Hilpert, Roshko) | terminé, validé |
 | 1 | Comparaison de 10 formes de tubes à charge de propane égale | maillages prêts |
 | 2 | Agencement (aligné / quinconce, pas, nombre de rangs) avec les meilleures formes | à faire |
 | plus tard | Ailettes (3D), puis surfaces TPMS | hors de ce dossier |
@@ -104,7 +104,7 @@ résultats sont fiables) :
 | Plaques parallèles | f·Re | 23,93 | 24 (exact) | −0,3 % |
 | Plaques parallèles | Nu | 7,529 | 7,541 (exact) | −0,2 % |
 | Faisceau de tubes ronds | Nu (Ø 6 mm) | 14,75 | Zukauskas 11,25 à 15,54 (±15 à 25 %) | dans la fourchette |
-| Faisceau de tubes ronds | Δp (4 rangs) | 4,40 Pa | non encore comparée | à faire |
+| Faisceau de tubes ronds | Δp (4 rangs) | 4,40 Pa | Zukauskas (abaques, bibliothèque `ht`) 5,02 Pa | −12 % |
 | Faisceau de tubes ronds | bilan d'énergie | 0,07 % | | |
 | Tube isolé | Nu | 10,72 | Hilpert 9,89 ; Churchill-Bernstein 10,09 | +8 % ; +6 % |
 | Tube isolé | Strouhal | 0,220 | Roshko 0,205 | +7 % |

@@ -14,6 +14,7 @@ passif (entrée 0, paroi 1), écoulement laminaire.
 | Plaques parallèles | f·Re (frottement établi) | 23,93 | 24 (exact) | −0,3 % | validé |
 | Plaques parallèles | Nu (échange établi) | 7,529 | 7,541 (exact) | −0,2 % | validé |
 | Faisceau de tubes ronds | Nu sur Ø 6 mm | 14,75 | Zukauskas : 11,25 à 15,54 | dans la fourchette, −5 % de la loi faisceau | validé |
+| Faisceau de tubes ronds | perte de charge (4 rangs) | 4,40 Pa | Zukauskas (abaques) : 5,02 Pa | −12 % | cohérent (incertitude des abaques ±15 à 25 %) |
 | Faisceau de tubes ronds | bilan d'énergie air / paroi | 0,07 % | 0 | | validé |
 | Tube isolé | Nu | 10,72 | Hilpert 9,89 ; Churchill-Bernstein 10,09 | +8 % ; +6 % | validé |
 | Tube isolé | Strouhal (fréquence des tourbillons) | 0,220 (36,7 Hz) | Roshko 0,205 | +7 % | validé |
@@ -23,7 +24,7 @@ Conclusion : la chaîne (géométrie, maillage gmsh, conversion OpenFOAM, condit
 aux limites, solveurs, mesures) reproduit la solution exacte d'un écoulement laminaire établi
 et les corrélations de référence d'un faisceau de tubes et d'un tube isolé (échange et
 fréquence des tourbillons à moins de 10 %, dans l'incertitude des corrélations). Elle peut
-servir au niveau 1. Reste à comparer la perte de charge du faisceau à une corrélation publiée.
+servir au niveau 1.
 
 ## 1. Plaques parallèles (ailette plate idéale)
 
@@ -49,7 +50,7 @@ simulées dont 0,38 s moyennées (environ 25 périodes de lâcher de tourbillons
 | Grandeur | Valeur |
 |---|---|
 | Perte de charge (4 rangs) | 4,40 Pa |
-| Facteur de frottement par rang (Zukauskas) | 0,456 |
+| Facteur de frottement par rang (définition de Zukauskas) | 0,456 |
 | Température de mélange en sortie (efficacité) | 0,281 (28,1 %) |
 | NTU | 0,330 |
 | Coefficient d'échange h | 63,6 W/m²·K |
@@ -62,6 +63,16 @@ Zukauskas, 4 rangs (C2 = 0,89) : 11,25 avec la loi « cylindre isolé » qu'il r
 100 < Re < 1 000, 15,54 avec la loi des faisceaux 1 000 < Re < 2·10⁵ prolongée. Re_max = 792
 est proche de la frontière ; la CFD (14,75) est dans la fourchette, plus proche de la loi des
 faisceaux, ce qui est cohérent avec un faisceau serré.
+
+Perte de charge comparée à Zukauskas (Advances in Heat Transfer, vol. 8, 1972), méthode
+Δp = N_L · χ · f · ρ·V_max²/2 avec f et χ lus sur les abaques, numérisés par la bibliothèque
+libre `ht` (fonction `dP_Zukauskas`, Caleb Bell ; mêmes abaques qu'Incropera, fig. 7.14) :
+f = 0,521 par rang et Δp = 5,02 Pa, contre f = 0,456 et Δp = 4,40 Pa en CFD (−12 %).
+L'écart est dans l'incertitude des abaques (lecture graphique, essais sur des faisceaux de
+nombreux rangs, en soufflerie avec turbulence résiduelle) ; un calcul 2D laminaire, sans
+turbulence amont ni effets 3D, donne attendu une perte de charge un peu plus faible.
+Corrélation de Gaddis-Gnielinski (VDI Heat Atlas) non utilisée : formules non accessibles
+depuis la session ; à ajouter si l'on dispose de l'ouvrage.
 
 Observations : jets entre les tubes jusqu'à 3 m/s, sillages lents derrière chaque tube,
 lâcher de tourbillons surtout après le dernier rang. Les mailles du tampon aval (1 mm)
