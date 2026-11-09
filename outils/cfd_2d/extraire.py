@@ -25,15 +25,19 @@ import numpy as np
 
 # ------------------------------------------------------------------ lecture des séries
 def serie(cas: Path, nom: str, fichier: str = "surfaceFieldValue.dat") -> np.ndarray:
-    """Concatène postProcessing/<nom>/<t>/<fichier> (reprises comprises), trié en temps."""
+    """Concatène postProcessing/<nom>/<t>/<fichier> et ses variantes de reprise (<fichier>_0.dat,
+    ...), triées par date ; pour un même instant, la valeur la plus récente l'emporte."""
+    base = fichier[:-4] if fichier.endswith(".dat") else fichier
+    fichiers = sorted((cas / "postProcessing" / nom).glob(f"*/{base}*.dat"), key=lambda p: p.stat().st_mtime)
     blocs = []
-    for f in sorted((cas / "postProcessing" / nom).glob(f"*/{fichier}"), key=lambda p: float(p.parent.name)):
+    for f in fichiers:
         lignes = [l.split() for l in f.read_text().splitlines() if l.strip() and not l.startswith("#")]
-        blocs.append(np.array([[float(x.strip("()")) for x in l] for l in lignes]))
+        if lignes:
+            blocs.append(np.array([[float(x.strip("()")) for x in l] for l in lignes]))
     if not blocs:
         raise FileNotFoundError(f"{cas}/postProcessing/{nom}")
-    a = np.vstack(blocs)
-    _, i = np.unique(a[:, 0], return_index=True)
+    a = np.vstack(blocs)[::-1]                      # le plus récent d'abord
+    _, i = np.unique(a[:, 0], return_index=True)    # première occurrence = la plus récente
     return a[i]
 
 
@@ -131,7 +135,7 @@ def tube_isole(cas: Path, m: dict) -> dict:
     dz = m["epaisseur_mm"] * 1e-3
     c = serie(cas, "efforts", "coefficient.dat")
     entetes = None
-    for f in (cas / "postProcessing" / "efforts").glob("*/coefficient.dat"):
+    for f in (cas / "postProcessing" / "efforts").glob("*/coefficient*.dat"):
         for l in f.read_text().splitlines():
             if l.startswith("#") and "Cd" in l:
                 entetes = l.lstrip("#").split()
