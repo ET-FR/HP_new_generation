@@ -14,6 +14,49 @@ Compresseur **générique** du simulateur : les chiffres absolus seront à
 refaire avec une carte constructeur, les tendances et ordres de grandeur sont
 ce qui compte ici.
 
+## 0. Principe : rotatif et scroll
+
+![Schéma rotatif et scroll](schema_compresseurs.png)
+
+Figure générée par `python outils/figure_compresseurs.py docs/schema_compresseurs.png`
+(schéma de principe, proportions indicatives).
+
+* **Rotatif** : un rouleau monté sur un excentrique de l'arbre roule contre
+  le cylindre. La palette, poussée par un ressort, sépare la chambre
+  d'aspiration (qui grandit) de la chambre de compression (qui rétrécit). Un
+  clapet s'ouvre quand la pression de refoulement est atteinte, ce qui adapte
+  le compresseur à tout taux de compression. L'enveloppe est à haute
+  pression : le gaz refoulé traverse et refroidit le moteur.
+* **Scroll** : la spirale mobile orbite (sans tourner sur elle-même) contre
+  la spirale fixe. Les poches de gaz se forment à la périphérie et
+  rétrécissent jusqu'au centre. Le taux de compression est fixé par la
+  géométrie.
+
+## 0 bis. Ce qui réduit l'efficacité d'un compresseur rotatif
+
+| Perte | Origine | Quand elle est forte | Dans le simulateur |
+|---|---|---|---|
+| Fuites internes | jeux palette / fente, rouleau / cylindre, faces axiales : le gaz comprimé retourne vers l'aspiration | **basse vitesse** (le gaz a plus de temps pour fuir) et **taux de compression élevé** | `k_fuite` (η_v), forme de η_is(f) |
+| Échauffement à l'aspiration | le gaz aspiré se réchauffe au contact du bloc et de l'enveloppe chaude (haute pression) : densité plus faible, travail plus grand | taux de compression élevé, refoulement chaud | implicite dans η_is, η_v |
+| Pertes de charge | orifices et clapets d'aspiration et de refoulement, silencieux | **haute vitesse** (débit élevé) | forme de η_is(f), `dT_aspiration`, `dT_refoulement` |
+| Espace mort | le gaz resté dans l'orifice de refoulement se re-détend dans la chambre | taux de compression élevé | `espace_mort` (η_v) |
+| Frottements mécaniques | palette sur rouleau, paliers, cisaillement de l'huile | haute vitesse, huile froide ou trop visqueuse | inclus dans η_is |
+| Pertes moteur | cuivre (courant, donc couple : fort taux de compression), fer (haute vitesse), aimants qui s'échauffent | aux deux extrêmes de vitesse | `eta_mot_max`, `f_mot_opt` |
+| Pertes variateur | conduction et commutation des transistors | faible charge (rendement relatif plus bas) | `eta_variateur` |
+| Pertes thermiques | chaleur cédée par l'enveloppe à l'air ambiant | compresseur chaud, mal isolé | `pertes_carter` |
+| Point de fonctionnement | taux de compression ou vitesse loin de ceux pour lesquels le compresseur a été optimisé | compresseur de climatiseur (PR 3 à 3,5) utilisé à PR 2,5 | `PR_opt`, `f_opt` |
+
+Conséquences pour le projet :
+
+1. **Réduire le taux de compression** est le levier le plus fort : grands
+   échangeurs (petits pincements), pertes de charge faibles, surchauffe
+   réduite. Toutes les pertes ci-dessus diminuent avec lui.
+2. **Choisir un compresseur optimisé pour les faibles taux et les basses
+   vitesses** (séries « basse charge » ou haut rendement), puisque c'est là
+   que la machine passe le plus de temps.
+3. **Bicylindre** : vibrations plus faibles à basse vitesse, ce qui permet de
+   descendre plus bas en vitesse sans cycler.
+
 ## 1. Ce que le compresseur coûte aujourd'hui
 
 | Point | f (tr/s) | PR | η global | COP perdu par le compresseur | COP unité |
