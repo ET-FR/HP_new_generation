@@ -11,6 +11,9 @@ d'air et sur l'échange, et valider la chaîne CFD, **avant** l'optimisation bay
 | Critère d'équité entre formes | **Même charge de propane** et **même périmètre de contact air / propane**, par unité de surface frontale |
 | Vitesse frontale de l'air | **1 m/s** pour toutes les comparaisons |
 | Ailettes | **Plus tard**, après les tubes |
+| Paroi | **1 mm** d'épaisseur constante (décidé le 9 novembre 2026) |
+| Batterie de référence | validée (section 3) |
+| Formes du niveau 1 | validées pour le moment ; la liste sera complétée plus tard |
 
 ## 2. Conséquence géométrique du critère d'équité
 
@@ -38,23 +41,48 @@ Avec Dh = 4 mm, A (mm²) = P (mm) pour toutes les formes :
 | Rectangle plat 4:1 (type tube plat, un seul canal) | 10,0 × 2,5 mm | 25,00 | 0,50 |
 | Goutte d'eau, lentille (type tube UMD) | à dimensionner numériquement | | |
 
-Paroi : épaisseur constante (proposition 0,4 mm), contour extérieur = contour intérieur
-décalé de l'épaisseur (angles extérieurs arrondis au rayon de l'épaisseur). Le périmètre
-côté air est donc un peu plus grand que le périmètre côté propane ; on le reporte pour
-chaque forme.
+Paroi : épaisseur constante de **1 mm**, contour extérieur = contour intérieur décalé de
+1 mm (angles extérieurs arrondis au rayon de 1 mm). Pour une forme convexe, le périmètre
+extérieur vaut exactement P_int + 2π·e = P_int + 6,28 mm par tube.
 
-## 3. Batterie de référence (à valider)
+Conséquence : le périmètre **côté propane** (intérieur) est identique pour toutes les formes,
+mais le périmètre **côté air** (extérieur) ne l'est pas, car le nombre de tubes change. Il
+baisse jusqu'à 17 % pour le tube plat (tableau de la section 3). On garde l'égalité côté
+propane (elle découle de la charge et du Dh) et on reporte la surface côté air comme résultat.
+
+Résistance thermique de la paroi : 1 mm d'aluminium (λ ≈ 150 W/m·K) ajoute environ
+7e-6 m²·K/W, négligeable devant la résistance côté air (≈ 1e-2 m²·K/W) : la paroi à
+température imposée reste une bonne hypothèse.
+
+## 3. Batterie de référence (validée)
 
 | Paramètre | Proposition |
 |---|---|
-| Tube de référence | rond, Ø intérieur 4 mm, paroi 0,4 mm (Ø extérieur 4,8 mm) |
+| Tube de référence | rond, Ø intérieur 4 mm, paroi 1 mm (Ø extérieur 6 mm) |
 | Disposition | quinconce, triangle équilatéral |
-| Pas transversal (rond) | 2 × Ø extérieur = 9,6 mm ; pas longitudinal = 0,866 × pas transversal |
+| Pas transversal (rond) | 2 × Ø extérieur = 12 mm ; pas longitudinal = 0,866 × pas transversal = 10,4 mm |
 | Nombre de rangs | 4 |
 | Autres formes | mêmes 4 rangs et même disposition ; pas transversal multiplié par A_forme / A_rond pour garder la même section et le même périmètre totaux par unité de surface frontale |
 
 La profondeur et le volume d'encombrement changent donc d'une forme à l'autre : ce sont
 des **résultats**, comme chez Tancabel.
+
+Dimensions obtenues (mm ; enveloppe extérieure approchée, à recalculer exactement par la chaîne) :
+
+| Forme | Pas transv. | Pas long. | Largeur ext. (face à l'air) | Longueur ext. (sens de l'air) | Périmètre côté air total / rond | Profondeur 4 rangs |
+|---|---|---|---|---|---|---|
+| Rond | 12,0 | 10,4 | 6,0 | 6,0 | 1,00 | 37 |
+| Carré | 15,3 | 13,2 | 6,0 | 6,0 | 0,93 | 46 |
+| Losange | 15,3 | 13,2 | 7,7 | 7,7 | 0,93 | 47 |
+| Triangle (2 orientations) | 19,8 | 17,2 | 8,9 | 8,0 | 0,87 | 60 |
+| Ellipse 2:1 | 14,3 | 12,4 | 5,1 | 8,2 | 0,95 | 45 |
+| Ellipse 3:1 | 18,1 | 15,7 | 4,8 | 10,5 | 0,89 | 58 |
+| Rectangle plat 4:1 | 23,9 | 20,7 | 4,5 | 12,0 | 0,83 | 74 |
+
+Toutes les formes passent sans chevauchement. Les formes à gros canal (triangle, tube plat)
+sont moins nombreuses, plus espacées et donnent une batterie plus profonde : à charge égale,
+le volume d'encombrement peut presque doubler. C'est un résultat de l'étude, pas un défaut
+du critère.
 
 ## 4. Simulation
 
@@ -112,8 +140,10 @@ Ordre de grandeur : niveaux 0 à 2, environ 60 à 120 cas 2D, de quelques second
 quelques minutes chacun en stationnaire, nettement plus en instationnaire (à mesurer sur
 le cas de référence).
 
-## 8. Points à valider
+## 8. Points validés et restant ouverts
 
-1. Dh intérieur de 4 mm et paroi de 0,4 mm.
-2. Batterie de référence (quinconce, 4 rangs, pas transversal = 2 Ø extérieur).
-3. Liste des formes du niveau 1.
+Validés le 9 novembre 2026 : paroi de 1 mm, batterie de référence, liste des formes du
+niveau 1 (provisoire).
+
+Ouvert : Dh intérieur de 4 mm (conservé par défaut ; avec la paroi de 1 mm, le tube rond
+fait 6 mm de diamètre extérieur).
