@@ -315,8 +315,13 @@ def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, f
         systeme(cas, True, fin, debut, nproc, dict(U=U, lRef=D, Aref=D * EPAISSEUR_MM * 1e-3))
         allrun(cas, nproc, "pimpleFoam")
     elif cas_type == "batterie":
-        b, xy, tri, bd = mailler(forme, avec_bords=True, finesse=finesse, couches=couches)
-        meta.update(finesse=finesse, couches=couches)
+        if couches:   # anneaux structurés de quadrilatères autour des tubes (maillage_couches.py)
+            from maillage_couches import mailler_couches
+            b, xy, tri, bd = mailler_couches(forme, finesse=finesse)
+            meta.update(finesse=finesse, couches=b.couches)
+        else:
+            b, xy, tri, bd = mailler(forme, avec_bords=True, finesse=finesse)
+            meta.update(finesse=finesse, couches=False)
         roles = {"entree": "entree", "sortie": "sortie", "paroi": "paroi", "haut": "cyclic", "bas": "cyclic"}
         n = ecrire_polymesh(cas, xy, tri, bd, {"entree": "patch", "sortie": "patch", "paroi": "wall",
                                                "haut": "cyclic", "bas": "cyclic"},
