@@ -321,6 +321,33 @@ les cartes EN 12900 à 20, 30, 60 et 90 tr/s, l'enveloppe de fonctionnement,
 le plan d'encombrement, la charge d'huile et le variateur recommandé, puis
 charger les cartes dans le simulateur (`--carte`).
 
+### Options de cylindrée gardées ouvertes
+
+Petite cylindrée et haute vitesse : plus compact, moins d'huile (donc moins
+de propane dissous), puissance mini plus faible, fuites moins pénalisantes en
+charge partielle. Limites : rendement qui baisse au-delà d'environ 140 à
+160 tr/s (arXiv 2407.11080), usure, bruit, et produits R290 trouvés limités à
+120 tr/s.
+
+Vitesse nécessaire (même débit de gaz que le 15 cm³ dans le simulateur) :
+
+| Cylindrée | 3,2 kW à 7 °C | 3,5 kW à -7 °C | Mini à 12 tr/s (7 °C) |
+|---|---|---|---|
+| 8,9 cm³ | 108 tr/s | 180 tr/s | 0,43 kW |
+| 10 cm³ | 96 tr/s | 160 tr/s | 0,46 kW |
+| 12 cm³ | 80 tr/s | 134 tr/s | 0,55 kW |
+| 15 cm³ | 64 tr/s | 107 tr/s | 0,69 kW |
+
+1. **15 cm³, 12 à 120 tr/s** (EDTN150D32EFZ) : couvre tout le besoin avec des
+   produits existants. Solution de repli sûre.
+2. **10 à 12 cm³ jusqu'à 150 tr/s ou plus** : plus compact, meilleur en charge
+   partielle. Existence en R290 à demander aux fabricants.
+3. **8,9 cm³ (RDSK89D35WBZ3) limité à 120 tr/s** : environ 2,5 kW à -7 °C, avec
+   appoint électrique les jours de grand froid. Le plus compact.
+
+Décision reportée : à trancher avec les cartes constructeur et les
+contraintes d'encombrement de l'appareil complet.
+
 ## 5. Cahier des charges à envoyer aux fabricants
 
 | Critère | Exigence |
