@@ -160,7 +160,7 @@ def plaques(cas: Path, m: dict) -> dict:
     if not (cas / "VTK").exists():
         subprocess.run("foamToVTK -latestTime -fields '(U p T gradT)' > log.foamToVTK 2>&1",
                        shell=True, cwd=cas, check=True, executable="/bin/bash")
-    d = sorted((cas / "VTK").glob("*_[0-9]*"), key=lambda p: int(p.name.rsplit("_", 1)[1]))[-1]
+    d = sorted([p for p in (cas / "VTK").glob("*_[0-9]*") if p.is_dir()], key=lambda p: int(p.name.rsplit("_", 1)[1]))[-1]
     vol = pv.read(d / "internal.vtu")
     cc = vol.cell_centers().points
     U = vol.cell_data["U"][:, 0]; p = vol.cell_data["p"]; T = vol.cell_data["T"]

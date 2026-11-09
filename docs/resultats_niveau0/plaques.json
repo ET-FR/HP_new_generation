@@ -1,0 +1,36 @@
+{
+ "parametres": {
+  "cas": "plaques",
+  "U": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 1.0,
+  "nproc": 4,
+  "ecart_mm": 2.0,
+  "longueur_mm": 200.0,
+  "Dh": 0.004,
+  "Re": 263.85224274406335,
+  "instationnaire": false,
+  "maillage": {
+   "cellules": 32000,
+   "faces": 128840,
+   "internes": 63160
+  }
+ },
+ "resultats": {
+  "cas": "plaques",
+  "Re": 263.85224274406335,
+  "fRe": 23.932376908244752,
+  "fRe_exact": 24.0,
+  "Nu": 7.528750043800036,
+  "Nu_min": 7.52873809138329,
+  "Nu_max": 7.528759938413181,
+  "Nu_exact": 7.541,
+  "L_etablissement_mm": 18.124999,
+  "L_etab_theorique_mm": 52.77044854881267
+ }
+}
