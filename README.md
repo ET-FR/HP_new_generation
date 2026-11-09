@@ -4,6 +4,33 @@
 s'installe dans une fenêtre d'appartement (battant en France / UE, guillotine aux
 USA), pour une pièce de 50 m² maximum, avec du propane comme réfrigérant.
 
+## Objectif du projet
+
+| Critère | Cible |
+|---|---|
+| Fonction | PAC air/air réversible (chauffage et clim) de fenêtre |
+| Prix | 1500 € |
+| Performance | COP entre 5 et 6 |
+| Encombrement | petite taille (compatible fenêtre battant et guillotine) |
+
+Écart estimé avec le simulateur (modèle générique, chauffage 7 / 20 °C, clim 35 / 27 °C) :
+
+| Hypothèse | Chauffage 30 Hz | Chauffage 60 Hz | Clim 30 Hz | Clim 60 Hz |
+|---|---|---|---|---|
+| Valeurs par défaut (TPMS) | 4,9 | 4,2 | 4,2 | 3,6 |
+| UA x2 | 5,0 | 4,4 | 4,4 | 3,8 |
+| UA x2, η_is 0,78 | 5,4 | 4,6 | 4,8 | 4,1 |
+| UA x3, η_is 0,78 | 5,4 | 4,7 | 4,8 | 4,2 |
+| UA x2, η_is 0,78, débits d'air x1,5 | 6,0 | 5,2 | 5,7 | 4,7 |
+
+Lecture : au delà de UA x2, l'échangeur ne limite plus, c'est le débit d'air
+(donc la section frontale et l'efficacité du ventilateur) et le compresseur qui
+fixent le COP. Le COP 5 à 6 est atteignable à charge partielle (30 Hz) et
+autour de 5 à pleine charge en chauffage, à condition d'augmenter le débit
+d'air sans augmenter la puissance ventilateur dans la même proportion. C'est
+la tension principale avec la petite taille. Le COP 5 à 6 à -7 °C n'est pas
+atteignable (environ 4 au mieux).
+
 Cette première étape fournit un **simulateur physique temps réel** : on fait
 varier les charges (températures et humidités intérieure / extérieure,
 déperditions, apports) et on voit immédiatement l'effet sur le cycle et le COP.
