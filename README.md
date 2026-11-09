@@ -124,6 +124,12 @@ nécessaire pour atteindre un objectif de COP.
 * Pas encore : recirculation d'air chaud au droit de la fenêtre, bruit,
   limitation de Te en clim pour garantir la déshumidification.
 
+## Étude du compresseur
+
+Synthèse, rendements à exiger, cylindrée recommandée et cahier des charges
+fournisseur : [`docs/compresseur.md`](docs/compresseur.md)
+(`python outils/etude_compresseur.py`).
+
 ## Carte compresseur constructeur (`pac_fenetre/carte_compresseur.py`)
 
 Le compresseur générique peut être remplacé par une carte constructeur

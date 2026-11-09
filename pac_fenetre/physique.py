@@ -155,6 +155,8 @@ class Conception:
     PR_opt: float = 3.0
     pertes_carter: float = 0.07  # fraction du travail perdue vers l'ambiance
     eta_variateur: float = 0.97
+    eta_mot_max: float = 0.935   # rendement moteur BLDC au meilleur point
+    f_mot_opt: float = 70.0      # vitesse (tr/s) du meilleur rendement moteur
     T_refoul_max: float = 110.0
     # Carte constructeur (None : modèle générique ci-dessus). Voir
     # Conception.avec_carte() et pac_fenetre/carte_compresseur.py
@@ -366,7 +368,7 @@ class PompeAChaleur:
         eta_is *= 1.0 - 0.08 * ((f - c.f_opt) / c.f_opt) ** 2
         eta_is = min(max(eta_is, 0.25), 0.80)
 
-        eta_mot = 0.935 - 0.06 * ((f - 70.0) / 70.0) ** 2
+        eta_mot = c.eta_mot_max - 0.06 * ((f - c.f_mot_opt) / c.f_mot_opt) ** 2
 
         m = rho1 * c.cylindree_cm3 * 1e-6 * f * eta_v
         w = (h2s - h1) / eta_is
