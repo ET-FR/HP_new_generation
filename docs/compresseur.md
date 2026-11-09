@@ -229,6 +229,72 @@ Lecture :
 3. **DSM165D19UDZ** : plus petite cylindrée R290 inverter du catalogue,
    η 0,665.
 
+## 4 ter. Sélection du compresseur
+
+### Besoin de notre machine
+
+| Critère | Valeur visée | Origine |
+|---|---|---|
+| Puissance nominale | 3,2 kW en chauffage à 7 °C, vers 60 tr/s | simulateur |
+| Puissance mini | 0,7 kW ou moins à 7 °C | pièce de 50 m² bien isolée, éviter les arrêts et redémarrages |
+| Puissance maxi | environ 3,5 kW à -7 °C | chauffage par grand froid |
+| Cylindrée | 12 à 16 cm³ | section 3 |
+| Vitesse | 12 tr/s mini, 120 tr/s maxi | plage de modulation |
+| Type | rotatif inverter R290, bicylindre de préférence (vibrations en fenêtre) | |
+| Hauteur | la plus faible possible | petite taille |
+
+### Candidats trouvés (fiches 2024 à 2026)
+
+Sources : catalogue Highly R290 (distributeur JOAP, Danemark), gamme R290
+GMCC présentée par Area Cooling Solutions (distributeur européen, Espagne)
+à EuroShop 2026. η global recalculé avec CoolProp ; les conditions d'essai
+diffèrent entre fabricants, d'où les hypothèses indiquées.
+
+| Modèle | Fabricant | Cylindres | Cylindrée (cm³) | Vitesse (tr/s) | Hauteur (mm) | Donnée catalogue | η global estimé |
+|---|---|---|---|---|---|---|---|
+| **EDTN150D32EFZ** | GMCC | 2 | 15,0 | 12 à 120 | n.d. | 4137 W froid, COP 3,51 à 7,2 / 54,4 °C | **0,73** (hyp. surchauffe 5 K, liquide 46,1 °C) |
+| **WHP03300PRKQA6JT6** | Highly | 1 | 14,0 | n.d. (essai à 60) | **253,5** | 2680 W froid, COP 3,78 ; 3389 W chaud, COP 4,78 (ASHRAE/T, 60 tr/s) | **0,77** (hyp. conditions ASH, variateur probablement exclu) |
+| WHP03600PRKQA7JT6 | Highly | 2 | 15,0 | n.d. | 308,7 | 2749 W froid, COP 3,35 | 0,68 |
+| DSM165D19UDT | GMCC | 1 | 16,5 | 12 à 120 | 290 | 4656 W froid, COP 3,31 à 7,2 / 54,4 °C | 0,69 |
+| RDSK89D35WBZ3 | GMCC | 1 | 8,9 | 12 à 120 | n.d. | 2492 W froid, COP 3,24 à 7,2 / 54,4 °C | 0,68 |
+| WHP02000PCKQF3BU6B | Highly | 1 | 8,8 | n.d. | 247 | 2130 W chaud, COP 4,73 (ASHRAE/T) | n.d. |
+
+Les puissances GMCC à 7,2 / 54,4 °C correspondent à environ 90 tr/s
+(rendement volumétrique de 0,90 supposé) ; le catalogue ne précise pas la
+vitesse. Les COP de Highly et de GMCC ne sont donc pas directement
+comparables : seules des cartes complètes aux mêmes conditions trancheront.
+
+### Dans notre machine (simulateur, rendement générique, f de 12 à 120 tr/s)
+
+| Modèle | Mini à 7 °C, 12 tr/s | Maxi à -7 °C, 120 tr/s | 3,2 kW à 7 °C | 1,6 kW à 7 °C |
+|---|---|---|---|---|
+| RDSK89D35WBZ3 (8,9 cm³) | 0,43 kW | **2,54 kW** (insuffisant) | 102 tr/s | 48 tr/s |
+| WHP03300PRKQA6JT6 (14 cm³) | 0,65 kW | 3,67 kW | 68 tr/s | 32 tr/s |
+| EDTN150D32EFZ (15 cm³) | 0,69 kW | 3,87 kW | 64 tr/s | 30 tr/s |
+| DSM165D19UDT (16,5 cm³) | 0,75 kW | 4,17 kW | 59 tr/s | 27 tr/s |
+
+### Recommandation
+
+1. **GMCC EDTN150D32EFZ** (premier choix). Bicylindre, donc peu de vibrations
+   à basse vitesse ; série « E » dédiée au chauffage ; meilleur rendement de
+   la gamme R290 GMCC (COP 3,51 contre 3,1 à 3,3 pour les autres) ; 12 à
+   120 tr/s ; cylindrée de 15 cm³ qui couvre exactement le besoin. Fabricant
+   numéro 1 mondial, distributeur européen identifié. À vérifier : hauteur,
+   carte EN 12900 à plusieurs vitesses, rendement sous 30 tr/s.
+2. **Highly WHP03300PRKQA6JT6** (alternative, la plus compacte). 14 cm³, le
+   plus bas de tous (253,5 mm), rendement annoncé le plus élevé (à confirmer :
+   conditions d'essai et prise en compte du variateur non précisées).
+   Monocylindre : vibrations plus fortes à basse vitesse, à traiter par les
+   supports. À vérifier : plage de vitesse.
+3. **GMCC RDSK89D35WBZ3** seulement si la puissance visée descend à environ
+   2,5 kW (pièce plus petite ou mieux isolée) : il serait alors le plus
+   compact et le plus modulant (0,43 kW mini).
+
+Prochaine étape : demander à GMCC (via Area Cooling) et à Highly (via JOAP)
+les cartes EN 12900 à 20, 30, 60 et 90 tr/s, l'enveloppe de fonctionnement,
+le plan d'encombrement, la charge d'huile et le variateur recommandé, puis
+charger les cartes dans le simulateur (`--carte`).
+
 ## 5. Cahier des charges à envoyer aux fabricants
 
 | Critère | Exigence |
@@ -261,6 +327,9 @@ Bibliographie sur les pertes en fonction de la vitesse :
    échangeur interne liquide / aspiration (peu utile avec R290, à vérifier).
 
 ## Sources
+
+* [Highly, Rotary Compressors for R290 (JOAP, 2024)](https://joap.dk/wp-content/uploads/2024/01/Highly-Rotary-R290-Compressors.pdf) et [catalogue Highly 2024](https://joap.dk/wp-content/uploads/2024/09/HIGHLY-catalogue-2024.pdf)
+* [Area Cooling Solutions, gamme GMCC R290, EuroShop 2026](https://www.euroshop.de/vis-content/event-euroshop2026/exh-euroshop2026.3043818/EuroShop-2026-Area-Cooling-Solutions-S.A.U-Paper-euroshop2026.3043818-CZMvqmEFRhy2CO8ooXP9LA.pdf)
 
 * GMCC, Rotary Compressor Product Catalog (2024), via [hvacrcompressor.com](https://www.hvacrcompressor.com/downloadpdf/GMCC-rotary-compressor-catalogue.pdf)
 
