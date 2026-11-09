@@ -252,7 +252,7 @@ diffèrent entre fabricants, d'où les hypothèses indiquées.
 
 | Modèle | Fabricant | Cylindres | Cylindrée (cm³) | Vitesse (tr/s) | Hauteur (mm) | Donnée catalogue | η global estimé |
 |---|---|---|---|---|---|---|---|
-| **EDTN150D32EFZ** | GMCC | 2 | 15,0 | 12 à 120 | n.d. | 4137 W froid, COP 3,51 à 7,2 / 54,4 °C | **0,73** (hyp. surchauffe 5 K, liquide 46,1 °C) |
+| **EDTN150D32EFZ** | GMCC | 2 | 15,0 | 12 à 120 | **254** | 4137 W froid, COP 3,51 à 7,2 / 54,4 °C | **0,73** (hyp. surchauffe 5 K, liquide 46,1 °C) |
 | **WHP03300PRKQA6JT6** | Highly | 1 | 14,0 | n.d. (essai à 60) | **253,5** | 2680 W froid, COP 3,78 ; 3389 W chaud, COP 4,78 (ASHRAE/T, 60 tr/s) | **0,77** (hyp. conditions ASH, variateur probablement exclu) |
 | WHP03600PRKQA7JT6 | Highly | 2 | 15,0 | n.d. | 308,7 | 2749 W froid, COP 3,35 | 0,68 |
 | DSM165D19UDT | GMCC | 1 | 16,5 | 12 à 120 | 290 | 4656 W froid, COP 3,31 à 7,2 / 54,4 °C | 0,69 |
@@ -272,6 +272,32 @@ comparables : seules des cartes complètes aux mêmes conditions trancheront.
 | WHP03300PRKQA6JT6 (14 cm³) | 0,65 kW | 3,67 kW | 68 tr/s | 32 tr/s |
 | EDTN150D32EFZ (15 cm³) | 0,69 kW | 3,87 kW | 64 tr/s | 30 tr/s |
 | DSM165D19UDT (16,5 cm³) | 0,75 kW | 4,17 kW | 59 tr/s | 27 tr/s |
+
+### Encombrement (fiches du distributeur Area Cooling)
+
+| Modèle | Hauteur | Diamètre de l'enveloppe | Charge d'huile | Remarque |
+|---|---|---|---|---|
+| GMCC EDTN150D32EFZ | **254 mm** | **107 mm** | 300 ml | 3537 W froid / 4696 W chaud à 90 tr/s (conditions du distributeur) |
+| GMCC EDTN210D32EFZ | 280 mm | 107 mm | 250 ml | même diamètre, plus haut |
+| Highly WHP03300PRKQA6JT6 | 253,5 mm | n.d. | n.d. | |
+| GMCC RDSK89D35WBZ3 | n.d. (série K, la plus petite) | n.d. | **190 ml** | moins d'huile, donc moins de propane dissous |
+
+Ordre de grandeur : enveloppe de 107 mm de diamètre et 254 mm de haut, plus
+la bouteille séparatrice fixée sur le côté (environ 50 à 65 mm de diamètre),
+soit une emprise d'environ 170 × 110 × 260 mm et un volume d'environ 2,5 L.
+Le compresseur n'est donc pas ce qui fixe la taille de l'appareil : ce sont
+les échangeurs et les ventilateurs.
+
+Pistes pour un appareil plus plat :
+
+* **Compresseur horizontal** : la nomenclature GMCC prévoit des rotatifs
+  horizontaux (lettre H en monocylindre, Z en bicylindre), utilisés dans les
+  climatiseurs de toit pour camping-car et les unités basses. Couché, le
+  compresseur ne fait plus que 110 à 130 mm de haut. À demander à GMCC en
+  R290.
+* **Moins d'huile** : chaque 100 ml d'huile en moins retire environ 13 g de
+  propane dissous (solubilité 0,15 kg/kg), ce qui aide aussi à rester sous la
+  limite de charge de la norme.
 
 ### Recommandation
 
