@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compile OpenFOAM v2606 (ESI / openfoam.com) depuis les sources, sur Ubuntu 24.04.
-# Utilisé dans le conteneur cloud et prévu pour une machine AWS. Durée : 2 à 3 h sur 4 cœurs.
+# Utilisé dans le conteneur cloud et prévu pour une machine AWS. Durée mesurée : environ 2 h 30 sur 4 cœurs (conteneur cloud, 9 novembre 2026).
 #
 #   sudo bash outils/openfoam/installer_v2606.sh [/opt/openfoam] [nombre_de_coeurs]
 #   source /opt/openfoam/OpenFOAM-v2606/etc/bashrc
@@ -31,5 +31,5 @@ source etc/bashrc || true
 set -u
 foamSystemCheck
 export WM_NCOMPPROCS=$NP
-./Allwmake -j "$NP" -s -q -l
+./Allwmake -j "$NP" -s -l   # sans -q : chaque bibliothèque est assemblée au fil de l eau (reprise possible)
 echo "Installation terminée : source $DEST/OpenFOAM-v2606/etc/bashrc"
