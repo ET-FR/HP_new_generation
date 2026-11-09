@@ -1,7 +1,8 @@
 """Figure des maillages OpenFOAM (après conversion foamToVTK) : cellules et patchs de bord.
 
-    python figure_polymesh.py dossier_des_cas sortie.png
-(les cas plaques, tube_isole et rond doivent contenir VTK/ produit par foamToVTK -constant)
+    python figure_polymesh.py dossier_des_cas sortie.png [nom_dossier_vtk]
+(les cas plaques, tube_isole et rond doivent contenir le dossier produit par
+ foamToVTK -constant, « VTK » par défaut)
 """
 import re
 import sys
@@ -22,8 +23,11 @@ LEG = {"entree": "entrée : vitesse imposée 1 m/s, T = 0", "sortie": "sortie : 
        "haut_bas": "haut / bas : symétrie (glissement)"}
 
 
+VTK_DIR = "VTK"
+
+
 def charger(cas: Path):
-    d = next((cas / "VTK").glob("*_0"))
+    d = next((cas / VTK_DIR).glob("*_0"))
     m = pv.read(d / "internal.vtu")
     z0 = m.points[:, 2].min()
     polys, kinds = [], []
@@ -65,7 +69,7 @@ def dessiner(ax, polys, kinds, bords, xlim, ylim, lw=0.15, lwb=2.2):
 def main(base, sortie):
     base = Path(base)
     fig = plt.figure(figsize=(15, 17))
-    fig.suptitle("Maillages OpenFOAM du niveau 0 (après conversion, vus par OpenFOAM)\n"
+    fig.suptitle("Maillages OpenFOAM du niveau 0, tels que lus par OpenFOAM v2606 pour les calculs\n"
                  "bleu clair = quadrilatères (hexaèdres une fois extrudés), gris = triangles (prismes) ; "
                  "traits de couleur = patchs de bord", fontsize=12, fontweight="bold", y=0.995)
     poignees = [Line2D([], [], color=COUL[k], lw=3, label=LEG[k]) for k in ("entree", "sortie", "paroi", "haut", "haut_bas")]
@@ -101,4 +105,6 @@ def main(base, sortie):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 3:
+        VTK_DIR = sys.argv[3]
     main(sys.argv[1], sys.argv[2])
