@@ -24,7 +24,11 @@ TAILLE_TAMPON = 1.0   # mm, dans les tampons amont / aval
 DIST_TRANSITION = 2.0  # mm, distance sur laquelle la maille grossit
 
 
-def mailler(forme: str, sortie: str | None = None, voir=False, avec_bords=False, **kw):
+def mailler(forme: str, sortie: str | None = None, voir=False, avec_bords=False, finesse=1.0,
+            couches=False, **kw):
+    """finesse : divise toutes les tailles de maille (1 = maillage de référence, 1,5 = plus fin).
+    couches : ajoute des couches de quadrilatères contre les parois (1re couche 0,02 mm / finesse,
+    raison 1,2, 10 couches), comme pour le tube isolé."""
     b = batterie(forme, **kw)
     gmsh.initialize()
     gmsh.option.setNumber("General.Terminal", 0)
@@ -64,11 +68,19 @@ def mailler(forme: str, sortie: str | None = None, voir=False, avec_bords=False,
     gmsh.model.setPhysicalName(2, gmsh.model.addPhysicalGroup(2, [s for _, s in gmsh.model.getEntities(2)]), "air")
 
     f = gmsh.model.mesh.field
+    k = 1.0 / finesse
+    if couches:
+        e1, raison, n = 0.02 * k, 1.2, 10
+        cl = f.add("BoundaryLayer")
+        f.setNumbers(cl, "CurvesList", parois)
+        f.setNumber(cl, "Size", e1); f.setNumber(cl, "Ratio", raison)
+        f.setNumber(cl, "Thickness", e1 * (raison ** n - 1) / (raison - 1)); f.setNumber(cl, "Quads", 1)
+        f.setAsBoundaryLayer(cl)
     d = f.add("Distance"); f.setNumbers(d, "CurvesList", parois); f.setNumber(d, "Sampling", 400)
     t = f.add("Threshold"); f.setNumber(t, "InField", d)
-    f.setNumber(t, "SizeMin", TAILLE_PAROI); f.setNumber(t, "SizeMax", TAILLE_LOIN)
+    f.setNumber(t, "SizeMin", TAILLE_PAROI * k); f.setNumber(t, "SizeMax", TAILLE_LOIN * k)
     f.setNumber(t, "DistMin", 0.0); f.setNumber(t, "DistMax", DIST_TRANSITION)
-    bx = f.add("Box"); f.setNumber(bx, "VIn", TAILLE_LOIN); f.setNumber(bx, "VOut", TAILLE_TAMPON)
+    bx = f.add("Box"); f.setNumber(bx, "VIn", TAILLE_LOIN * k); f.setNumber(bx, "VOut", TAILLE_TAMPON * k)
     f.setNumber(bx, "XMin", b.x_noyau[0] - 3); f.setNumber(bx, "XMax", b.x_noyau[1] + 6)
     f.setNumber(bx, "YMin", -1); f.setNumber(bx, "YMax", b.Pt + 1); f.setNumber(bx, "Thickness", 4)
     m = f.add("Min"); f.setNumbers(m, "FieldsList", [t, bx]); f.setAsBackgroundMesh(m)
@@ -78,7 +90,7 @@ def mailler(forme: str, sortie: str | None = None, voir=False, avec_bords=False,
     gmsh.model.mesh.generate(2)
 
     xy, cellules, bords = extraire()
-    tri = np.array(cellules)
+    tri = np.array(cellules) if len({len(c) for c in cellules}) == 1 else cellules
     if sortie:
         Path(sortie).parent.mkdir(parents=True, exist_ok=True)
         gmsh.write(sortie)

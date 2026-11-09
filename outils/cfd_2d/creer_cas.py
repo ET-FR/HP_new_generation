@@ -288,7 +288,7 @@ checkMesh > log.checkMesh 2>&1
 
 
 # ------------------------------------------------------------------ cas
-def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None):
+def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, finesse=1.0, couches=False):
     cas = Path(dossier)
     meta = dict(cas=cas_type, U=U, air=AIR, epaisseur_mm=EPAISSEUR_MM, nproc=nproc)
     if cas_type == "plaques":
@@ -315,7 +315,8 @@ def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None):
         systeme(cas, True, fin, debut, nproc, dict(U=U, lRef=D, Aref=D * EPAISSEUR_MM * 1e-3))
         allrun(cas, nproc, "pimpleFoam")
     elif cas_type == "batterie":
-        b, xy, tri, bd = mailler(forme, avec_bords=True)
+        b, xy, tri, bd = mailler(forme, avec_bords=True, finesse=finesse, couches=couches)
+        meta.update(finesse=finesse, couches=couches)
         roles = {"entree": "entree", "sortie": "sortie", "paroi": "paroi", "haut": "cyclic", "bas": "cyclic"}
         n = ecrire_polymesh(cas, xy, tri, bd, {"entree": "patch", "sortie": "patch", "paroi": "wall",
                                                "haut": "cyclic", "bas": "cyclic"},
@@ -349,7 +350,9 @@ if __name__ == "__main__":
     ap.add_argument("--vitesse", type=float, default=1.0, help="vitesse frontale (m/s)")
     ap.add_argument("--nproc", type=int, default=4)
     ap.add_argument("--fin", type=float, default=None, help="temps final (s), instationnaire")
+    ap.add_argument("--finesse", type=float, default=1.0, help="divise les tailles de maille (batterie)")
+    ap.add_argument("--couches", action="store_true", help="couches de quadrilatères contre les parois")
     ap.add_argument("--dossier", required=True)
     a = ap.parse_args()
-    m = creer(a.cas, a.dossier, a.forme, a.vitesse, a.nproc, a.fin)
+    m = creer(a.cas, a.dossier, a.forme, a.vitesse, a.nproc, a.fin, a.finesse, a.couches)
     print(json.dumps({k: m[k] for k in m if k not in ("air",)}, indent=1, ensure_ascii=False))
