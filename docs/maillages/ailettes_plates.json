@@ -1,0 +1,17 @@
+{
+ "forme": "rond",
+ "pas_ailettes_mm": 1.8,
+ "epaisseur_mm": 0.2,
+ "ecart_mm": 1.6,
+ "Pt_mm": 12.000685436173702,
+ "Pl_mm": 10.392898450552362,
+ "rangs": 4,
+ "cellules_2d": 32086,
+ "tranches": 28,
+ "cellules_3d": 898408,
+ "premiere_tranche_mm": 0.019750791867073417,
+ "tranche_milieu_mm": 0.12152242771049859,
+ "surface_air_sans_ailettes_mm2_par_mm": 75.40037710274815,
+ "surface_air_avec_ailettes_mm2_par_mm": 437.10060414831617,
+ "facteur_surface": 5.797061247487911
+}
