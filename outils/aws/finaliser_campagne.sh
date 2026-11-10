@@ -1,7 +1,8 @@
 #!/bin/bash
 # À lancer sur la machine locale, détaché (nohup setsid). Attend la fin des calculs sur la machine
-# AWS, rapatrie tous les cas, les traite, met à jour le rapport, pousse sur GitHub, puis supprime
-# la machine AWS SEULEMENT si tous les cas ont été rapatriés et vérifiés.
+# AWS, rapatrie tous les cas, les traite, met à jour le rapport, pousse sur GitHub, puis ARRÊTE
+# la machine AWS (sans la supprimer : OpenFOAM reste compilé ; outils/aws/demarrer_machine.sh la
+# relance) SEULEMENT si tous les cas ont été rapatriés et vérifiés.
 #   outils/aws/finaliser_campagne.sh <id_instance> <ip> <campagne> "<message de commit>" <dossier_distant>:<niveau> ...
 # Chaque dossier distant doit contenir ordre.txt et TERMINE en fin de calcul. Un cas dont la vitesse
 # n'est pas 1 m/s est rangé avec le suffixe _U<vitesse> (resultat_U2.json, ...), sauf si cas.json
@@ -44,8 +45,9 @@ git commit -qm "$MSG
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" >> $J 2>&1 && git push -q origin HEAD >> $J 2>&1 && log "poussé sur GitHub"
 if [ $ok = 1 ]; then
-  aws ec2 terminate-instances --instance-ids $ID --query 'TerminatingInstances[0].CurrentState.Name' --output text >> $J 2>&1
-  log "machine AWS $ID supprimée"
+  for d in "$@"; do distant "rm -rf ${d%%:*}" 2>/dev/null; done   # libère le disque (cas rapatriés)
+  aws ec2 stop-instances --instance-ids $ID --query 'StoppingInstances[0].CurrentState.Name' --output text >> $J 2>&1
+  log "machine AWS $ID arrêtée (conservée, OpenFOAM compilé)"
 else
   log "machine AWS CONSERVÉE (rapatriement ou traitement incomplet) : à vérifier"
 fi
