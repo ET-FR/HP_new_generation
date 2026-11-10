@@ -82,7 +82,7 @@ def main(cas, sortie):
             f"{r['periodes_moyennees']:.0f} périodes moyennées\n"
             f"stabilité : Cd {100 * r['stabilite_moyenne']['Cd']:.2f} %, Nu {100 * r['stabilite_moyenne']['Nu']:.2f} %",
             va="top", family="monospace", fontsize=9)
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
 
 
 if __name__ == "__main__":

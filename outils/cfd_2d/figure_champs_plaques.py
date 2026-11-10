@@ -54,7 +54,7 @@ def main(cas, sortie):
              "accélère au centre jusqu'à 1,5 m/s (profil parabolique).\nIl se réchauffe d'abord contre les plaques, puis dans tout "
              "l'écartement ; vers 100 mm il est presque à la température des plaques. La pression baisse régulièrement : "
              "c'est le frottement sur les plaques.", fontsize=9.5)
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
 
 
 if __name__ == "__main__":

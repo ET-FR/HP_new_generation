@@ -83,7 +83,7 @@ def main(cas, sortie):
           f"  → CFD dans la fourchette des deux lois")
     ax.text(0, 1, g, va="top", family="monospace", fontsize=9.5)
     ax.text(0.58, 1, d2, va="top", family="monospace", fontsize=9.5)
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
 
 
 if __name__ == "__main__":

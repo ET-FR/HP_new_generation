@@ -62,7 +62,7 @@ def main(cas, sortie):
            "solution exacte : elle est validée pour un écoulement\n"
            "laminaire établi près d'une paroi.", va="top", family="monospace", fontsize=10)
     fig.tight_layout(rect=(0, 0, 1, 0.95))
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
 
 
 if __name__ == "__main__":

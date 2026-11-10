@@ -101,7 +101,7 @@ def main(base, sortie):
     ax.set_title("Zoom : couches de quadrilatères autour du tube, puis triangles", fontsize=9)
     ax = fig.add_axes([0.53, 0.04, 0.43, 0.31]); dessiner(ax, P2, K2, B2, (2.2, 3.8), (-0.8, 0.8), lw=0.3)
     ax.set_title("Zoom paroi : 20 couches, première de 0,01 mm", fontsize=9)
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
 
 
 if __name__ == "__main__":

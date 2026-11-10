@@ -123,7 +123,7 @@ def page_image(pdf, titre, images, notes=""):
     h = 0.90 / len(images)
     for k, im in enumerate(images):
         ax = fig.add_axes([0.03, 0.92 - (k + 1) * h, 0.94, h - 0.01])
-        ax.imshow(mpimg.imread(im)); ax.axis("off")
+        ax.imshow(mpimg.imread(im), interpolation="none"); ax.axis("off")
     pdf.savefig(fig); plt.close(fig)
 
 

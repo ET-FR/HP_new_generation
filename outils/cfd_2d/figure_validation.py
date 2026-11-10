@@ -71,7 +71,7 @@ def main(sortie):
     ax.set_title(f"Zoom sur la paroi : {nq} quadrilatères en 20 couches\n"
                  "(1re couche 0,01 mm, raison 1,15), puis triangles", fontsize=9.5)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
 
 
 if __name__ == "__main__":

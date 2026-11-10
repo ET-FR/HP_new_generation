@@ -53,7 +53,7 @@ def main(sortie):
         ax.set_title(f"{b.nom} : pas {b.Pt:.1f} × {b.Pl:.1f} mm, noyau {b.x_noyau[1]:.0f} mm, "
                      f"périmètre air {b.P_ext:.1f} mm/tube, {len(tri)} mailles", fontsize=8.5)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(sortie, dpi=110)
+    fig.savefig(sortie, dpi=300)
     # zoom paroi
     b, xy, tri = res["rond"]
     fig2, ax = plt.subplots(figsize=(7, 6))
@@ -62,7 +62,7 @@ def main(sortie):
     ax.set_ylim(cy - 4.5, cy + 4.5)
     ax.set_title("Zoom sur un tube rond : mailles de 0,08 mm contre la paroi,\n"
                  "grossissant jusqu'à 0,6 mm à 2 mm de la paroi", fontsize=10)
-    fig2.savefig(str(sortie).replace(".png", "_zoom.png"), dpi=130, bbox_inches="tight")
+    fig2.savefig(str(sortie).replace(".png", "_zoom.png"), dpi=300, bbox_inches="tight")
 
 
 if __name__ == "__main__":
