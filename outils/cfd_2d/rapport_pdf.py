@@ -154,6 +154,56 @@ def page_comparaison(pdf):
     pdf.savefig(fig); plt.close(fig)
 
 
+def page_compromis(pdf):
+    """Efficacité contre P vent / Q pour toutes les formes à 1 m/s ; front de Pareto en évidence."""
+    pts = []
+    for cle, nom in NIVEAU1 + SERIE2:
+        d = lire(f"{cle}/resultat.json")
+        if d and d.get("parametres", {}).get("couches"):
+            r = d["resultats"]
+            pts.append((r["P_vent_sur_Q"] / DT_REF * 1e3, 100 * r["T_sortie"], nom))
+    if len(pts) < 3:
+        return
+    pareto = [p for p in pts if not any(q[0] <= p[0] and q[1] >= p[1] and q != p for q in pts)]
+    pareto.sort()
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Compromis échange / ventilation des 22 formes", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.95, "Air à 1 m/s, même charge de propane. En haut à gauche : meilleur.\n"
+             "En bleu, le front de Pareto : aucune autre forme ne fait mieux sur les deux critères à la fois.",
+             fontsize=8, color="#495057", va="top", linespacing=1.4)
+    ax = fig.add_axes([0.11, 0.40, 0.83, 0.50])
+    autres = [p for p in pts if p not in pareto]
+    ax.scatter([p[0] for p in autres], [p[1] for p in autres], s=30, color="#adb5bd", edgecolor="white", lw=0.6,
+               zorder=2, label="autres formes")
+    ax.plot([p[0] for p in pareto], [p[1] for p in pareto], color="#2a78d6", lw=1.6, marker="o", ms=6,
+            mec="white", mew=0.8, zorder=3, label="front de Pareto")
+    decalage = {"Hexagone, plat amont": (-4, 6, "right"), "Hexagone, pointe amont": (0, -11, "center"),
+                "Losange": (4, 5, "left"), "Profil d'aile NACA 0030": (-5, -3, "right"),
+                "Tube plat 4:1": (-4, -10, "right"), "Goutte inversée": (5, 3, "left"),
+                "Ellipse 3:1": (5, 3, "left"), "Goutte": (5, -4, "left"), "Lentille": (-5, 4, "right"),
+                "Ellipse 4:1": (-5, 4, "right"), "Ellipse 5:1": (-5, 4, "right"),
+                "Tube plat 8:1 arrondi": (5, -9, "left"), "Rond à 6 ailettes longit.": (-6, 4, "right")}
+    for x, yv, nom in pts:
+        dx, dy, ha = decalage.get(nom, (5, 3, "left"))
+        ax.annotate(nom, (x, yv), xytext=(dx, dy), textcoords="offset points", fontsize=6.3, ha=ha,
+                    color="#212529" if (x, yv, nom) in pareto else "#6c757d")
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+    ax.set_xscale("log")
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}")); ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_xticks([0.2, 0.5, 1, 2, 5, 10])
+    ax.set_xlabel("P vent / Q (‰, pour 10 K d'écart air / paroi) : plus bas = moins de ventilateur", fontsize=8)
+    ax.set_ylabel("Efficacité (%) : plus haut = plus de chaleur par m² de face", fontsize=8)
+    ax.tick_params(labelsize=7.5); ax.grid(True, color="#e9ecef", lw=0.6)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    ax.legend(fontsize=7.5, frameon=False, loc="lower right")
+    fig.text(0.06, 0.34, "Lecture : les formes rondes échangent le plus sur peu de profondeur mais coûtent en ventilation ;\n"
+             "les formes allongées divisent la puissance de ventilation par 4 à 6 mais échangent 2 à 2,5 fois moins par m² de face.\n"
+             "Le rond à ailettes a beaucoup plus de surface côté air : c'est déjà un tube à ailettes (à comparer plus tard aux ailettes).",
+             fontsize=7.8, va="top", color="#343a40", linespacing=1.5)
+    pdf.savefig(fig); plt.close(fig)
+
+
 def resultat_vitesse(cle, U):
     d = lire(f"{cle}/resultat.json" if U == 1.0 else f"{cle}/resultat_U{U:g}.json")
     return d["resultats"] if d and abs(d["parametres"]["U"] - U) < 1e-9 else None
@@ -232,19 +282,28 @@ def main():
     with PdfPages(SORTIE) as pdf:
         page_synthese(pdf)
         page_comparaison(pdf)
+        page_compromis(pdf)
         page_vitesse(pdf)
+        page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
+                   "Tracées sur le premier maillage (triangles) ; calculs faits sur le maillage à couches (page convergence).")
+        page_image(pdf, "Géométries : série 2", ["../maillages/formes_serie2.png"])
         for cle, nom in NIVEAU1 + SERIE2:
             page_image(pdf, nom, [f"{cle}/resultat.png"])
         for cle, nom in BALAYAGE:
             for U in VITESSES:
                 if U != 1.0:
                     page_image(pdf, f"{nom}, {U:g} m/s", [f"{cle}/resultat_U{U:g}.png"])
+        page_image(pdf, "Maillages de validation (niveau 0)",
+                   ["../maillages/validation_niveau0.png", "../maillages/openfoam_niveau0.png"])
         page_image(pdf, "Validation : plaques parallèles", ["plaques/profils_validation.png", "plaques/champs.png"])
         page_image(pdf, "Validation : tube isolé", ["tube_isole/resultat.png"])
         page_image(pdf, "Faisceau de tubes ronds : convergence en maillage",
                    ["rond/convergence.png", "rond/maillage_couches.png"])
+        page_image(pdf, "Faisceau de tubes ronds : premier maillage (triangles), non retenu",
+                   ["rond/resultat_maillage_triangles.png"])
         page_image(pdf, "Test 3D : cellule gyroïde (TPMS)", ["tpms_gyroide/resultat.png"],
                    "Chronométrage et frottement seulement (Leeds +5 %) ; échange non mesuré.")
+        page_image(pdf, "Test 3D : surfaces TPMS et maillage", ["tpms_gyroide/coupes_tpms.png", "tpms_gyroide/maillage.png"])
     compresser(SORTIE)
     print(SORTIE)
 
