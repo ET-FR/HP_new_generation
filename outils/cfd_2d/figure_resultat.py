@@ -50,22 +50,22 @@ def main(cas, sortie):
     Um = np.linalg.norm(s.cell_data["UMean"], axis=1)
     umax = float(np.percentile(Ui, 99.8))
     fig = plt.figure(figsize=(15, 13.5))
-    fig.suptitle(f"Résultat CFD 2D : {m['nom']} (niveau 0, comparaison Zukauskas), air 1 m/s, "
+    fig.suptitle(f"Résultat CFD 2D : {m['nom']}, même charge R290 que le rond, air 1 m/s, "
                  f"OpenFOAM v2606, pimpleFoam laminaire instationnaire", fontsize=12, fontweight="bold", y=0.99)
     hs = 0.155
     y = [0.80, 0.61, 0.42, 0.23]
     panneau(fig.add_axes([0.05, y[0], 0.88, hs]), P, Ui, "turbo",
-            "(a) Vitesse instantanée (fin du calcul) : on voit les tourbillons qui se détachent derrière chaque tube",
+            "(a) Vitesse instantanée (fin du calcul) : tourbillons et sillages",
             "|U| (m/s)", xa, xb, H, 0, umax)
     panneau(fig.add_axes([0.05, y[1], 0.88, hs]), P, Um, "turbo",
-            "(b) Vitesse moyennée dans le temps : jets entre les tubes, sillages lents derrière",
+            "(b) Vitesse moyennée dans le temps : jets entre les tubes, sillages lents",
             "|U| moyenne (m/s)", xa, xb, H, 0, umax)
     panneau(fig.add_axes([0.05, y[2], 0.88, hs]), P, s.cell_data["TMean"], "inferno",
-            "(c) Température moyenne (0 = air entrant, 1 = paroi) : l'air se réchauffe au contact des tubes",
+            "(c) Température moyenne (0 = air entrant, 1 = paroi)",
             "T (-)", xa, xb, H, 0, 1)
     pm = s.cell_data["pMean"] * rho
     panneau(fig.add_axes([0.05, y[3], 0.88, hs]), P, pm - np.percentile(pm, 1), "viridis",
-            "(d) Pression moyenne : forte au nez des tubes (arrêt de l'air), chute à travers la batterie",
+            "(d) Pression moyenne",
             "p (Pa)", xa, xb, H)
     z = r.get("zukauskas", {})
     ax = fig.add_axes([0.05, 0.015, 0.9, 0.17]); ax.axis("off")
@@ -74,13 +74,20 @@ def main(cas, sortie):
          f"Coefficient d'échange    h = {r['h']:.1f} W/m²K   Nu (Ø 6 mm) = {r['Nu_D6']:.2f}   j = {r['j']:.4f}\n"
          f"Bilan d'énergie          air / paroi : écart {100 * r['ecart_bilan']:+.2f} %\n"
          f"Stabilité de la moyenne  écart 1re / 2e moitié : Δp {100 * r['stabilite_moyenne']['dp']:.2f} %, "
-         f"T {100 * r['stabilite_moyenne']['T_sortie']:.2f} %  →  durée suffisante")
-    d2 = (f"Zukauskas (Re_max = {r['Re_max_D6']:.0f}, 4 rangs, C2 = {z.get('C2', 0):.2f})\n"
-          f"  loi « cylindre isolé » (100 < Re < 1000) : Nu = {z.get('Nu_cylindre_isole', 0):.2f}  "
-          f"({100 * (r['Nu_D6'] / z.get('Nu_cylindre_isole', 1) - 1):+.0f} %)\n"
-          f"  loi faisceau 1000 < Re < 2e5 prolongée  : Nu = {z.get('Nu_loi_1e3', 0):.2f}  "
-          f"({100 * (r['Nu_D6'] / z.get('Nu_loi_1e3', 1) - 1):+.0f} %)\n"
-          f"  → CFD dans la fourchette des deux lois")
+         f"T {100 * r['stabilite_moyenne']['T_sortie']:.2f} %")
+    if z:
+        d2 = (f"Zukauskas (Re_max = {r['Re_max_D6']:.0f}, 4 rangs, C2 = {z.get('C2', 0):.2f})\n"
+              f"  Nu cylindre isolé {z['Nu_cylindre_isole']:.2f} ({100 * (r['Nu_D6'] / z['Nu_cylindre_isole'] - 1):+.0f} %)\n"
+              f"  Nu faisceau       {z['Nu_loi_1e3']:.2f} ({100 * (r['Nu_D6'] / z['Nu_loi_1e3'] - 1):+.0f} %)\n"
+              f"  Δp abaques        {z.get('dp_Pa', float('nan')):.2f} Pa ({100 * z.get('ecart_dp', float('nan')):+.0f} %)")
+    else:
+        ref = Path(__file__).resolve().parents[2] / "docs" / "formes" / "rond" / "convergence_couches.json"
+        g0 = json.loads(ref.read_text())["grandeurs"]
+        dp0, T0, h0 = g0["dp_Pa"]["moyen"], g0["T_sortie"]["moyen"], g0["h"]["moyen"]
+        d2 = (f"Comparaison au rond (même charge, même maillage)\n"
+              f"  Δp          {r['dp_Pa']:5.2f} Pa  contre {dp0:.2f}  ({100 * (r['dp_Pa'] / dp0 - 1):+.0f} %)\n"
+              f"  efficacité  {100 * r['T_sortie']:5.1f} %   contre {100 * T0:.1f}  ({100 * (r['T_sortie'] / T0 - 1):+.0f} %)\n"
+              f"  h           {r['h']:5.1f}     contre {h0:.1f}  ({100 * (r['h'] / h0 - 1):+.0f} %)")
     ax.text(0, 1, g, va="top", family="monospace", fontsize=9.5)
     ax.text(0.58, 1, d2, va="top", family="monospace", fontsize=9.5)
     fig.savefig(sortie, dpi=300)

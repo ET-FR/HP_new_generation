@@ -101,13 +101,15 @@ def page_synthese(pdf):
         d = lire(f"{cle}/resultat.json")
         if d and d.get("parametres", {}).get("couches"):
             r = d["resultats"]; n_ok += 1
-            lignes.append([nom, f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f}",
-                           f"{r['P_vent_sur_Q'] * 1e3:.1f}", f"{r['profondeur_mm']:.0f}"])
+            lignes.append([nom, f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f} %",
+                           f"{r['P_vent_sur_Q'] * 1e3:.1f}", f"{r['profondeur_mm']:.0f}",
+                           f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"])
         else:
-            lignes.append([nom, "en cours", "", "", "", ""])
+            lignes.append([nom, "en cours", "", "", "", "", ""])
     tableau(fig, y,
-            ["Forme (même charge R290)", "Δp (Pa)", "h (W/m²K)", "Efficacité (%)", "P vent / Q (‰/K)", "Profondeur (mm)"],
-            lignes, [0.30, 0.12, 0.13, 0.15, 0.16, 0.14],
+            ["Forme (même charge R290)", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰/K)",
+             "Prof. (mm)", "Stabilité"],
+            lignes, [0.25, 0.10, 0.11, 0.13, 0.15, 0.14, 0.12],
             f"3. Comparaison des formes (niveau 1) : {n_ok} / {len(NIVEAU1)} calculées", taille=8)
     pdf.savefig(fig); plt.close(fig)
 
