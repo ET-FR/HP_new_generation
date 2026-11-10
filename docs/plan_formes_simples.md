@@ -171,3 +171,13 @@ niveau 1 (provisoire).
 
 Ouvert : Dh intérieur de 4 mm (conservé par défaut ; avec la paroi de 1 mm, le tube rond
 fait 6 mm de diamètre extérieur).
+
+## 10. Pistes en attente
+
+**Tubes parallèles à l'air** (écoulement longitudinal), notée le 10 novembre 2026, mise de côté.
+Estimation analytique (`outils/analytique/tubes_longitudinaux.py`, page 7 du rapport) : à charge
+égale, la courbe suit le front de Pareto des formes en travers (un peu au-dessus à pas serré,
+P ≤ 9 mm). Résultat **non validé** : anneau équivalent peu fidèle sous P/D ≈ 1,5, bouts de tubes
+modélisés par des pertes forfaitaires, laminaire supposé, collecteurs non comptés.
+À reprendre par une CFD 3D d'une cellule périodique (P = 8, 10, 12 mm, 1 m/s, bouts plats puis
+profilés), puis le dessin d'un collecteur imprimé, qui décidera de la piste.

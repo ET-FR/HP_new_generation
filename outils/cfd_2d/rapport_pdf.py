@@ -484,7 +484,7 @@ def page_longitudinal(pdf):
     pareto = sorted(p for p in pts if not any(q[0] <= p[0] and q[1] >= p[1] and q != p for q in pts))
     lon = d["charge_egale"]
     fig = plt.figure(figsize=A4)
-    fig.text(0.06, 0.965, "Piste : tubes parallèles à l'air (estimation)", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.965, "Piste : tubes parallèles à l'air (estimation, à valider en CFD 3D)", fontsize=15, fontweight="bold", color=BLEU)
     fig.text(0.06, 0.95, "Tubes ronds Ø 6 mm couchés dans le sens de l'air, en réseau triangulaire de pas P dans le plan "
              "de la face ; air à 1 m/s.\nMême tube et même charge de propane que la batterie de référence : la "
              "profondeur découle du pas (même longueur de tube par m² de face).\nCalcul analytique, pas CFD : "
