@@ -1,0 +1,79 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "U": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 1.0,
+  "nproc": 4,
+  "finesse": 1.0,
+  "couches": {
+   "premiere": 0.01,
+   "raison": 1.15,
+   "n": 15,
+   "epaisseur": 0.4758041086108217,
+   "tangentielle": 0.08
+  },
+  "forme": "demi_cercle_rond",
+  "nom": "Demi-cercle, arrondi face à l'air",
+  "Pt": 0.01607244226036733,
+  "Pl": 0.013919143298336694,
+  "rangs": 4,
+  "A_int": 1.683102217680538e-05,
+  "P_int": 0.016831022176805384,
+  "P_ext": 0.02311379359917458,
+  "x_noyau": [
+   0.0,
+   0.04703070641520033
+  ],
+  "x_domaine": [
+   -0.03,
+   0.10703070641520034
+  ],
+  "largeur_frontale": 0.008546949178167734,
+  "Umax": 2.135732779873818,
+  "Re_Dext": 395.77836411609496,
+  "instationnaire": true,
+  "fin": 1.274,
+  "debut_moyenne": 0.274,
+  "maillage": {
+   "cellules": 40916,
+   "faces": 152735,
+   "internes": 69125
+  },
+  "fin_initiale": 0.774
+ },
+ "resultats": {
+  "cas": "demi_cercle_rond",
+  "forme": "demi_cercle_rond",
+  "U": 1.0,
+  "Umax": 2.135732779873818,
+  "Re_max_D6": 845.2768258075796,
+  "dp_Pa": 5.878747021165608,
+  "fluct_p": 0.1143551050928805,
+  "T_sortie": 0.24506844449358886,
+  "fluct_T": 0.0576751638419331,
+  "NTU": 0.28112818880091733,
+  "h": 59.19424905792328,
+  "Nu_D6": 13.733000807967938,
+  "j": 0.018211555159026803,
+  "f_par_rang": 0.5352226233035544,
+  "j_sur_f": 0.03402613112020495,
+  "Q_W_par_K": 0.004770827755228309,
+  "ecart_bilan": 0.001702923558173438,
+  "fluct_flux": 0.008270307422343037,
+  "P_vent_sur_Q": 0.019804911671865523,
+  "profondeur_mm": 47.03070641520033,
+  "A_air": 9.245517439669832e-05,
+  "stabilite_moyenne": {
+   "dp": 0.0004944025231946246,
+   "T_sortie": 0.002314549183926075,
+   "flux_paroi": 0.0009353221233177169
+  },
+  "duree_suffisante": true
+ }
+}

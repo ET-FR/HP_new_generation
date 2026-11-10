@@ -11,6 +11,8 @@ sont rangés.
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 from datetime import date
 from pathlib import Path
 
@@ -174,7 +176,21 @@ def main():
                    ["rond/convergence.png", "rond/maillage_couches.png"])
         page_image(pdf, "Test 3D : cellule gyroïde (TPMS)", ["tpms_gyroide/resultat.png"],
                    "Chronométrage et frottement seulement (Leeds +5 %) ; échange non mesuré.")
+    compresser(SORTIE)
     print(SORTIE)
+
+
+def compresser(chemin):
+    """Images recompressées en JPEG (qualité 90, 250 dpi) : PDF ≈ 5 Mo au lieu de 140 Mo
+    (limite GitHub 100 Mo), netteté conservée au zoom."""
+    if not shutil.which("gs"):
+        return
+    tmp = chemin.with_suffix(".tmp.pdf")
+    subprocess.run(["gs", "-q", "-sDEVICE=pdfwrite", "-dNOPAUSE", "-dBATCH", "-dAutoFilterColorImages=false",
+                    "-dColorImageFilter=/DCTEncode", "-dJPEGQ=90", "-dDownsampleColorImages=true",
+                    "-dColorImageResolution=250", "-dColorImageDownsampleThreshold=1.2",
+                    f"-sOutputFile={tmp}", str(chemin)], check=True)
+    tmp.replace(chemin)
 
 
 if __name__ == "__main__":
