@@ -29,6 +29,12 @@ NIVEAU1 = [("rond", "Rond"), ("carre", "Carré"), ("losange", "Losange"),
            ("triangle_pointe", "Triangle, pointe amont"), ("triangle_base", "Triangle, base amont"),
            ("ellipse2", "Ellipse 2:1"), ("ellipse3", "Ellipse 3:1"), ("plat4", "Tube plat 4:1"),
            ("goutte", "Goutte"), ("lentille", "Lentille")]
+SERIE2 = [("naca0030", "Profil d'aile NACA 0030"), ("goutte_inversee", "Goutte inversée"),
+          ("ellipse4", "Ellipse 4:1"), ("ellipse5", "Ellipse 5:1"), ("stade8", "Tube plat 8:1 arrondi"),
+          ("hexagone_pointe", "Hexagone, pointe amont"), ("hexagone_plat", "Hexagone, plat amont"),
+          ("demi_cercle_plat", "Demi-cercle, plat amont"), ("demi_cercle_rond", "Demi-cercle, arrondi amont"),
+          ("etoile6", "Rond à 6 ailettes longit."), ("cannele12", "Rond cannelé (12 ondes)"),
+          ("trois_canaux", "Multicanaux (3 canaux)")]
 A4 = (8.27, 11.69)
 DT_REF = 10.0     # K, écart de température air / paroi de référence pour P vent / Q
 LEGENDE = (
@@ -109,21 +115,34 @@ def page_synthese(pdf):
                 lignes, [0.22, 0.19, 0.19, 0.19, 0.21],
                 "2. Convergence en maillage (tubes ronds, couches) : maillage moyen retenu")
 
-    lignes, n_ok = [], 0
-    for cle, nom in NIVEAU1:
-        d = lire(f"{cle}/resultat.json")
-        if d and d.get("parametres", {}).get("couches"):
-            r = d["resultats"]; n_ok += 1
-            lignes.append([nom, f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f} %",
-                           f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}", f"{r['profondeur_mm']:.0f}",
-                           f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"])
-        else:
-            lignes.append([nom, "en cours", "", "", "", "", ""])
-    y = tableau(fig, y,
-            ["Forme (même charge R290)", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰)",
-             "Prof. (mm)", "Stabilité"],
-            lignes, [0.25, 0.10, 0.11, 0.13, 0.15, 0.14, 0.12],
-            f"3. Comparaison des formes (niveau 1) : {n_ok} / {len(NIVEAU1)} calculées", taille=8)
+    fig.text(0.06, y, "La comparaison des formes est en page 2.", fontsize=9, color="#495057", va="top")
+    pdf.savefig(fig); plt.close(fig)
+
+
+def ligne_forme(cle, nom):
+    d = lire(f"{cle}/resultat.json")
+    if d and d.get("parametres", {}).get("couches"):
+        r = d["resultats"]
+        return [nom, f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f} %",
+                f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}", f"{r['profondeur_mm']:.0f}",
+                f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"], True
+    return [nom, "en cours", "", "", "", "", ""], False
+
+
+def page_comparaison(pdf):
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Comparaison des formes de tubes", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.945, "Même charge de propane et même périmètre côté propane pour toutes les formes.",
+             fontsize=8.5, color="#495057")
+    entetes = ["Forme (même charge R290)", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰)",
+               "Prof. (mm)", "Stabilité"]
+    largeurs = [0.27, 0.10, 0.11, 0.12, 0.14, 0.13, 0.13]
+    y = 0.925
+    for titre, liste in (("Série 1", NIVEAU1), ("Série 2", SERIE2)):
+        res = [ligne_forme(c, n) for c, n in liste]
+        n_ok = sum(ok for _, ok in res)
+        y = tableau(fig, y, entetes, [l for l, _ in res], largeurs,
+                    f"{titre} : {n_ok} / {len(liste)} calculées", taille=7.8, h_ligne=0.022)
     fig.text(0.06, y + 0.02, LEGENDE, fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
     pdf.savefig(fig); plt.close(fig)
 
@@ -146,8 +165,9 @@ def page_image(pdf, titre, images, notes=""):
 def main():
     with PdfPages(SORTIE) as pdf:
         page_synthese(pdf)
-        for cle, nom in NIVEAU1:
-            page_image(pdf, f"Niveau 1 : {nom}", [f"{cle}/resultat.png"])
+        page_comparaison(pdf)
+        for cle, nom in NIVEAU1 + SERIE2:
+            page_image(pdf, nom, [f"{cle}/resultat.png"])
         page_image(pdf, "Validation : plaques parallèles", ["plaques/profils_validation.png", "plaques/champs.png"])
         page_image(pdf, "Validation : tube isolé", ["tube_isole/resultat.png"])
         page_image(pdf, "Faisceau de tubes ronds : convergence en maillage",
