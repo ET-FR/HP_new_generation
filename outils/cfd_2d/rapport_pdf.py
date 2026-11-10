@@ -277,10 +277,12 @@ def page_vitesse(pdf):
         st = dict(color=col, marker=mk, ms=4.5, lw=1.6, label=nom, mec="white", mew=0.6)
         axes[0].plot(Us, [r["h"] for _, r in pts], **st)
         axes[1].plot(Us, [r["dp_Pa"] for _, r in pts], **st)
-        axes[2].plot([r["P_vent_sur_Q"] / DT_REF * 1e3 for _, r in pts], [100 * r["T_sortie"] for _, r in pts], **st)
+        # chaleur par m² de face pour 10 K d'écart air / paroi : ρ cp U ε ΔT (kW/m²), comparable entre vitesses
+        q_face = [1.2 * 1006 * U * r["T_sortie"] * DT_REF / 1e3 for U, r in pts]
+        axes[2].plot([r["P_vent_sur_Q"] / DT_REF * 1e3 for _, r in pts], q_face, **st)
     for ax, xl, yl, t in ((axes[0], "vitesse (m/s)", "h (W/m²K)", "Coefficient d'échange"),
                           (axes[1], "vitesse (m/s)", "Δp (Pa)", "Perte de charge"),
-                          (axes[2], "P vent / Q (‰, 10 K)", "efficacité (%)", "Compromis")):
+                          (axes[2], "P vent / Q (‰, 10 K)", "Q par m² de face (kW/m², 10 K)", "Compromis (vitesse libre)")):
         ax.set_xlabel(xl, fontsize=7.5); ax.set_ylabel(yl, fontsize=7.5); ax.set_title(t, fontsize=9)
         ax.tick_params(labelsize=7); ax.grid(True, color="#e9ecef", lw=0.6)
         for sp in ("top", "right"):
