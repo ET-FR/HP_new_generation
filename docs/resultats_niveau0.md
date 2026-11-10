@@ -38,8 +38,8 @@ rectangles. Convergé en 1 138 itérations (résidus < 1e-7), 17 s de calcul.
   plaque n'échange presque plus. **Information de conception** : à 1 m/s et 2 mm d'écartement,
   une ailette plate plus profonde qu'environ 50 à 100 mm est peu utile.
 
-Figures : `docs/resultat_niveau0_plaques.png` (profils et comparaison à l'exact),
-`docs/cfd_plaques_champs.png` (cartes de vitesse, température, pression).
+Figures : `docs/formes/plaques/profils_validation.png` (profils et comparaison à l'exact),
+`docs/formes/plaques/champs.png` (cartes de vitesse, température, pression).
 
 ## 2. Faisceau de tubes ronds (référence du niveau 1)
 
@@ -79,7 +79,7 @@ lâcher de tourbillons surtout après le dernier rang. Les mailles du tampon ava
 amortissent les tourbillons trop vite ; sans effet sur les mesures (prises dans le noyau et à
 la sortie), mais à affiner si l'on veut étudier le sillage.
 
-Figure : `docs/resultat_niveau0_faisceau_rond.png`.
+Figure : `docs/formes/rond/resultat_maillage_triangles.png`.
 
 ## 3. Tube rond isolé
 
@@ -104,7 +104,7 @@ tridimensionnel et moins organisé, ce qu'un calcul 2D ne peut pas représenter 
 restent valables, mais les valeurs absolues de traînée et de perte de charge des formes non
 profilées sont probablement un peu surestimées.
 
-Figure : `docs/resultat_niveau0_tube_isole.png`.
+Figure : `docs/formes/tube_isole/resultat.png`.
 
 ## 4. Convergence en maillage (faisceau de tubes ronds)
 
@@ -137,7 +137,7 @@ environ 1 h par forme), ou ajouter des couches de quadrilatères contre les tube
 le tube isolé), ce qui suppose de régler le défaut rencontré là où les couches des tubes coupés
 rejoignent le raccordement haut / bas (165 faces à près de 90°).
 
-Figure : `docs/convergence_faisceau_rond.png` ; données : `docs/resultats_niveau0/convergence_faisceau_rond.json` ;
+Figure : `docs/formes/rond/convergence.png` ; données : `docs/formes/rond/convergence_triangles.json` ;
 archives : `resultats_cfd/convergence/`.
 
 ### 4 bis. Maillage à anneaux de couches (`maillage_couches.py`)
@@ -173,8 +173,8 @@ Lecture :
 maillage de couches est retenu pour la suite ; le choix entre finesse grossière (15 min par
 cas, ±2,5 %) et moyenne (37 min, ±2 %) reste à faire pour le niveau 1.
 
-Figure : `docs/convergence_faisceau_rond.png` (les deux familles) ; données :
-`docs/resultats_niveau0/convergence_faisceau_rond_couches.json` ; archives :
+Figure : `docs/formes/rond/convergence.png` (les deux familles) ; données :
+`docs/formes/rond/convergence_couches.json` ; archives :
 `resultats_cfd/convergence/rond_couches_*.tar.xz`.
 
 ## Données conservées
@@ -193,4 +193,4 @@ tar xJf resultats_cfd/niveau0/rond.tar.xz
 cd rond && foamToVTK -latestTime    # puis ouvrir VTK/ dans ParaView
 ```
 
-Résultats chiffrés seuls : `docs/resultats_niveau0/<cas>.json`.
+Résultats chiffrés seuls : `docs/formes/<forme>/resultat.json`.

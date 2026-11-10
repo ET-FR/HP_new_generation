@@ -60,7 +60,7 @@ finesse 8, raffinement 2, 3 000 itérations. Conteneur cloud 4 cœurs, OpenFOAM 
 | simpleFoam, 4 cœurs, 3 000 itérations (0,12 s / itération) | 6 min 14 s |
 | **Total par cas** | **≈ 7,5 min** |
 
-Coupe du maillage : `docs/coupe_cfd_gyroide.png`. Réserves : fonctions de mesure retirées
+Coupe du maillage : `docs/formes/tpms_gyroide/maillage.png`. Réserves : fonctions de mesure retirées
 (défaut de la v1912 Ubuntu, pas du code) ; durée à recontrôler en v2412 ; les cas turbulents
 (k-ω SST, Re > 300) coûteront environ 30 % de plus (deux équations de plus).
 

@@ -1,6 +1,6 @@
 """Figure des maillages 2D de toutes les formes (noyau de la batterie + vue d'ensemble).
 
-    python figure_maillages.py docs/maillages_formes_simples.png
+    python figure_maillages.py docs/maillages/formes_niveau1.png
 """
 import sys
 from pathlib import Path
@@ -66,4 +66,4 @@ def main(sortie):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "docs/maillages_formes_simples.png")
+    main(sys.argv[1] if len(sys.argv) > 1 else "docs/maillages/formes_niveau1.png")

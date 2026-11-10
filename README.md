@@ -8,7 +8,7 @@ Cette première étape fournit un **simulateur physique temps réel** : on fait
 varier les charges (températures et humidités intérieure / extérieure,
 déperditions, apports) et on voit immédiatement l'effet sur le cycle et le COP.
 
-![Chauffage](docs/capture_chauffage.png)
+![Chauffage](docs/simulateur/capture_chauffage.png)
 
 ## Lancer
 

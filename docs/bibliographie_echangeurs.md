@@ -78,7 +78,7 @@ Auteurs clés : Bacellar, Aute, Radermacher (corrélations CFD côté air pour t
 - Givrage et drainage très peu documentés pour TPMS, mousses et tubes fins : risque n° 1 pour la batterie extérieure.
 - Aucune corrélation j / f côté air (Pr ≈ 0,7) trouvée pour Diamond, FKS, I-WP : à produire par CFD sur cellule périodique.
 
-## 7. Lecture détaillée : rapport final UMD / DOE DE-EE0008221 (`docs/DE-EE0008221 University of Maryland, College Park.pdf`)
+## 7. Lecture détaillée : rapport final UMD / DOE DE-EE0008221 (`docs/articles/DE-EE0008221 University of Maryland, College Park.pdf`)
 
 « Design and Manufacturing of High Performance, Reduced Charge Heat Exchangers », Université du
 Maryland (Radermacher, Aute, Tancabel…), 114 p. [OSTI 2293536](https://www.osti.gov/biblio/2293536).
@@ -137,7 +137,7 @@ d'éclatement précoce.
 | Article CLIMA 2022 (même groupe, condenseur de climatiseur résidentiel) | [PDF TU Delft](https://proceedings.open.tudelft.nl/clima2022/article/download/245/226/235) |
 | A-type HX à tubes non ronds optimisés | [OSTI 1808321](https://www.osti.gov/biblio/1808321) |
 
-## 8. Lecture détaillée : Tancabel, Aute, Ling, GL2020 (article R290, `docs/1131-30027955.pdf`)
+## 8. Lecture détaillée : Tancabel, Aute, Ling, GL2020 (article R290, `docs/articles/1131-30027955.pdf`)
 
 - **Cas** : condenseur air / R290 d'un climatiseur (référence : tube-ailettes, tubes cuivre Ø 5 mm,
   Ren et al. 2014 ; 2,4 kW d'après le rapport DOE). **Condenseur seulement, régime sec, pas d'essai.**

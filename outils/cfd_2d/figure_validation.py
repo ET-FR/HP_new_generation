@@ -1,6 +1,6 @@
 """Figure des maillages des cas de validation du niveau 0.
 
-    python figure_validation.py docs/maillages_validation.png
+    python figure_validation.py docs/maillages/validation_niveau0.png
 """
 import sys
 from pathlib import Path
@@ -75,4 +75,4 @@ def main(sortie):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "docs/maillages_validation.png")
+    main(sys.argv[1] if len(sys.argv) > 1 else "docs/maillages/validation_niveau0.png")
