@@ -208,3 +208,17 @@ répartit mal le mélange liquide / vapeur entre 20 à 40 circuits. PAC réversi
 collecteur doit fonctionner dans les deux sens (petit en sortie de condenseur, où la charge
 compte ; répartition égale en entrée d'évaporateur, complétée par les orifices calibrés). En
 diphasique, l'exposant de la loi change : à recalculer avec le modèle de charge.
+
+**Pistes de biomimétisme** (index ; détail et sources dans `docs/biomimetisme.md`), notées le
+10 novembre 2026, à reprendre à l'étape indiquée :
+
+| Piste | Où la reprendre |
+|---|---|
+| Tube elliptique ondulé « moustache de phoque » (sillage réduit, - 13 % de Δp publiés sur des picots) | étape 3, CFD 3D face à l'ellipse 2:1 lisse |
+| Bord d'attaque d'ailette ondulé (tubercules de baleine) | étape 3, variantes d'ailettes |
+| Collecteurs en arbre de Murray (voir ci-dessus) | conception des collecteurs |
+| Circuits à contre-courant global (poumon d'oiseau, rete mirabile) | étape 4, modèle de la machine |
+| Ailettes vascularisées (canaux de propane dans l'ailette, oreille d'éléphant) | étape 4 |
+| Échangeur en disque à distribution radiale (toile d'araignée, phyllotaxie) | si ventilateur axial |
+| Pales de ventilateur inspirées de la chouette (bruit - 2 dB publiés) | choix du ventilateur |
+| Mouillabilité alternée, surfaces glissantes (scarabée du Namib, Nepenthes) : condensats et givre | étape 5, essais |

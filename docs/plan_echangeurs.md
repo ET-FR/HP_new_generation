@@ -18,6 +18,10 @@ physiques (pression, charge, paroi minimale, givre, bruit).
    fin de la phase 1.
 3. Référence à battre : tube-ailettes du simulateur (et microcanaux).
 
+Pistes notées en cours d'étude (tubes parallèles à l'air, distributeur à orifices calibrés,
+collecteurs en arbre de Murray, biomimétisme) : voir `docs/plan_formes_simples.md`, section 10,
+et `docs/biomimetisme.md`.
+
 ## Phase 0 : fondations (en cours)
 
 | Tâche | État |
