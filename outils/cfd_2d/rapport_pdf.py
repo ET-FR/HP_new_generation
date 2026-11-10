@@ -544,6 +544,87 @@ def page_longitudinal(pdf):
     pdf.savefig(fig); plt.close(fig)
 
 
+def page_charge_propane(pdf):
+    """Côté propane : charge et perte de charge selon le diamètre intérieur (outils/analytique/charge_propane.py)."""
+    d = lire("charge_propane/resultat.json")
+    if not d:
+        return
+    lim, hors = d["limite_charge_g"], d["hors_tubes_g"]
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Côté propane : diamètre intérieur des tubes (estimation)", fontsize=15,
+             fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.95, "Tube de Ø extérieur 6 mm (côté air inchangé) ; le canal intérieur rétrécit quand la paroi "
+             "s'épaissit. Climatisation nominale : évaporation 10 °C,\ncondensation 46 °C, 2,3 kW de froid. "
+             f"Longueur de tube tirée de la CFD (tubes nus, 4 rangs, 1 m/s) : {d['longueur_evap_m']:.0f} m à "
+             f"l'évaporateur, {d['longueur_cond_m']:.0f} m au condenseur.\nPour chaque diamètre : le nombre minimal "
+             f"de circuits en parallèle pour perdre au plus {100 * d['perte_COP_max']:.0f} % de COP par la perte de "
+             "charge du propane.", fontsize=8, color="#495057", va="top", linespacing=1.4)
+    ax = fig.add_axes([0.10, 0.60, 0.38, 0.25])
+    for sc, col, mk in zip(d["scenarios"], COULEURS, MARQUEURS):
+        D = [r["D_i_mm"] for r in sc["resultats"]]
+        m = [r["charge_tubes_g"] for r in sc["resultats"]]
+        ax.plot(D, m, color=col, marker=mk, ms=4.5, lw=1.6, mec="white", mew=0.6,
+                label="tubes nus, 1 m/s" if sc["facteur_longueur"] == 1 else "tubes 4 fois plus courts")
+        for r, x, y in zip(sc["resultats"], D, m):
+            ax.annotate(f"{r['circuits']}", (x, y), xytext=(-3, 5), textcoords="offset points", fontsize=6,
+                        color=col, ha="right")
+    ax.axhline(lim, color="#c0392b", lw=1, ls="--"); ax.text(3.0, lim * 0.84, f"limite totale {lim:.0f} g",
+                                                             fontsize=6.5, color="#c0392b")
+    ax.axhline(lim - hors, color="#c0392b", lw=1, ls=":")
+    ax.text(2.6, (lim - hors) * 0.84, f"reste pour les tubes ≈ {lim - hors:.0f} g", fontsize=6.5, color="#c0392b")
+    ax.set_yscale("log"); ax.set_xlabel("Ø intérieur (mm)", fontsize=7.5); ax.set_ylabel("charge dans les tubes (g)",
+                                                                                          fontsize=7.5)
+    ax.set_title("Charge des deux batteries (chiffres : circuits)", fontsize=9)
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}")); ax.yaxis.set_minor_formatter(NullFormatter())
+    ax.set_yticks([20, 50, 100, 200, 500, 1000])
+    ax.legend(fontsize=6.5, frameon=False, loc="lower right")
+    ax2 = fig.add_axes([0.58, 0.60, 0.36, 0.25])
+    sc = d["scenarios"][0]
+    for (Dm, pts), col, mk in zip(sorted(sc["sensibilite"].items()), COULEURS, MARQUEURS):
+        ax2.plot([p[0] for p in pts], [max(100 * p[1], 0.01) for p in pts], color=col, marker=mk, ms=4.5, lw=1.6,
+                 mec="white", mew=0.6, label=f"Ø int. {Dm} mm")
+    ax2.axhline(100 * d["perte_COP_max"], color="#495057", lw=0.8, ls="--")
+    ax2.set_xscale("log", base=2); ax2.set_yscale("log"); ax2.set_ylim(0.05, 120)
+    ax2.set_xlabel("circuits en parallèle", fontsize=7.5); ax2.set_ylabel("perte de COP (%)", fontsize=7.5)
+    ax2.set_title("Perte de COP par la perte de charge (tubes nus)", fontsize=9)
+    ax2.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax2.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}")); ax2.yaxis.set_minor_formatter(NullFormatter())
+    ax2.legend(fontsize=6.5, frameon=False)
+    for a_ in (ax, ax2):
+        a_.tick_params(labelsize=7); a_.grid(True, color="#e9ecef", lw=0.6)
+        for sp in ("top", "right"):
+            a_.spines[sp].set_visible(False)
+    lignes = []
+    for sc in d["scenarios"]:
+        nom = "Tubes nus, 1 m/s" if sc["facteur_longueur"] == 1 else "4 fois plus courts"
+        for r in sc["resultats"]:
+            lignes.append([nom, f"{r['D_i_mm']:.1f}", f"{r['paroi_mm']:.2f}", f"{r['circuits']}",
+                           f"{r['longueur_circuit_cond_m']:.1f}", f"{r['evap']['charge_g']:.0f}",
+                           f"{r['cond']['charge_g']:.0f}", f"{r['charge_tubes_g']:.0f}",
+                           f"{r['charge_tubes_g'] + hors:.0f}"])
+    y = tableau(fig, 0.53, ["Longueur", "Ø int. (mm)", "Paroi (mm)", "Circuits", "Circuit cond. (m)",
+                            "Évap. (g)", "Cond. (g)", "Tubes (g)", "Total (g)"], lignes,
+                [0.17, 0.09, 0.09, 0.09, 0.13, 0.10, 0.10, 0.11, 0.12], "Résultats (perte de COP ≤ 2 %)",
+                taille=7, h_ligne=0.0185, degrades={7: -1, 8: -1})
+    fig.text(0.06, y + 0.02, f"Total : tubes + reste du circuit ({hors:.0f} g selon les volumes du simulateur : "
+             "huile du compresseur, carter, ligne liquide). Collecteurs et distributeurs non comptés.\n"
+             "Charge : fraction de vide de Rouhani-Axelsson ; perte de charge : Müller-Steinhagen et Heck ; "
+             "COP : sensibilité de Carnot (≈ 3 % par K perdu) ;\nau-delà d'environ 20 % de perte de COP, la valeur "
+             "n'est plus qu'indicative (perte de charge comparable à la pression). Charges colorées du rouge au vert.",
+             fontsize=7, va="top", color="#343a40", linespacing=1.45)
+    conclusion(fig, y - 0.035, [
+        "Le diamètre intérieur est un levier fort : la charge varie comme son carré. Passer de 4 à 2 mm la divise par 4.",
+        "Mais il faut alors 3 fois plus de circuits en parallèle pour garder la perte de charge du propane (39 au lieu de 12).",
+        "Le vrai problème est la longueur : en tubes nus à 1 m/s il faut ≈ 450 m de tube, et le total dépasse la limite",
+        "    à tous les diamètres, même 1,5 mm (193 g avec 64 circuits). Le reste du circuit prend déjà ≈ 95 g sur 152.",
+        "Le condenseur porte 87 % de la charge des tubes (liquide et diphasique dense) : c'est lui qu'il faut réduire.",
+        "Avec des tubes 4 fois plus courts (ailettes, air plus rapide) : Ø ≤ 2 mm tient dans la limite (138 g, 24 circuits).",
+        "Conclusion : canal fin ET tubes courts ; l'étape 3 (ailettes) devient prioritaire, et les collecteurs sont à",
+        "    concevoir avec soin, car leur volume s'ajoute (non compté ici)."], "Conclusion")
+    pdf.savefig(fig); plt.close(fig)
+
+
 def page_image(pdf, titre, images, notes=""):
     images = [FORMES / i for i in images if (FORMES / i).exists()]
     if not images:
@@ -568,6 +649,7 @@ def main():
         page_vitesse(pdf)
         page_niveau2(pdf)
         page_longitudinal(pdf)
+        page_charge_propane(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
                    "Tracées sur le premier maillage (triangles) ; calculs faits sur le maillage à couches (page convergence).")
         page_image(pdf, "Géométries : série 2", ["../maillages/formes_serie2.png"])
