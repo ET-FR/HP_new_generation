@@ -11,6 +11,9 @@ until [ -f ~/OPENFOAM_PRET ] || [ -f ~/OPENFOAM_ECHEC ]; do sleep 30; done
 [ -f ~/OPENFOAM_ECHEC ] && { echo "OpenFOAM non compilé" > $DOSSIER/ECHEC; exit 1; }
 source /opt/openfoam/OpenFOAM-v2606/etc/bashrc >/dev/null 2>&1
 export OMPI_MCA_rmaps_base_oversubscribe=1
+# pas d'attache des processus MPI à des cœurs fixes : sinon, avec -np 2, OpenMPI attache CHAQUE calcul
+# aux cœurs 0 et 1 et tous les cas parallèles s'y empilent (constaté le 10/11/2026 : 18 cas sur 2 cœurs)
+export OMPI_MCA_hwloc_base_binding_policy=none
 cd $DOSSIER
 un_cas() {
   c=$1; t=$(date +%s)
