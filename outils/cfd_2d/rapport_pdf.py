@@ -30,6 +30,19 @@ NIVEAU1 = [("rond", "Rond"), ("carre", "Carré"), ("losange", "Losange"),
            ("ellipse2", "Ellipse 2:1"), ("ellipse3", "Ellipse 3:1"), ("plat4", "Tube plat 4:1"),
            ("goutte", "Goutte"), ("lentille", "Lentille")]
 A4 = (8.27, 11.69)
+DT_REF = 10.0     # K, écart de température air / paroi de référence pour P vent / Q
+LEGENDE = (
+    "Conditions : batterie de 4 rangs en quinconce, air à 1 m/s en face, même charge de propane et même périmètre "
+    "côté propane pour toutes les formes.\n"
+    "Δp : perte de charge de l'air à travers la batterie ; fixe la puissance et le bruit du ventilateur.\n"
+    "h : coefficient d'échange moyen côté air, par m² de surface extérieure des tubes.\n"
+    "Efficacité : part de l'écart de température entre l'air entrant et la paroi récupérée par l'air en sortie ; "
+    "à vitesse égale,\n    elle est proportionnelle à la chaleur échangée par m² de face.\n"
+    f"P vent / Q : puissance de ventilation (Δp × débit) divisée par la chaleur échangée, pour un écart air / paroi de "
+    f"{DT_REF:.0f} K ; plus c'est bas, mieux c'est.\n"
+    "Prof. : profondeur de la batterie dans le sens de l'air (encombrement à charge égale).\n"
+    "Stabilité : écart entre les moyennes de la 1re et de la 2e moitié du calcul (écoulement instationnaire) ; "
+    "au-delà de ±2 %, le calcul est à prolonger.")
 BLEU = "#1c3d6e"
 
 
@@ -102,15 +115,16 @@ def page_synthese(pdf):
         if d and d.get("parametres", {}).get("couches"):
             r = d["resultats"]; n_ok += 1
             lignes.append([nom, f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f} %",
-                           f"{r['P_vent_sur_Q'] * 1e3:.1f}", f"{r['profondeur_mm']:.0f}",
+                           f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}", f"{r['profondeur_mm']:.0f}",
                            f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"])
         else:
             lignes.append([nom, "en cours", "", "", "", "", ""])
-    tableau(fig, y,
-            ["Forme (même charge R290)", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰/K)",
+    y = tableau(fig, y,
+            ["Forme (même charge R290)", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰)",
              "Prof. (mm)", "Stabilité"],
             lignes, [0.25, 0.10, 0.11, 0.13, 0.15, 0.14, 0.12],
             f"3. Comparaison des formes (niveau 1) : {n_ok} / {len(NIVEAU1)} calculées", taille=8)
+    fig.text(0.06, y + 0.02, LEGENDE, fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
     pdf.savefig(fig); plt.close(fig)
 
 
