@@ -5,6 +5,8 @@
  "ecart_mm": 1.6,
  "Pt_mm": 12.000685436173702,
  "Pl_mm": 10.392898450552362,
+ "profondeur_ailettes_mm": 41.57159380220945,
+ "marge_ailettes_mm": 2.1963635381693942,
  "rangs": 4,
  "cellules_2d": 32086,
  "tranches": 28,
@@ -12,6 +14,6 @@
  "premiere_tranche_mm": 0.019750791867073417,
  "tranche_milieu_mm": 0.12152242771049859,
  "surface_air_sans_ailettes_mm2_par_mm": 75.40037710274815,
- "surface_air_avec_ailettes_mm2_par_mm": 437.10060414831617,
- "facteur_surface": 5.797061247487911
+ "surface_air_avec_ailettes_mm2_par_mm": 495.67364398176585,
+ "facteur_surface": 6.573888129316794
 }

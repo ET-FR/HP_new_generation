@@ -81,6 +81,15 @@ def dessiner_coupe(ax, intervalles, z, s0, decal=0.0, lw=0.15, couleur="#2a78d6"
     ax.add_collection(PolyCollection(rects, facecolors=couleurs, edgecolors="k", linewidths=lw))
 
 
+def etendue_ailettes(b):
+    """Ailettes sur toute la profondeur de la batterie : chaque rang au centre de sa bande Pl,
+    soit une profondeur d'ailette de rangs × Pl (marge de Pl / 2 - demi-largeur du tube avant
+    le 1er rang et après le dernier). Renvoie (x début, x fin, marge) en mm."""
+    x0, x1 = b.x_noyau
+    m = b.Pl / 2 - (b.exterieur.bounds[2] - b.exterieur.bounds[0]) / 2
+    return x0 - m, x1 + m, m
+
+
 def vue_3d(ax, b, Fp, e, n_ail=4):
     """Tubes (cylindres) et ailettes (plaques translucides) sur quelques pas d'ailettes."""
     H = n_ail * Fp
@@ -94,7 +103,7 @@ def vue_3d(ax, b, Fp, e, n_ail=4):
         T, Z = np.meshgrid(np.linspace(t0, t1, 40), zz)
         ax.plot_surface(cx + r * np.cos(T), cy + r * np.sin(T), Z, color="#c0392b",
                         alpha=0.9, linewidth=0, shade=True)
-    x0, x1 = b.x_noyau
+    x0, x1, _ = etendue_ailettes(b)
     for k in range(n_ail + 1):
         zf = k * Fp
         X, Y = np.meshgrid([x0, x1], [0, b.Pt])
@@ -118,11 +127,12 @@ def main():
     b, xy, cellules, bords = mailler_couches(a.forme)
     z, n_demi = tranches(Fp - e)
     n2d, nz = len(cellules), len(z) - 1
-    x0, x1 = b.x_noyau
+    x0, x1, _ = etendue_ailettes(b)
     aire_ext = Polygon(b.exterieur.exterior.coords).area
     A_ail = 2 * (b.Pt * (x1 - x0) - b.rangs * aire_ext) / Fp
     A_tub = b.rangs * b.P_ext * (Fp - e) / Fp
     info = dict(forme=a.forme, pas_ailettes_mm=Fp, epaisseur_mm=e, ecart_mm=Fp - e, Pt_mm=b.Pt, Pl_mm=b.Pl,
+                profondeur_ailettes_mm=x1 - x0, marge_ailettes_mm=etendue_ailettes(b)[2],
                 rangs=b.rangs, cellules_2d=n2d, tranches=nz, cellules_3d=n2d * nz,
                 premiere_tranche_mm=float(z[1]), tranche_milieu_mm=float(np.diff(z).max()),
                 surface_air_sans_ailettes_mm2_par_mm=b.rangs * b.P_ext,
@@ -136,7 +146,7 @@ def main():
     fig = plt.figure(figsize=(15, 11.5))
     mil = lambda n: f"{n:,}".replace(",", " ")
     fig.suptitle(f"Premier maillage 3D : tubes ronds à ailettes plates (pas {Fp:g} mm, épaisseur {e:g} mm), "
-                 f"4 rangs en quinconce, Pt = {b.Pt:.0f} mm\n"
+                 f"4 rangs en quinconce, Pt = {b.Pt:.0f} mm, ailettes sur toute la profondeur ({x1 - x0:.1f} mm = 4 Pl)\n"
                  f"{mil(n2d)} mailles par tranche × {nz} tranches = {mil(n2d * nz)} mailles ; surface côté air × "
                  f"{info['facteur_surface']:.1f} par rapport aux tubes nus, même charge de propane",
                  fontsize=11.5, fontweight="bold")
@@ -178,10 +188,10 @@ def main():
     dessiner_coupe(ax, iv, z, s0, decal=s0, lw=0.12)
     for zf in (0, Fp - e):
         ax.plot([x0, x1], [zf, zf], color="#495057", lw=3, solid_capstyle="butt")
-    ax.set_xlim(cx - r - 1.2, cx - r + 1.0); ax.set_ylim(-0.08, Fp - e + 0.08); ax.set_aspect("equal")
+    ax.set_xlim(x0 - 0.8, cx - r + 0.6); ax.set_ylim(-0.08, Fp - e + 0.08); ax.set_aspect("equal")
     ax.set_xlabel("x (mm)", fontsize=8); ax.set_ylabel("z (mm)", fontsize=8); ax.tick_params(labelsize=7)
-    ax.set_title("(d) Zoom, coupe y = Pt / 2 : coin ailette / tube en amont du 1er tube\n"
-                 "(mailles fines contre l'ailette et contre le tube)", fontsize=8.5)
+    ax.set_title(f"(d) Zoom, coupe y = Pt / 2 : bord d'attaque de l'ailette ({etendue_ailettes(b)[2]:.1f} mm avant "
+                 "le 1er tube) et coin ailette / tube\n(mailles fines contre l'ailette et contre le tube)", fontsize=8.5)
 
     # (e) coupe yz à travers le centre du 1er tube : ce que voit l'air de face
     ivy = coupe(xy, cellules, (cx, 0.0), (cx, b.Pt))
