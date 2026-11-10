@@ -37,6 +37,11 @@ SERIE2 = [("naca0030", "Profil d'aile NACA 0030"), ("goutte_inversee", "Goutte i
           ("demi_cercle_plat", "Demi-cercle, plat amont"), ("demi_cercle_rond", "Demi-cercle, arrondi amont"),
           ("etoile6", "Rond à 6 ailettes longit."), ("cannele12", "Rond cannelé (12 ondes)"),
           ("trois_canaux", "Multicanaux (3 canaux)")]
+# Étape 1 : balayage en vitesse (10 novembre 2026)
+BALAYAGE = [("rond", "Rond"), ("ellipse2", "Ellipse 2:1"), ("lentille", "Lentille 3:1"), ("ellipse4", "Ellipse 4:1")]
+VITESSES = [0.5, 1.0, 2.0, 3.0]
+COULEURS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]   # ordre fixe, palette validée (CVD)
+MARQUEURS = ["o", "s", "^", "D"]
 A4 = (8.27, 11.69)
 DT_REF = 10.0     # K, écart de température air / paroi de référence pour P vent / Q
 LEGENDE = (
@@ -149,6 +154,65 @@ def page_comparaison(pdf):
     pdf.savefig(fig); plt.close(fig)
 
 
+def resultat_vitesse(cle, U):
+    d = lire(f"{cle}/resultat.json" if U == 1.0 else f"{cle}/resultat_U{U:g}.json")
+    return d["resultats"] if d and abs(d["parametres"]["U"] - U) < 1e-9 else None
+
+
+def page_vitesse(pdf):
+    res = {c: {U: resultat_vitesse(c, U) for U in VITESSES} for c, _ in BALAYAGE}
+    if not any(r for c in res for U, r in res[c].items() if U != 1.0 and r):
+        return
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Étape 1 : influence de la vitesse de l'air", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.945, "4 formes du meilleur compromis, 0,5 à 3 m/s en face, même batterie (4 rangs, même charge).",
+             fontsize=8.5, color="#495057")
+    axes = [fig.add_axes([0.08 + k * 0.31, 0.70, 0.25, 0.20]) for k in range(3)]
+    for (cle, nom), col, mk in zip(BALAYAGE, COULEURS, MARQUEURS):
+        pts = [(U, r) for U, r in res[cle].items() if r]
+        if not pts:
+            continue
+        Us = [U for U, _ in pts]
+        st = dict(color=col, marker=mk, ms=4.5, lw=1.6, label=nom, mec="white", mew=0.6)
+        axes[0].plot(Us, [r["h"] for _, r in pts], **st)
+        axes[1].plot(Us, [r["dp_Pa"] for _, r in pts], **st)
+        axes[2].plot([r["P_vent_sur_Q"] / DT_REF * 1e3 for _, r in pts], [100 * r["T_sortie"] for _, r in pts], **st)
+    for ax, xl, yl, t in ((axes[0], "vitesse (m/s)", "h (W/m²K)", "Coefficient d'échange"),
+                          (axes[1], "vitesse (m/s)", "Δp (Pa)", "Perte de charge"),
+                          (axes[2], "P vent / Q (‰, 10 K)", "efficacité (%)", "Compromis")):
+        ax.set_xlabel(xl, fontsize=7.5); ax.set_ylabel(yl, fontsize=7.5); ax.set_title(t, fontsize=9)
+        ax.tick_params(labelsize=7); ax.grid(True, color="#e9ecef", lw=0.6)
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+    axes[1].set_yscale("log"); axes[2].set_xscale("log")
+    for ax, axe in ((axes[1], "yaxis"), (axes[2], "xaxis")):
+        getattr(ax, axe).set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+        getattr(ax, axe).set_minor_formatter(NullFormatter())
+    axes[2].set_xticks([0.1, 0.2, 0.5, 1, 2, 5, 10])
+    axes[0].legend(fontsize=7, frameon=False, loc="upper left")
+    lignes = []
+    for cle, nom in BALAYAGE:
+        for U in VITESSES:
+            r = res[cle][U]
+            if r is None:
+                lignes.append([nom, f"{U:g}", "en cours", "", "", "", "", ""]); continue
+            z = r.get("zukauskas", {})
+            lignes.append([nom, f"{U:g}", f"{r['Re_max_D6']:.0f}", f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}",
+                           f"{100 * r['T_sortie']:.1f} %", f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
+                           f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"
+                           + (f"  (Δp Zuk. {100 * z['ecart_dp']:+.0f} %)" if "ecart_dp" in z else "")])
+    y = tableau(fig, 0.63, ["Forme", "U (m/s)", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰)",
+                            "Stabilité"], lignes, [0.15, 0.08, 0.09, 0.10, 0.11, 0.11, 0.13, 0.23],
+                "Résultats", taille=7.2, h_ligne=0.021)
+    fig.text(0.06, y + 0.02, "Re max : nombre de Reynolds sur la vitesse maximale entre tubes et le Ø 6 mm du rond. "
+             "Au-delà de Re ≈ 1 000, l'écoulement réel devient\n3D et turbulent dans les sillages : le calcul 2D "
+             "laminaire est alors moins fiable (tendance correcte, valeurs à confirmer en 3D).\n"
+             "Δp Zuk. : écart aux abaques de Zukauskas (tubes ronds seulement).",
+             fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
+    pdf.savefig(fig); plt.close(fig)
+
+
 def page_image(pdf, titre, images, notes=""):
     images = [FORMES / i for i in images if (FORMES / i).exists()]
     if not images:
@@ -168,8 +232,13 @@ def main():
     with PdfPages(SORTIE) as pdf:
         page_synthese(pdf)
         page_comparaison(pdf)
+        page_vitesse(pdf)
         for cle, nom in NIVEAU1 + SERIE2:
             page_image(pdf, nom, [f"{cle}/resultat.png"])
+        for cle, nom in BALAYAGE:
+            for U in VITESSES:
+                if U != 1.0:
+                    page_image(pdf, f"{nom}, {U:g} m/s", [f"{cle}/resultat_U{U:g}.png"])
         page_image(pdf, "Validation : plaques parallèles", ["plaques/profils_validation.png", "plaques/champs.png"])
         page_image(pdf, "Validation : tube isolé", ["tube_isole/resultat.png"])
         page_image(pdf, "Faisceau de tubes ronds : convergence en maillage",

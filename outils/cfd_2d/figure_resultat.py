@@ -50,7 +50,7 @@ def main(cas, sortie):
     Um = np.linalg.norm(s.cell_data["UMean"], axis=1)
     umax = float(np.percentile(Ui, 99.8))
     fig = plt.figure(figsize=(15, 13.5))
-    fig.suptitle(f"Résultat CFD 2D : {m['nom']}, même charge R290 que le rond, air 1 m/s, "
+    fig.suptitle(f"Résultat CFD 2D : {m['nom']}, même charge R290 que le rond, air {m['U']:g} m/s, "
                  f"OpenFOAM v2606, pimpleFoam laminaire instationnaire", fontsize=12, fontweight="bold", y=0.99)
     hs = 0.155
     y = [0.80, 0.61, 0.42, 0.23]
@@ -81,10 +81,15 @@ def main(cas, sortie):
               f"  Nu faisceau       {z['Nu_loi_1e3']:.2f} ({100 * (r['Nu_D6'] / z['Nu_loi_1e3'] - 1):+.0f} %)\n"
               f"  Δp abaques        {z.get('dp_Pa', float('nan')):.2f} Pa ({100 * z.get('ecart_dp', float('nan')):+.0f} %)")
     else:
-        ref = Path(__file__).resolve().parents[2] / "docs" / "formes" / "rond" / "convergence_couches.json"
-        g0 = json.loads(ref.read_text())["grandeurs"]
-        dp0, T0, h0 = g0["dp_Pa"]["moyen"], g0["T_sortie"]["moyen"], g0["h"]["moyen"]
-        d2 = (f"Comparaison au rond (même charge, même maillage)\n"
+        rond = Path(__file__).resolve().parents[2] / "docs" / "formes" / "rond"
+        if abs(m["U"] - 1.0) < 1e-9:
+            g0 = json.loads((rond / "convergence_couches.json").read_text())["grandeurs"]
+            dp0, T0, h0 = g0["dp_Pa"]["moyen"], g0["T_sortie"]["moyen"], g0["h"]["moyen"]
+        else:      # rond à la même vitesse (balayage en vitesse), s'il est déjà rangé
+            ref = rond / f"resultat_U{m['U']:g}.json"
+            r0 = json.loads(ref.read_text())["resultats"] if ref.exists() else {}
+            dp0, T0, h0 = (r0.get(k, float("nan")) for k in ("dp_Pa", "T_sortie", "h"))
+        d2 = (f"Comparaison au rond (même charge, même maillage, {m['U']:g} m/s)\n"
               f"  Δp          {r['dp_Pa']:5.2f} Pa  contre {dp0:.2f}  ({100 * (r['dp_Pa'] / dp0 - 1):+.0f} %)\n"
               f"  efficacité  {100 * r['T_sortie']:5.1f} %   contre {100 * T0:.1f}  ({100 * (r['T_sortie'] / T0 - 1):+.0f} %)\n"
               f"  h           {r['h']:5.1f}     contre {h0:.1f}  ({100 * (r['h'] / h0 - 1):+.0f} %)")
