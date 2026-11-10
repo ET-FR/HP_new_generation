@@ -341,12 +341,11 @@ def main():
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
                    "Tracées sur le premier maillage (triangles) ; calculs faits sur le maillage à couches (page convergence).")
         page_image(pdf, "Géométries : série 2", ["../maillages/formes_serie2.png"])
+        # vues CFD rangées par forme : toutes les vitesses d'une forme à la suite (0,5 → 3 m/s)
         for cle, nom in NIVEAU1 + SERIE2:
-            page_image(pdf, nom, [f"{cle}/resultat.png"])
-        for cle, nom in BALAYAGE:
             for U in VITESSES:
-                if U != 1.0:
-                    page_image(pdf, f"{nom}, {U:g} m/s", [f"{cle}/resultat_U{U:g}.png"])
+                page_image(pdf, f"{nom}, {U:g} m/s".replace(".", ","),
+                           [f"{cle}/resultat.png" if U == 1.0 else f"{cle}/resultat_U{U:g}.png"])
         page_image(pdf, "Maillages de validation (niveau 0)",
                    ["../maillages/validation_niveau0.png", "../maillages/openfoam_niveau0.png"])
         page_image(pdf, "Validation : plaques parallèles", ["plaques/profils_validation.png", "plaques/champs.png"])
