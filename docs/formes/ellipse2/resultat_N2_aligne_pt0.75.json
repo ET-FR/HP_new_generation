@@ -1,0 +1,83 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "U": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 1.0,
+  "nproc": 2,
+  "finesse": 1.0,
+  "couches": {
+   "premiere": 0.01,
+   "raison": 1.15,
+   "n": 15,
+   "epaisseur": 0.4758041086108217,
+   "tangentielle": 0.08
+  },
+  "forme": "ellipse2",
+  "nom": "Ellipse 2:1",
+  "Pt": 0.010700055447329077,
+  "Pl": 0.012355359785718726,
+  "rangs": 4,
+  "A_int": 1.4940095816147765e-05,
+  "P_int": 0.014940095816147757,
+  "P_ext": 0.021222950357895964,
+  "x_noyau": [
+   0.0,
+   0.04523378040322615
+  ],
+  "x_domaine": [
+   -0.03,
+   0.10523378040322615
+  ],
+  "largeur_frontale": 0.005084150240341595,
+  "Umax": 1.9053126883295215,
+  "Re_Dext": 395.77836411609496,
+  "instationnaire": true,
+  "fin": 0.938,
+  "debut_moyenne": 0.27,
+  "aligne": true,
+  "pt_facteur": 0.75,
+  "pl_facteur": 1.0,
+  "maillage": {
+   "cellules": 34270,
+   "faces": 128701,
+   "internes": 58609
+  },
+  "suffixe": "_N2_aligne_pt0.75",
+  "fin_initiale": 0.604
+ },
+ "resultats": {
+  "cas": "ellipse2_N2_aligne_pt0.75",
+  "forme": "ellipse2",
+  "U": 1.0,
+  "Umax": 1.9053126883295215,
+  "Re_max_D6": 754.0815389166971,
+  "dp_Pa": 1.5566526015100088,
+  "fluct_p": 0.06250482965985853,
+  "T_sortie": 0.19129180276281724,
+  "fluct_T": 0.06012872389536531,
+  "NTU": 0.21231712261766963,
+  "h": 32.413786277149875,
+  "Nu_D6": 7.519962837907081,
+  "j": 0.011178355987764729,
+  "f_par_rang": 0.17807489623245812,
+  "j_sur_f": 0.06277333989386441,
+  "Q_W_par_K": 0.0024791731168787457,
+  "ecart_bilan": 2.815998091933569e-05,
+  "fluct_flux": 0.001202529554389147,
+  "P_vent_sur_Q": 0.006718477609051075,
+  "profondeur_mm": 45.23378040322615,
+  "A_air": 8.489180143158385e-05,
+  "stabilite_moyenne": {
+   "dp": 0.0002641112790397862,
+   "T_sortie": 0.0003091482095971262,
+   "flux_paroi": 2.3337570981638415e-05
+  },
+  "duree_suffisante": true
+ }
+}
