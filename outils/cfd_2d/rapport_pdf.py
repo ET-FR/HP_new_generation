@@ -64,8 +64,38 @@ def lire(chemin):
     return json.loads(p.read_text()) if p.exists() else None
 
 
-def tableau(fig, y, entetes, lignes, largeurs, titre, taille=8.5, h_ligne=0.026):
-    """Tableau placé sous l'ordonnée y (fraction de page) ; renvoie l'ordonnée sous le tableau."""
+def valeur(texte):
+    """Nombre lu dans une cellule (« 27.5 % », « ± 0.1 % », « 3.32 ») ; None si ce n'en est pas un."""
+    try:
+        return float(str(texte).replace("±", "").replace("%", "").replace(",", ".").split()[0])
+    except (ValueError, IndexError):
+        return None
+
+
+ROUGE, JAUNE, VERT = (0.973, 0.412, 0.420), (1.0, 0.922, 0.518), (0.388, 0.745, 0.482)
+
+
+def couleur_degrade(x):
+    """0 → rouge, 0,5 → jaune, 1 → vert, éclairci pour garder le texte lisible."""
+    a, b, t = (ROUGE, JAUNE, 2 * x) if x < 0.5 else (JAUNE, VERT, 2 * x - 1)
+    c = [a[k] + (b[k] - a[k]) * t for k in range(3)]
+    return tuple(0.45 + 0.55 * v for v in c)
+
+
+def bornes(lignes, col):
+    """5e et 95e centiles de la colonne : une valeur extrême ne doit pas écraser l'échelle."""
+    import numpy as np
+    v = [valeur(l[col]) for l in lignes]
+    v = [x for x in v if x is not None]
+    return tuple(np.percentile(v, [5, 95])) if v else (0.0, 1.0)
+
+
+def tableau(fig, y, entetes, lignes, largeurs, titre, taille=8.5, h_ligne=0.026, degrades=None):
+    """Tableau placé sous l'ordonnée y (fraction de page) ; renvoie l'ordonnée sous le tableau.
+    degrades : {colonne: sens} ; fond du rouge (mauvais) au vert (bon), échelle propre à ce tableau.
+    sens = +1 : plus c'est grand, mieux c'est (chaleur) ; -1 : plus c'est petit, mieux c'est (Δp)."""
+    sens = degrades or {}
+    degrades = {c: bornes(lignes, c) for c in sens}
     fig.text(0.06, y, titre, fontsize=11, fontweight="bold", color=BLEU, va="top")
     h = h_ligne * (len(lignes) + 1)
     ax = fig.add_axes([0.06, y - 0.025 - h, 0.88, h]); ax.axis("off")
@@ -80,6 +110,12 @@ def tableau(fig, y, entetes, lignes, largeurs, titre, taille=8.5, h_ligne=0.026)
             cel.set_facecolor("#f1f3f5")
         if c == 0 and r > 0:
             cel.set_text_props(ha="left"); cel._loc = "left"
+        if r > 0 and c in degrades:
+            x = valeur(lignes[r - 1][c])
+            lo, hi = degrades[c]
+            if x is not None and hi > lo:
+                t = min(1.0, max(0.0, (x - lo) / (hi - lo)))
+                cel.set_facecolor(couleur_degrade(t if sens[c] > 0 else 1 - t))
     return y - 0.025 - h - 0.035
 
 
@@ -218,8 +254,11 @@ def page_comparaison(pdf):
         res = [ligne_forme(c, n) for c, n in liste]
         n_ok = sum(ok for _, ok in res)
         y = tableau(fig, y, entetes, [l for l, _ in res], largeurs,
-                    f"{titre} : {n_ok} / {len(liste)} calculées", taille=7.8, h_ligne=0.022)
-    fig.text(0.06, y + 0.02, LEGENDE, fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
+                    f"{titre} : {n_ok} / {len(liste)} calculées", taille=7.8, h_ligne=0.022,
+                    degrades={1: -1, 3: +1})
+    fig.text(0.06, y + 0.02, LEGENDE + "\nCouleurs : du rouge (moins bien) au vert (mieux), chaque tableau sur sa propre échelle ; "
+             "Efficacité : vert = plus de chaleur ; Δp : vert = moins de perte de charge.",
+             fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -325,28 +364,32 @@ def page_vitesse(pdf):
         for U in VITESSES:
             r = res[cle][U]
             if r is None:
-                lignes.append([nom, f"{U:g}", "en cours", "", "", "", "", ""]); continue
+                lignes.append([nom, f"{U:g}", "en cours", "", "", "", "", "", ""]); continue
             z = r.get("zukauskas", {})
             lignes.append([nom, f"{U:g}", f"{r['Re_max_D6']:.0f}", f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}",
-                           f"{100 * r['T_sortie']:.1f} %", f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
+                           f"{100 * r['T_sortie']:.1f} %", f"{1.2 * 1006 * U * r['T_sortie'] * DT_REF / 1e3:.2f}",
+                           f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
                            f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"
                            + (f"  (Δp Zuk. {100 * z['ecart_dp']:+.0f} %)" if "ecart_dp" in z else "")])
-    y = tableau(fig, 0.63, ["Forme", "U (m/s)", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité", "P vent / Q (‰)",
-                            "Stabilité"], lignes, [0.15, 0.08, 0.09, 0.10, 0.11, 0.11, 0.13, 0.23],
-                "Résultats", taille=7.2, h_ligne=0.021)
+    y = tableau(fig, 0.63, ["Forme", "U (m/s)", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité", "Q face (kW/m²)",
+                            "P vent / Q (‰)", "Stabilité"], lignes,
+                [0.12, 0.07, 0.08, 0.09, 0.10, 0.10, 0.12, 0.12, 0.20],
+                "Résultats", taille=6.9, h_ligne=0.021, degrades={3: -1, 6: +1})
     fig.text(0.06, y + 0.02, "Re max : nombre de Reynolds sur la vitesse maximale entre tubes et le Ø 6 mm du rond. "
              "Au-delà de Re ≈ 1 000, l'écoulement réel devient\n3D et turbulent dans les sillages : le calcul 2D "
              "laminaire est alors moins fiable (tendance correcte, valeurs à confirmer en 3D).\n"
-             "Δp Zuk. : écart aux abaques de Zukauskas (tubes ronds seulement).",
+             "Δp Zuk. : écart aux abaques de Zukauskas (tubes ronds seulement). Q face : chaleur par m² de face "
+             "(10 K d'écart air / paroi) ; Q face et Δp colorés du rouge au vert ;\nl'efficacité baisse avec la vitesse alors que la "
+             "chaleur augmente, c'est donc Q face qui compare les vitesses entre elles.",
              fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
-    conclusion(fig, y - 0.04, [
+    conclusion(fig, y - 0.065, [
         "Quand la vitesse est libre, le rond donne le plus de chaleur par m² de face pour un même coût de ventilation",
         "    (graphique de droite) ; l'ellipse 2:1 le suit de près (5 % en dessous), la lentille et l'ellipse 4:1 sont derrière.",
         "Exemple : le rond à 0,5 m/s échange 2,3 kW/m² pour 0,26 ‰, mieux que l'ellipse 4:1 à 1 m/s (1,8 kW/m² pour 0,30 ‰).",
         "Ralentir l'air est donc plus efficace qu'allonger le tube ; l'avantage des formes allongées à 1 m/s venait surtout",
         "    de la vitesse plus faible entre les tubes. Elles ne gardent l'avantage que pour des P vent / Q très bas (< 0,2 ‰).",
-        "Le prix d'une vitesse faible est une grande surface de face : c'est la taille de la fenêtre qui fixera la vitesse.",
-        "Au-delà de 2 m/s (Re max > 1 000), les valeurs 2D sont à confirmer en 3D."], "Conclusion de l'étape 1b")
+        "Le prix d'une vitesse faible est une grande surface de face, fixée par la fenêtre. Au-delà de 2 m/s : à confirmer en 3D."],
+        "Conclusion de l'étape 1b")
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -406,13 +449,14 @@ def page_niveau2(pdf):
     y = tableau(fig, 0.715, ["Forme", "Agencement", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité",
                             "P vent / Q (‰)", "Prof. (mm)", "Charge", "Q / charge", "Stabilité"], lignes,
                 [0.09, 0.15, 0.07, 0.07, 0.09, 0.09, 0.10, 0.08, 0.07, 0.09, 0.10], "Résultats",
-                taille=6.5, h_ligne=0.0178)
+                taille=6.5, h_ligne=0.0178, degrades={3: -1, 5: +1, 9: +1})
     fig.text(0.06, y + 0.02, "Mêmes grandeurs que les autres tableaux (Δp, h, efficacité, P vent / Q, profondeur, "
              "stabilité : voir la légende de la page de comparaison des formes).\n"
              "Re max : Reynolds sur la vitesse maximale entre tubes et le Ø 6 mm du rond.\n"
              "Charge : charge de propane par m² de face, relative à la référence (1 = 4 rangs, Pt de référence).\n"
-             "Q / charge : chaleur par m² de face (kW/m², 10 K d'écart air / paroi) divisée par la charge relative ; "
-             "c'est le critère qui compte\nsi la charge de 152 g est la contrainte limitante.",
+             "Q / charge : chaleur par m² de face (kW/m², 10 K d'écart air / paroi) divisée par la charge relative "
+             "\n(Δp, efficacité et Q / charge colorés du rouge au vert) ; Q / charge est le critère qui compte si la charge de 152 g "
+             "est la contrainte limitante.",
              fontsize=7, va="top", color="#343a40", linespacing=1.45)
     conclusion(fig, y - 0.058, [
         "La quinconce s'impose : en aligné, la chaleur chute de 43 % (rond) et de 27 % (ellipse 2:1) à charge égale.",
@@ -421,8 +465,82 @@ def page_niveau2(pdf):
         "Moins de rangs utilise mieux le propane (2 rangs : + 13 %) mais demande 2 fois plus de surface de face.",
         "Le pas en profondeur (Pl) change peu la chaleur ; Pl × 0,6 amincit la batterie (37 → 25 mm), + 37 % de ventilation.",
         "L'ellipse 2:1 ventile partout 2 fois moins par kW que le rond, pour 20 à 25 % de chaleur par gramme en moins.",
-        "À vérifier : rond Pl × 1,5 (h et efficacité identiques à la référence) et ellipse Pl × 1,5 (stabilité ± 10,7 %)."],
+        "Rond Pl × 1,5 vérifié : calcul bien distinct, Pl n'y change presque rien. À prolonger : ellipse Pl × 1,5 (± 10,7 %)."],
         "Conclusion de l'étape 2")
+    pdf.savefig(fig); plt.close(fig)
+
+
+def page_longitudinal(pdf):
+    """Piste : tubes parallèles à l'air, estimation analytique (outils/analytique/tubes_longitudinaux.py)."""
+    d = lire("longitudinal/resultat.json")
+    if not d:
+        return
+    pts = []
+    for cle, nom in NIVEAU1 + SERIE2:
+        r = lire(f"{cle}/resultat.json")
+        if r and r.get("parametres", {}).get("couches"):
+            r = r["resultats"]
+            pts.append((r["P_vent_sur_Q"] / DT_REF * 1e3, 100 * r["T_sortie"], nom))
+    pareto = sorted(p for p in pts if not any(q[0] <= p[0] and q[1] >= p[1] and q != p for q in pts))
+    lon = d["charge_egale"]
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Piste : tubes parallèles à l'air (estimation)", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.95, "Tubes ronds Ø 6 mm couchés dans le sens de l'air, en réseau triangulaire de pas P dans le plan "
+             "de la face ; air à 1 m/s.\nMême tube et même charge de propane que la batterie de référence : la "
+             "profondeur découle du pas (même longueur de tube par m² de face).\nCalcul analytique, pas CFD : "
+             "couche limite laminaire en développement dans l'anneau équivalent à la cellule, pertes aux bouts.",
+             fontsize=8, color="#495057", va="top", linespacing=1.4)
+    ax = fig.add_axes([0.11, 0.53, 0.83, 0.34])
+    ax.scatter([p[0] for p in pts if p not in pareto], [p[1] for p in pts if p not in pareto], s=22,
+               color="#adb5bd", edgecolor="white", lw=0.5, zorder=2, label="formes en travers (CFD 2D)")
+    ax.plot([p[0] for p in pareto], [p[1] for p in pareto], color="#2a78d6", lw=1.4, marker="o", ms=5,
+            mec="white", mew=0.7, zorder=3, label="front de Pareto, en travers")
+    for x, yv, nom in pareto:
+        ax.annotate(nom, (x, yv), xytext=(-5, 4), textcoords="offset points", fontsize=6, ha="right", color="#2a78d6")
+    xs = [1e3 * r["P_vent_sur_Q"] for r in lon]; ys = [100 * r["T_sortie"] for r in lon]
+    ax.plot(xs, ys, color="#eb6834", lw=1.8, marker="s", ms=5, mec="white", mew=0.7, zorder=4,
+            label="tubes parallèles à l'air (estimation)")
+    for r, x, yv in zip(lon, xs, ys):
+        ax.annotate(f"P = {r['P_mm']:g} mm", (x, yv), xytext=(5, -9), textcoords="offset points", fontsize=6,
+                    color="#b8461b")
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+    ax.set_xscale("log")
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}")); ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_xticks([0.2, 0.5, 1, 2, 5, 10])
+    ax.set_xlabel("P vent / Q (‰, 10 K d'écart air / paroi) : plus bas = moins de ventilateur", fontsize=8)
+    ax.set_ylabel("Efficacité (%) : plus haut = plus de chaleur", fontsize=8)
+    ax.tick_params(labelsize=7.5); ax.grid(True, color="#e9ecef", lw=0.6)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    ax.legend(fontsize=7, frameon=False, loc="upper left")
+    lignes = [[f"{r['P_mm']:g}", f"{r['P_sur_D']:.2f}", f"{r['profondeur_mm']:.0f}", f"{r['Re_Dh']:.0f}",
+               f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f} %", f"{1e3 * r['P_vent_sur_Q']:.2f}",
+               "faible (P/D < 1,5)" if r["P_sur_D"] < 1.49 else ("transition ?" if r["Re_Dh"] > 2300 else "bonne")]
+              for r in lon]
+    ref = lire("rond/resultat.json")["resultats"]
+    lignes.append(["Rond en travers", "2.00", f"{ref['profondeur_mm']:.0f}", "", f"{ref['dp_Pa']:.2f}", f"{ref['h']:.1f}",
+                   f"{100 * ref['T_sortie']:.1f} %", f"{ref['P_vent_sur_Q'] / DT_REF * 1e3:.2f}", "CFD 2D"])
+    v = d["verification"]
+    y = tableau(fig, 0.47, ["Pas P (mm)", "P / D", "Prof. (mm)", "Re (Dh)", "Δp (Pa)", "h (W/m²K)", "Efficacité",
+                            "P vent / Q (‰)", "Fiabilité"], lignes,
+                [0.13, 0.08, 0.10, 0.09, 0.09, 0.10, 0.11, 0.13, 0.17], "Résultats à charge égale (1 m/s)",
+                taille=7, h_ligne=0.019, degrades={4: -1, 6: +1})
+    fig.text(0.06, y + 0.02, f"Vérification du calcul sur le canal plan : f·Re = {v['fRe']:.2f} (exact 24), "
+             f"Nu = {v['Nu']:.2f} (exact 7,54) ; zone d'entrée à moins de 2,5 % de la corrélation de Shah.\n"
+             "Fiabilité : l'anneau équivalent n'est plus fidèle sous P/D ≈ 1,5 (passage très inégal autour du tube) ; "
+             "au-delà de Re ≈ 2 300 l'écoulement peut devenir turbulent.\nCollecteurs non comptés : ni leur volume de "
+             "propane, ni leur obstacle à l'air. Δp et efficacité colorés du rouge au vert.",
+             fontsize=7, va="top", color="#343a40", linespacing=1.45)
+    conclusion(fig, y - 0.04, [
+        "Sur le papier, les tubes parallèles à l'air valent les meilleures formes en travers : la courbe suit le front de",
+        "    Pareto, un peu en dessous à pas large (P ≥ 10 mm), un peu au-dessus à pas serré (P ≤ 9 mm).",
+        "Raison : à charge égale les tubes sont courts (16 à 42 mm), l'air reste en régime d'entrée où l'échange est fort.",
+        "Les points au-dessus du front (P = 7,5 et 8 mm) sont ceux où le modèle est le moins fiable (passage inégal).",
+        "    Exemple P = 8 mm : autant de chaleur que le rond en travers, 12 % de Δp en moins, 19 mm de profondeur au lieu de 37.",
+        "Bilan : concurrent sérieux, pas une rupture ; l'écart au front reste dans l'incertitude (± 15 %).",
+        "Le juge sera le collecteur (milliers de tubes de 2 cm à raccorder), non compté ici ; avantage non compté :",
+        "    contre-courant air / propane. Suite si on garde la piste : CFD 3D d'une cellule et dessin du collecteur."],
+        "Conclusion")
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -449,6 +567,7 @@ def main():
         page_compromis(pdf)
         page_vitesse(pdf)
         page_niveau2(pdf)
+        page_longitudinal(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
                    "Tracées sur le premier maillage (triangles) ; calculs faits sur le maillage à couches (page convergence).")
         page_image(pdf, "Géométries : série 2", ["../maillages/formes_serie2.png"])
