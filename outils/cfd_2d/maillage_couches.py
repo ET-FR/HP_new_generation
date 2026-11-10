@@ -51,7 +51,16 @@ def chemins(poly, eps=1e-9):
     bas = pts[(pts[:, 1] < -eps)]
     bas = bas[np.argsort(np.mod(np.arctan2(bas[:, 1], bas[:, 0]), 2 * math.pi))]
     del ang
-    return [R, *map(tuple, haut), L], [L, *map(tuple, bas), R]
+    return _reechantillonner([R, *map(tuple, haut), L]), _reechantillonner([L, *map(tuple, bas), R])
+
+
+def _reechantillonner(chemin, pas=0.02):
+    """Points régulièrement espacés le long du chemin (polyligne), extrémités conservées.
+    Évite les ondulations d'une spline passant par des points très inégalement espacés
+    (côtés droits décrits par 2 points, coins arrondis par beaucoup) : elle pourrait se recouper."""
+    ligne = LineString(chemin)
+    n = max(8, int(math.ceil(ligne.length / pas)))
+    return [tuple(ligne.interpolate(i / n, normalized=True).coords[0]) for i in range(n + 1)]
 
 
 def _longueur(p):
