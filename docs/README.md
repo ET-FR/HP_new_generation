@@ -10,3 +10,4 @@
 | `resultats_niveau0.md` | Détail de la validation et de la convergence |
 | `plan_formes_simples.md`, `plan_echangeurs.md`, `methode_optimisation.md` | Plans et décisions |
 | `bibliographie_echangeurs.md` | Bibliographie commentée |
+| `nomenclature.md` | Nomenclature de la PAC (rôle, choix, masse, coût, charge R290) |
