@@ -4,7 +4,8 @@
 # la machine AWS SEULEMENT si tous les cas ont été rapatriés et vérifiés.
 #   outils/aws/finaliser_campagne.sh <id_instance> <ip> <campagne> "<message de commit>" <dossier_distant>:<niveau> ...
 # Chaque dossier distant doit contenir ordre.txt et TERMINE en fin de calcul. Un cas dont la vitesse
-# n'est pas 1 m/s est rangé avec le suffixe _U<vitesse> (resultat_U2.json, ...). Les ronds sont
+# n'est pas 1 m/s est rangé avec le suffixe _U<vitesse> (resultat_U2.json, ...), sauf si cas.json
+# donne son propre « suffixe » (niveau 2 : _N2_rangs8, ...). Les ronds sont
 # traités en premier (référence des comparaisons). Journal : cfd_campagne/<campagne>/journal.txt
 ID=$1; IP=$2; CAMP=$3; MSG=$4; shift 4
 CLE=~/.ssh/openfoam-key.pem
@@ -30,7 +31,7 @@ for d in "$@"; do
     || { log "ÉCHEC du rapatriement de $dist"; ok=0; }
   for c in $(distant "cat $dist/ordre.txt" | sort -t_ -k1,1 | awk '/^rond/{print; next}{a[n++]=$0} END{for(i=0;i<n;i++)print a[i]}'); do
     if grep -q '^End' $R/$niv/$c/log.pimpleFoam* 2>/dev/null && [ -f $R/$niv/$c/cas.json ]; then
-      suf=$(.venv/bin/python -c "import json;U=json.load(open('$R/$niv/$c/cas.json'))['U'];print('' if abs(U-1)<1e-9 else f'_U{U:g}')")
+      suf=$(.venv/bin/python -c "import json;m=json.load(open('$R/$niv/$c/cas.json'));U=m['U'];print(m.get('suffixe') or ('' if abs(U-1)<1e-9 else f'_U{U:g}'))")
       outils/cfd_2d/traiter_cas.sh $R/$niv/$c $niv $suf >> $J 2>&1 || { log "ÉCHEC du traitement de $c"; ok=0; }
     else
       log "INCOMPLET : $niv/$c"; ok=0

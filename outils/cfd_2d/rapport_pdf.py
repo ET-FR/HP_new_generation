@@ -316,6 +316,69 @@ def page_vitesse(pdf):
     pdf.savefig(fig); plt.close(fig)
 
 
+# Niveau 2 : agencement (10 novembre 2026), rond et ellipse 2:1 à 1 m/s
+NIVEAU2_FORMES = [("rond", "Rond"), ("ellipse2", "Ellipse 2:1")]
+NIVEAU2 = [("rangs1", "1 rang"), ("rangs2", "2 rangs"), ("rangs8", "8 rangs"), ("pt0.75", "Pt × 0,75"),
+           ("pt1.25", "Pt × 1,25"), ("pt1.5", "Pt × 1,5"), ("pl0.6", "Pl × 0,6"), ("pl1.5", "Pl × 1,5"),
+           ("aligne", "Aligné"), ("aligne_pt0.75", "Aligné, Pt × 0,75")]
+
+
+def q_face(r, U):
+    """Chaleur par m² de face pour 10 K d'écart air / paroi (kW/m²)."""
+    return 1.2 * 1006 * U * r["T_sortie"] * DT_REF / 1e3
+
+
+def page_niveau2(pdf):
+    res = {}
+    for cle, _ in NIVEAU2_FORMES:
+        for tag, _ in [("ref", "")] + NIVEAU2:
+            d = lire(f"{cle}/resultat.json" if tag == "ref" else f"{cle}/resultat_N2_{tag}.json")
+            if d:
+                res[cle, tag] = d
+    if not any(t != "ref" for _, t in res):
+        return
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Niveau 2 : agencement de la batterie", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.95, "Rond et ellipse 2:1, air à 1 m/s. Référence : 4 rangs en quinconce, Pt = 2 Ø (rond), "
+             "Pl = Pt √3 / 2.\nLa charge de propane par m² de face varie ici comme rangs / Pt : colonne « Charge ».",
+             fontsize=8, color="#495057", va="top", linespacing=1.4)
+    axes = [fig.add_axes([0.08 + k * 0.31, 0.70, 0.25, 0.18]) for k in range(3)]
+    series = [("rangs", [("rangs1", 1), ("rangs2", 2), ("ref", 4), ("rangs8", 8)], "nombre de rangs"),
+              ("pt", [("pt0.75", 0.75), ("ref", 1.0), ("pt1.25", 1.25), ("pt1.5", 1.5)], "Pt / Pt référence"),
+              ("pl", [("pl0.6", 0.6), ("ref", 1.0), ("pl1.5", 1.5)], "Pl / Pl référence")]
+    for ax, (_, pts, xl) in zip(axes, series):
+        for (cle, nom), col, mk in zip(NIVEAU2_FORMES, COULEURS, MARQUEURS):
+            xy = [(x, q_face(res[cle, t]["resultats"], 1.0)) for t, x in pts if (cle, t) in res]
+            if xy:
+                ax.plot(*zip(*xy), color=col, marker=mk, ms=4.5, lw=1.6, mec="white", mew=0.6, label=nom)
+        ax.set_xlabel(xl, fontsize=7.5); ax.set_title("Q par m² de face", fontsize=9)
+        ax.tick_params(labelsize=7); ax.grid(True, color="#e9ecef", lw=0.6)
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+    axes[0].set_ylabel("kW/m² (10 K)", fontsize=7.5); axes[0].set_xticks([1, 2, 4, 8])
+    axes[0].legend(fontsize=7, frameon=False, loc="upper left")
+    lignes = []
+    for cle, nom in NIVEAU2_FORMES:
+        for tag, titre in [("ref", "Référence (4 rangs)")] + NIVEAU2:
+            d = res.get((cle, tag))
+            if not d:
+                lignes.append([nom, titre, "en cours", "", "", "", "", "", ""]); continue
+            r, m = d["resultats"], d["parametres"]
+            charge = m["rangs"] / 4 / m.get("pt_facteur", 1.0)
+            q = q_face(r, m["U"])
+            lignes.append([nom, titre, f"{r['dp_Pa']:.2f}", f"{q:.2f}", f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
+                           f"{charge:.2f}", f"{q / charge:.2f}", f"{r['profondeur_mm']:.0f}",
+                           f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"])
+    y = tableau(fig, 0.63, ["Forme", "Agencement", "Δp (Pa)", "Q face (kW/m²)", "P vent / Q (‰)", "Charge",
+                            "Q / charge", "Prof. (mm)", "Stabilité"], lignes,
+                [0.11, 0.18, 0.08, 0.12, 0.12, 0.08, 0.10, 0.09, 0.12], "Résultats", taille=6.8, h_ligne=0.0215)
+    fig.text(0.06, y + 0.02, "Q face : chaleur échangée par m² de face pour 10 K d'écart air / paroi. "
+             "\nCharge : charge de propane par m² de face, relative à la référence (1 = 4 rangs, Pt de référence).\n"
+             "Q / charge : chaleur par unité de charge (kW/m² ÷ charge relative) ; c'est le critère qui compte "
+             "si la charge de 152 g est la contrainte limitante.", fontsize=7, va="top", color="#343a40", linespacing=1.45)
+    pdf.savefig(fig); plt.close(fig)
+
+
 def page_image(pdf, titre, images, notes=""):
     images = [FORMES / i for i in images if (FORMES / i).exists()]
     if not images:
@@ -338,6 +401,7 @@ def main():
         page_comparaison(pdf)
         page_compromis(pdf)
         page_vitesse(pdf)
+        page_niveau2(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
                    "Tracées sur le premier maillage (triangles) ; calculs faits sur le maillage à couches (page convergence).")
         page_image(pdf, "Géométries : série 2", ["../maillages/formes_serie2.png"])
@@ -346,6 +410,8 @@ def main():
             for U in VITESSES:
                 page_image(pdf, f"{nom}, {U:g} m/s".replace(".", ","),
                            [f"{cle}/resultat.png" if U == 1.0 else f"{cle}/resultat_U{U:g}.png"])
+            for tag, titre in NIVEAU2:
+                page_image(pdf, f"{nom}, niveau 2 : {titre}", [f"{cle}/resultat_N2_{tag}.png"])
         page_image(pdf, "Maillages de validation (niveau 0)",
                    ["../maillages/validation_niveau0.png", "../maillages/openfoam_niveau0.png"])
         page_image(pdf, "Validation : plaques parallèles", ["plaques/profils_validation.png", "plaques/champs.png"])

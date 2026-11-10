@@ -69,14 +69,16 @@ def k_air(air):
 
 
 # ------------------------------------------------------------------ batterie
-def zukauskas(Re_max, Pr, ST_sur_SL, N_L):
+def zukauskas(Re_max, Pr, ST_sur_SL, N_L, aligne=False):
     """Zukauskas (Incropera, tab. 7.5 et 7.6), faisceau en quinconce, Pr / Pr_paroi = 1.
     Retourne (Nu, domaine). Pour 1e2 < Re < 1e3, Zukauskas renvoie au cylindre isolé ;
     on donne aussi la loi 1e3-2e5 prolongée, à titre de fourchette."""
     C2 = {1: 0.64, 2: 0.76, 3: 0.84, 4: 0.89, 5: 0.92, 7: 0.95, 10: 0.97, 13: 0.98, 16: 0.99}
-    c2 = C2.get(N_L, 1.0) if N_L < 20 else 1.0
+    if aligne:
+        C2 = {1: 0.70, 2: 0.80, 3: 0.86, 4: 0.90, 5: 0.92, 7: 0.95, 10: 0.97, 13: 0.98, 16: 0.99}
+    c2 = C2.get(N_L, 1.0) if N_L < 20 else (C2[max(k for k in C2 if k <= N_L)] if N_L < 16 else 1.0)
     cyl = 0.51 * Re_max ** 0.5 * Pr ** 0.37                 # cylindre isolé, 40 < Re < 1e3
-    loi = 0.35 * ST_sur_SL ** 0.2 * Re_max ** 0.6 * Pr ** 0.36
+    loi = (0.27 * Re_max ** 0.63 if aligne else 0.35 * ST_sur_SL ** 0.2 * Re_max ** 0.6) * Pr ** 0.36
     return dict(Nu_cylindre_isole=cyl * c2, Nu_loi_1e3=loi * c2, C2=c2)
 
 
@@ -117,9 +119,11 @@ def batterie(cas: Path, m: dict) -> dict:
              A_air=A_air, stabilite_moyenne=stab,
              duree_suffisante=max(stab.values()) < 0.01)
     if m.get("forme") == "rond":
-        r["zukauskas"] = zukauskas(Re_max, air["Pr"], m["Pt"] / m["Pl"], m["rangs"])
+        r["zukauskas"] = zukauskas(Re_max, air["Pr"], m["Pt"] / m["Pl"], m["rangs"], m.get("aligne", False))
         try:   # perte de charge : abaques de Zukauskas (1972) numérisés par la bibliothèque ht
-            from ht.conv_tube_bank import dP_Zukauskas
+            from ht.conv_tube_bank import dP_Zukauskas   # (aligné : seulement pas carré dans ht)
+            if m.get("aligne", False):
+                raise ImportError
             dpz = dP_Zukauskas(Re=Re_max, n=m["rangs"], ST=m["Pt"], SL=m["Pl"], D=D,
                                rho=air["rho"], Vmax=Umax)
             r["zukauskas"].update(dp_Pa=dpz, f_par_rang=dpz / (m["rangs"] * 0.5 * air["rho"] * Umax ** 2),

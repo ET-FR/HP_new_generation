@@ -165,6 +165,20 @@ def contour_interieur(forme: str, Dh: float = 4.0) -> Polygon:
     return affinity.scale(p, k, k, origin=(0, 0))
 
 
+def ecart_min(b) -> float:
+    """Plus petit passage d'air entre deux tubes (mm), images périodiques comprises."""
+    tubes = []
+    for cx, cy in b.centres:
+        for dy in (-b.Pt, 0.0, b.Pt):
+            tubes.append(affinity.translate(b.exterieur, cx, cy + dy))
+    d = math.inf
+    for i in range(len(tubes)):
+        for j in range(i + 1, len(tubes)):
+            if tubes[i].distance(tubes[j]) > 0 or tubes[i].intersects(tubes[j]):
+                d = min(d, tubes[i].distance(tubes[j]))
+    return d
+
+
 @dataclass
 class Batterie:
     forme: str
@@ -192,9 +206,12 @@ class Batterie:
 
 
 def batterie(forme: str, Dh: float = 4.0, paroi: float = 1.0, rangs: int = 4,
-             pas_rond_sur_D=2.0, amont_D=5.0, aval_D=10.0) -> Batterie:
-    """Batterie en quinconce respectant le critère d'équité (même section et périmètre intérieurs
-    totaux par unité de surface frontale que la batterie de tubes ronds)."""
+             pas_rond_sur_D=2.0, amont_D=5.0, aval_D=10.0, pt_facteur=1.0, pl_facteur=1.0,
+             aligne=False) -> Batterie:
+    """Batterie respectant le critère d'équité (même section et périmètre intérieurs totaux par
+    unité de surface frontale que la batterie de tubes ronds), en quinconce par défaut.
+    Niveau 2 : pt_facteur et pl_facteur multiplient les pas de référence (la charge par m² de face
+    varie alors comme rangs / pt_facteur) ; aligne=True met tous les tubes sur la même ligne."""
     inter = contour_interieur(forme, Dh)
     if forme in EXTERIEURS:
         exter = EXTERIEURS[forme](inter, paroi)
@@ -202,14 +219,15 @@ def batterie(forme: str, Dh: float = 4.0, paroi: float = 1.0, rangs: int = 4,
         exter = inter.buffer(paroi, quad_segs=32, join_style="round")
     A_rond = math.pi * Dh ** 2 / 4
     D_ref = Dh + 2 * paroi                      # Ø extérieur du rond de référence
-    Pt = pas_rond_sur_D * D_ref * inter.area / A_rond
-    Pl = Pt * math.sqrt(3) / 2
+    Pt0 = pas_rond_sur_D * D_ref * inter.area / A_rond
+    Pt = pt_facteur * Pt0
+    Pl = pl_facteur * Pt0 * math.sqrt(3) / 2
     xmin, _, xmax, _ = exter.bounds
     x0 = -xmin                                  # le noyau commence au bord d'attaque du 1er rang
     centres = []
     for i in range(rangs):
         x = x0 + i * Pl
-        centres.append((x, Pt / 2) if i % 2 == 0 else (x, 0.0))
+        centres.append((x, Pt / 2) if (i % 2 == 0 or aligne) else (x, 0.0))
     fin = x0 + (rangs - 1) * Pl + xmax
     return Batterie(forme, FORMES[forme][0], inter, exter, Pt, Pl, rangs, centres,
                     (0.0, fin), (-amont_D * D_ref, fin + aval_D * D_ref))

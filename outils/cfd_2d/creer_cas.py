@@ -288,7 +288,11 @@ checkMesh > log.checkMesh 2>&1
 
 
 # ------------------------------------------------------------------ cas
-def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, finesse=1.0, couches=False):
+def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, finesse=1.0, couches=False,
+          agencement=None, suffixe=None):
+    """agencement (niveau 2) : dict(rangs=, pt_facteur=, pl_facteur=, aligne=) passé à geometrie.batterie.
+    suffixe : rangement des résultats (docs/formes/<forme>/resultat<suffixe>.json)."""
+    agencement = agencement or {}
     cas = Path(dossier)
     meta = dict(cas=cas_type, U=U, air=AIR, epaisseur_mm=EPAISSEUR_MM, nproc=nproc)
     if cas_type == "plaques":
@@ -317,10 +321,10 @@ def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, f
     elif cas_type == "batterie":
         if couches:   # anneaux structurés de quadrilatères autour des tubes (maillage_couches.py)
             from maillage_couches import mailler_couches
-            b, xy, tri, bd = mailler_couches(forme, finesse=finesse)
+            b, xy, tri, bd = mailler_couches(forme, finesse=finesse, **agencement)
             meta.update(finesse=finesse, couches=b.couches)
         else:
-            b, xy, tri, bd = mailler(forme, avec_bords=True, finesse=finesse)
+            b, xy, tri, bd = mailler(forme, avec_bords=True, finesse=finesse, **agencement)
             meta.update(finesse=finesse, couches=False)
         roles = {"entree": "entree", "sortie": "sortie", "paroi": "paroi", "haut": "cyclic", "bas": "cyclic"}
         n = ecrire_polymesh(cas, xy, tri, bd, {"entree": "patch", "sortie": "patch", "paroi": "wall",
@@ -328,7 +332,13 @@ def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, f
                             cycliques={"haut": ("bas", (0, -b.Pt)), "bas": ("haut", (0, b.Pt))},
                             epaisseur_mm=EPAISSEUR_MM)
         largeur = (b.exterieur.bounds[3] - b.exterieur.bounds[1]) * 1e-3     # face à l'air
-        Umax = U * b.Pt / (b.Pt - largeur * 1e3)
+        # vitesse maximale : section transversale, ou deux passages diagonaux si plus étroits (quinconce serré)
+        passage = b.Pt - largeur * 1e3
+        if b.rangs > 1 and abs(b.centres[1][1] - b.centres[0][1]) > 1e-9:
+            from shapely import affinity as _aff
+            t0 = _aff.translate(b.exterieur, *b.centres[0]); t1 = _aff.translate(b.exterieur, *b.centres[1])
+            passage = min(passage, 2 * t0.distance(t1))
+        Umax = U * b.Pt / passage
         L_dom = (b.x_domaine[1] - b.x_domaine[0]) * 1e-3
         f_tourb = 0.2 * Umax / largeur
         fin = fin or round(2 * L_dom / U + 25 / f_tourb, 3)
@@ -337,13 +347,17 @@ def creer(cas_type: str, dossier: str, forme="rond", U=1.0, nproc=4, fin=None, f
                     A_int=b.A_int * 1e-6, P_int=b.P_int * 1e-3, P_ext=b.P_ext * 1e-3,
                     x_noyau=[x * 1e-3 for x in b.x_noyau], x_domaine=[x * 1e-3 for x in b.x_domaine],
                     largeur_frontale=largeur, Umax=Umax, Re_Dext=U * 6e-3 / AIR["nu"],
-                    instationnaire=True, fin=fin, debut_moyenne=debut)
+                    instationnaire=True, fin=fin, debut_moyenne=debut,
+                    aligne=bool(agencement.get("aligne", False)),
+                    pt_facteur=agencement.get("pt_facteur", 1.0), pl_facteur=agencement.get("pl_facteur", 1.0))
         champs(cas, U, roles)
         systeme(cas, True, fin, debut, nproc, None)
         allrun(cas, nproc, "pimpleFoam")
     else:
         raise ValueError(cas_type)
     meta["maillage"] = n
+    if suffixe:
+        meta["suffixe"] = suffixe
     (cas / "cas.json").write_text(json.dumps(meta, indent=1, ensure_ascii=False))
     return meta
 
@@ -357,7 +371,13 @@ if __name__ == "__main__":
     ap.add_argument("--fin", type=float, default=None, help="temps final (s), instationnaire")
     ap.add_argument("--finesse", type=float, default=1.0, help="divise les tailles de maille (batterie)")
     ap.add_argument("--couches", action="store_true", help="couches de quadrilatères contre les parois")
+    ap.add_argument("--rangs", type=int, default=4)
+    ap.add_argument("--pt-facteur", type=float, default=1.0, help="multiplie le pas transversal de référence")
+    ap.add_argument("--pl-facteur", type=float, default=1.0, help="multiplie le pas longitudinal de référence")
+    ap.add_argument("--aligne", action="store_true", help="tubes alignés (sinon quinconce)")
+    ap.add_argument("--suffixe", default=None, help="suffixe de rangement des résultats")
     ap.add_argument("--dossier", required=True)
     a = ap.parse_args()
-    m = creer(a.cas, a.dossier, a.forme, a.vitesse, a.nproc, a.fin, a.finesse, a.couches)
+    ag = dict(rangs=a.rangs, pt_facteur=a.pt_facteur, pl_facteur=a.pl_facteur, aligne=a.aligne)
+    m = creer(a.cas, a.dossier, a.forme, a.vitesse, a.nproc, a.fin, a.finesse, a.couches, ag, a.suffixe)
     print(json.dumps({k: m[k] for k in m if k not in ("air",)}, indent=1, ensure_ascii=False))
