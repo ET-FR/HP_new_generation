@@ -83,6 +83,17 @@ def tableau(fig, y, entetes, lignes, largeurs, titre, taille=8.5, h_ligne=0.026)
     return y - 0.025 - h - 0.035
 
 
+def conclusion(fig, y, lignes, titre="Conclusion"):
+    """Encadré de conclusion placé sous l'ordonnée y ; renvoie l'ordonnée sous l'encadré."""
+    h = 0.036 + 0.0150 * len(lignes)
+    ax = fig.add_axes([0.05, y - h, 0.90, h]); ax.axis("off")
+    ax.add_patch(plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes, facecolor="#eef4fb", edgecolor="#9fbbe0", lw=0.8))
+    fig.text(0.065, y - 0.008, titre, fontsize=10, fontweight="bold", color=BLEU, va="top")
+    fig.text(0.065, y - 0.028, "\n".join(l if l.startswith(" ") else "• " + l for l in lignes), fontsize=7.8, va="top", color="#212529",
+             linespacing=1.5)
+    return y - h - 0.015
+
+
 def pct(a, b):
     return f"{100 * (a / b - 1):+.1f} %"
 
@@ -173,6 +184,13 @@ def page_synthese(pdf):
                 lignes, [0.22, 0.19, 0.19, 0.19, 0.21],
                 "2. Convergence en maillage (tubes ronds, couches) : maillage moyen retenu")
 
+    y = conclusion(fig, y + 0.01, [
+        "Cas exacts (plaques) retrouvés à 0,3 % près : le solveur, les conditions aux limites et l'extraction sont justes.",
+        "Faisceau de ronds : Nu dans la fourchette de Zukauskas, Δp 12 % sous l'abaque (écart habituel en 2D laminaire).",
+        "Tube isolé : Nu et Strouhal 7 à 8 % au-dessus des références, Cd surestimé : effet connu du calcul 2D,",
+        "    sans conséquence pour comparer des formes entre elles.",
+        "Maillage moyen retenu : incertitude ± 2,5 % sur Δp, ± 1,5 % sur Nu. Un écart de moins de 5 % entre deux",
+        "    formes n'est donc pas significatif."], "Conclusion de l'étape 0")
     fig.text(0.06, y, "La comparaison des formes est en page 3.", fontsize=9, color="#495057", va="top")
     pdf.savefig(fig); plt.close(fig)
 
@@ -252,6 +270,14 @@ def page_compromis(pdf):
              "les formes allongées divisent la puissance de ventilation par 4 à 6 mais échangent 2 à 2,5 fois moins par m² de face.\n"
              "Le rond à ailettes a beaucoup plus de surface côté air : c'est déjà un tube à ailettes (à comparer plus tard aux ailettes).",
              fontsize=7.8, va="top", color="#343a40", linespacing=1.5)
+    conclusion(fig, 0.27, [
+        "Deux familles : formes compactes (rond, hexagones, losange) à 25 à 27 % d'efficacité mais P vent / Q de 1,3 à 2 ‰ ;",
+        "    formes allongées (ellipses 3:1 à 5:1, lentille, tubes plats) à 11 à 17 % mais 0,2 à 0,4 ‰.",
+        "Le rond est la meilleure forme compacte : il échange le plus pour la plus faible ventilation de sa famille, sur 37 mm.",
+        "L'ellipse 2:1 est le meilleur intermédiaire : 25 % de chaleur en moins que le rond, 54 % de ventilation en moins.",
+        "Faces plates ou arêtes face à l'air (triangle base amont, demi-cercle plat amont, carré) : nettement moins bonnes.",
+        "Les formes allongées demandent une batterie 1,6 à 3 fois plus profonde à charge égale (60 à 113 mm).",
+        "Retenues pour la suite (front de Pareto) : rond, ellipse 2:1, lentille 3:1, ellipse 4:1."], "Conclusion de l'étape 1")
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -313,6 +339,14 @@ def page_vitesse(pdf):
              "laminaire est alors moins fiable (tendance correcte, valeurs à confirmer en 3D).\n"
              "Δp Zuk. : écart aux abaques de Zukauskas (tubes ronds seulement).",
              fontsize=7.3, va="top", color="#343a40", linespacing=1.45)
+    conclusion(fig, y - 0.04, [
+        "Quand la vitesse est libre, le rond donne le plus de chaleur par m² de face pour un même coût de ventilation",
+        "    (graphique de droite) ; l'ellipse 2:1 le suit de près (5 % en dessous), la lentille et l'ellipse 4:1 sont derrière.",
+        "Exemple : le rond à 0,5 m/s échange 2,3 kW/m² pour 0,26 ‰, mieux que l'ellipse 4:1 à 1 m/s (1,8 kW/m² pour 0,30 ‰).",
+        "Ralentir l'air est donc plus efficace qu'allonger le tube ; l'avantage des formes allongées à 1 m/s venait surtout",
+        "    de la vitesse plus faible entre les tubes. Elles ne gardent l'avantage que pour des P vent / Q très bas (< 0,2 ‰).",
+        "Le prix d'une vitesse faible est une grande surface de face : c'est la taille de la fenêtre qui fixera la vitesse.",
+        "Au-delà de 2 m/s (Re max > 1 000), les valeurs 2D sont à confirmer en 3D."], "Conclusion de l'étape 1b")
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -342,7 +376,7 @@ def page_niveau2(pdf):
     fig.text(0.06, 0.95, "Rond et ellipse 2:1, air à 1 m/s. Référence : 4 rangs en quinconce, Pt = 2 Ø (rond), "
              "Pl = Pt √3 / 2.\nLa charge de propane par m² de face varie ici comme rangs / Pt : colonne « Charge ».",
              fontsize=8, color="#495057", va="top", linespacing=1.4)
-    axes = [fig.add_axes([0.08 + k * 0.31, 0.70, 0.25, 0.18]) for k in range(3)]
+    axes = [fig.add_axes([0.08 + k * 0.31, 0.765, 0.25, 0.115]) for k in range(3)]
     series = [("rangs", [("rangs1", 1), ("rangs2", 2), ("ref", 4), ("rangs8", 8)], "nombre de rangs"),
               ("pt", [("pt0.75", 0.75), ("ref", 1.0), ("pt1.25", 1.25), ("pt1.5", 1.5)], "Pt / Pt référence"),
               ("pl", [("pl0.6", 0.6), ("ref", 1.0), ("pl1.5", 1.5)], "Pl / Pl référence")]
@@ -369,10 +403,10 @@ def page_niveau2(pdf):
                            f"{100 * r['T_sortie']:.1f} %", f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
                            f"{r['profondeur_mm']:.0f}", f"{charge:.2f}", f"{q_face(r, m['U']) / charge:.2f}",
                            f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"])
-    y = tableau(fig, 0.63, ["Forme", "Agencement", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité",
+    y = tableau(fig, 0.715, ["Forme", "Agencement", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité",
                             "P vent / Q (‰)", "Prof. (mm)", "Charge", "Q / charge", "Stabilité"], lignes,
                 [0.09, 0.15, 0.07, 0.07, 0.09, 0.09, 0.10, 0.08, 0.07, 0.09, 0.10], "Résultats",
-                taille=6.5, h_ligne=0.0215)
+                taille=6.5, h_ligne=0.0178)
     fig.text(0.06, y + 0.02, "Mêmes grandeurs que les autres tableaux (Δp, h, efficacité, P vent / Q, profondeur, "
              "stabilité : voir la légende de la page de comparaison des formes).\n"
              "Re max : Reynolds sur la vitesse maximale entre tubes et le Ø 6 mm du rond.\n"
@@ -380,6 +414,15 @@ def page_niveau2(pdf):
              "Q / charge : chaleur par m² de face (kW/m², 10 K d'écart air / paroi) divisée par la charge relative ; "
              "c'est le critère qui compte\nsi la charge de 152 g est la contrainte limitante.",
              fontsize=7, va="top", color="#343a40", linespacing=1.45)
+    conclusion(fig, y - 0.058, [
+        "La quinconce s'impose : en aligné, la chaleur chute de 43 % (rond) et de 27 % (ellipse 2:1) à charge égale.",
+        "Resserrer les tubes en largeur (Pt × 0,75) donne le plus de chaleur par gramme de propane (+ 20 % pour le rond),",
+        "    mais la ventilation par kW monte de 46 % : intéressant si la charge limite, pas si le bruit limite.",
+        "Moins de rangs utilise mieux le propane (2 rangs : + 13 %) mais demande 2 fois plus de surface de face.",
+        "Le pas en profondeur (Pl) change peu la chaleur ; Pl × 0,6 amincit la batterie (37 → 25 mm), + 37 % de ventilation.",
+        "L'ellipse 2:1 ventile partout 2 fois moins par kW que le rond, pour 20 à 25 % de chaleur par gramme en moins.",
+        "À vérifier : rond Pl × 1,5 (h et efficacité identiques à la référence) et ellipse Pl × 1,5 (stabilité ± 10,7 %)."],
+        "Conclusion de l'étape 2")
     pdf.savefig(fig); plt.close(fig)
 
 
