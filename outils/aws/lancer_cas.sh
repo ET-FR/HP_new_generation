@@ -1,13 +1,17 @@
 #!/bin/bash
-# Sur la machine de calcul : lance tous les cas de ~/cas/ (un dossier par cas, avec Allrun),
-# PARALLELES cas à la fois, puis écrit ~/cas/TERMINE. Journal : ~/cas/journal.txt
+# Sur la machine de calcul : lance tous les cas de DOSSIER (un dossier par cas, avec Allrun),
+# PARALLELES cas à la fois, puis écrit DOSSIER/TERMINE. Journal : DOSSIER/journal.txt
+#   ./lancer_cas.sh [PARALLELES] [DOSSIER] [ATTENDRE]   (ATTENDRE : fichier dont on attend l'apparition)
 PARALLELES=${1:-4}
+DOSSIER=${2:-~/cas}
+ATTENDRE=${3:-}
+[ -n "$ATTENDRE" ] && until [ -f "$ATTENDRE" ]; do sleep 60; done
 # attend la fin de la compilation d'OpenFOAM (user_data_openfoam.sh)
 until [ -f ~/OPENFOAM_PRET ] || [ -f ~/OPENFOAM_ECHEC ]; do sleep 30; done
-[ -f ~/OPENFOAM_ECHEC ] && { echo "OpenFOAM non compilé" > ~/cas/ECHEC; exit 1; }
+[ -f ~/OPENFOAM_ECHEC ] && { echo "OpenFOAM non compilé" > $DOSSIER/ECHEC; exit 1; }
 source /opt/openfoam/OpenFOAM-v2606/etc/bashrc >/dev/null 2>&1
 export OMPI_MCA_rmaps_base_oversubscribe=1
-cd ~/cas
+cd $DOSSIER
 un_cas() {
   c=$1; t=$(date +%s)
   echo "$(date +%H:%M:%S) début $c" >> journal.txt
