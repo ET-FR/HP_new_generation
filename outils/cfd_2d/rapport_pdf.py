@@ -125,7 +125,7 @@ def page_introduction(pdf):
         ["0", "Validation de la chaîne", "plaques, tube isolé, faisceau de ronds ; convergence en maillage", "fait"],
         ["1", "Forme du tube", "22 formes à 1 m/s, même charge", "fait"],
         ["1b", "Vitesse de l'air", "4 formes du meilleur compromis, 0,5 / 1 / 2 / 3 m/s", etat_vitesse()],
-        ["2", "Agencement", "aligné / quinconce, pas, nombre de rangs (1, 2, 4, 8)", "à faire"],
+        ["2", "Agencement", "aligné / quinconce, pas, nombre de rangs (1, 2, 4, 8)", "fait"],
         ["3", "Ailettes et TPMS", "ailettes (plates, persiennées…), surfaces TPMS en 3D", "à faire"],
         ["4", "Base + optimisation", "plan d'expériences, puis optimisation bayésienne sur le cycle complet", "à faire"],
         ["5", "Validation physique", "prototype imprimé, essais d'échange, de givrage et de fuite", "à faire"],
@@ -362,20 +362,24 @@ def page_niveau2(pdf):
         for tag, titre in [("ref", "Référence (4 rangs)")] + NIVEAU2:
             d = res.get((cle, tag))
             if not d:
-                lignes.append([nom, titre, "en cours", "", "", "", "", "", ""]); continue
+                lignes.append([nom, titre, "en cours", "", "", "", "", "", "", "", ""]); continue
             r, m = d["resultats"], d["parametres"]
             charge = m["rangs"] / 4 / m.get("pt_facteur", 1.0)
-            q = q_face(r, m["U"])
-            lignes.append([nom, titre, f"{r['dp_Pa']:.2f}", f"{q:.2f}", f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
-                           f"{charge:.2f}", f"{q / charge:.2f}", f"{r['profondeur_mm']:.0f}",
+            lignes.append([nom, titre, f"{r['Re_max_D6']:.0f}", f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}",
+                           f"{100 * r['T_sortie']:.1f} %", f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}",
+                           f"{r['profondeur_mm']:.0f}", f"{charge:.2f}", f"{q_face(r, m['U']) / charge:.2f}",
                            f"± {100 * max(r['stabilite_moyenne'].values()):.1f} %"])
-    y = tableau(fig, 0.63, ["Forme", "Agencement", "Δp (Pa)", "Q face (kW/m²)", "P vent / Q (‰)", "Charge",
-                            "Q / charge", "Prof. (mm)", "Stabilité"], lignes,
-                [0.11, 0.18, 0.08, 0.12, 0.12, 0.08, 0.10, 0.09, 0.12], "Résultats", taille=6.8, h_ligne=0.0215)
-    fig.text(0.06, y + 0.02, "Q face : chaleur échangée par m² de face pour 10 K d'écart air / paroi. "
-             "\nCharge : charge de propane par m² de face, relative à la référence (1 = 4 rangs, Pt de référence).\n"
-             "Q / charge : chaleur par unité de charge (kW/m² ÷ charge relative) ; c'est le critère qui compte "
-             "si la charge de 152 g est la contrainte limitante.", fontsize=7, va="top", color="#343a40", linespacing=1.45)
+    y = tableau(fig, 0.63, ["Forme", "Agencement", "Re max", "Δp (Pa)", "h (W/m²K)", "Efficacité",
+                            "P vent / Q (‰)", "Prof. (mm)", "Charge", "Q / charge", "Stabilité"], lignes,
+                [0.09, 0.15, 0.07, 0.07, 0.09, 0.09, 0.10, 0.08, 0.07, 0.09, 0.10], "Résultats",
+                taille=6.5, h_ligne=0.0215)
+    fig.text(0.06, y + 0.02, "Mêmes grandeurs que les autres tableaux (Δp, h, efficacité, P vent / Q, profondeur, "
+             "stabilité : voir la légende de la page de comparaison des formes).\n"
+             "Re max : Reynolds sur la vitesse maximale entre tubes et le Ø 6 mm du rond.\n"
+             "Charge : charge de propane par m² de face, relative à la référence (1 = 4 rangs, Pt de référence).\n"
+             "Q / charge : chaleur par m² de face (kW/m², 10 K d'écart air / paroi) divisée par la charge relative ; "
+             "c'est le critère qui compte\nsi la charge de 152 g est la contrainte limitante.",
+             fontsize=7, va="top", color="#343a40", linespacing=1.45)
     pdf.savefig(fig); plt.close(fig)
 
 
