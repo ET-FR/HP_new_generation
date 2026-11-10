@@ -91,6 +91,58 @@ Sur une ailette : la condensation en gouttes (hydrophobe) se mêle à des chemin
 dont on structure la mouillabilité (rugosité, texture, revêtement) est une piste sérieuse et
 peu explorée pour les PAC. Elle relève des essais physiques (étape 5) plus que de la CFD.
 
+## 4. Autres formes à retenir (recherche complémentaire)
+
+**Moustache de phoque : le tube ondulé (intérêt fort).** La moustache du phoque veau-marin a une
+section elliptique dont la taille et l'orientation ondulent le long de son axe. Ces ondulations
+cassent les grands tourbillons du sillage : sillage plus petit, lâcher de tourbillons plus faible,
+efforts latéraux bien plus faibles. Une équipe d'Embry-Riddle (Prasad et Ricklick) l'a appliquée à
+des picots d'échangeur : en essais, en moyenne 13 % de perte de charge en moins pour 4,5 %
+d'échange en moins par rapport à un picot elliptique, ou environ 9 % de performance thermique en
+plus à perte de charge égale (un seul groupe, pas de réplication trouvée). Pour nous : c'est
+**exactement notre problème** (tubes en travers du flux qui lâchent des tourbillons, voir le
+balayage de l'étape 1) et c'est imprimable. Candidat pour l'étape 3 : ellipse 2:1 ondulée le long
+du tube, à calculer en CFD 3D (la 2D ne peut pas représenter l'ondulation).
+
+**Ailes de chouette, queue de poisson : le ventilateur (intérêt fort pour le bruit).** Les plumes
+de chouette ont un peigne au bord d'attaque et une frange au bord de fuite, qui rendent le vol
+silencieux. Une étude (Xi'an Jiaotong) sur un ventilateur axial avec profil de chouette et bord de
+fuite en dents de scie rapporte 2 dB de moins et 4,7 % de débit en plus ; une autre (Huazhong),
+sur le ventilateur d'une unité extérieure de climatiseur, utilise un bord de fuite fourchu inspiré
+de la queue de poisson. Attention : certains bords d'attaque modifiés dégradent le débit. Le bruit
+est un critère majeur pour un appareil dans la pièce : piste pour le choix et le dessin du
+ventilateur (dossier `ventilateurs/`).
+
+**Phyllotaxie (tournesol) : l'agencement des tubes (intérêt moyen).** Disposer des picots selon
+la spirale de Fibonacci du tournesol (angle d'or) : études sur des puits thermiques électroniques
+(température maximale plus basse qu'en quinconce, - 14,7 % de température de surface dans une
+autre étude) et un brevet d'échangeur radial. Surtout pertinent pour un **échangeur en disque à
+écoulement radial**, à rapprocher de l'idée de la toile d'araignée. Peu de preuves face au
+quinconce dans un écoulement droit comme le nôtre.
+
+**Poumon d'oiseau : séparer ventilation et échange (intérêt moyen).** Chez l'oiseau, des sacs
+aériens font circuler l'air et un tissu rigide (parabronches) fait l'échange ; l'air y passe dans
+un seul sens, perpendiculairement au sang (« courant croisé »), et le sang peut ressortir plus
+riche en oxygène que l'air sortant. C'est le principe de nos batteries (flux d'air unique, propane
+en travers). Leçon pour l'arrangement des circuits : un courant croisé à plusieurs passes, disposé
+à contre-courant global, se rapproche du contre-courant pur (déjà connu en ingénierie).
+
+**Contre-courant des pattes d'oiseaux et des thons (rete mirabile).** Artères et veines côte à
+côte en sens opposés : la chaleur passe de l'une à l'autre. Même leçon : circuits à contre-courant
+air / propane pour gagner sur la surchauffe et le sous-refroidissement.
+
+**Ailettes « vascularisées » (oreille d'éléphant, de fennec).** Grande surface mince parcourue
+par un réseau de vaisseaux. Pour nous : faire passer de petits canaux de propane **dans** les
+ailettes, ce qui raccourcit le chemin de conduction et permet des ailettes plus fines ou plus
+grandes. L'impression 3D le permet (c'est aussi l'esprit des TPMS en feuillet à deux fluides).
+Je n'ai pas trouvé d'étude sous ce nom : idée à évaluer (charge ajoutée contre rendement
+d'ailette gagné).
+
+**Plante carnivore Nepenthes (surfaces glissantes imbibées de liquide).** Surface poreuse imbibée
+d'un lubrifiant, sur laquelle l'eau et le givre glissent. Aucune application à un échangeur
+trouvée dans cette recherche ; un revêtement hydrophile anti-givre allonge nettement les cycles
+entre deux dégivrages. À garder pour l'étape 5, avec la mouillabilité alternée.
+
 ## Ce que je propose de faire de ces pistes
 
 1. **Étape 4 (prioritaire)** : collecteur en arbre de Murray adapté au diphasique, dans le
@@ -99,8 +151,12 @@ peu explorée pour les PAC. Elle relève des essais physiques (étape 5) plus qu
 2. **Étape 3** : ajouter le bord d'attaque ondulé (tubercules) aux variantes d'ailettes, à côté des
    ailettes plates, ondulées et persiennées.
 3. **Étape 5** : essais de mouillabilité alternée sur échantillons imprimés (condensats et givre).
-4. Garder en réserve l'échangeur en disque à distribution radiale (toile d'araignée), si le
-   ventilateur choisi est axial.
+4. Garder en réserve l'échangeur en disque à distribution radiale (toile d'araignée, phyllotaxie),
+   si le ventilateur choisi est axial.
+5. **Étape 3** : tube elliptique ondulé « moustache de phoque », en CFD 3D, face à l'ellipse 2:1 lisse.
+6. **Ventilateur** : profils inspirés de la chouette (bord de fuite en dents de scie) pour le bruit.
+7. **Étape 4** : arrangement des circuits à contre-courant global (poumon d'oiseau, rete mirabile)
+   et ailettes vascularisées, dans le modèle de la machine.
 
 ## Sources
 
@@ -131,3 +187,12 @@ peu explorée pour les PAC. Elle relève des essais physiques (étape 5) plus qu
   https://scholarworks.unist.ac.kr/handle/201301/58844
 * Échangeur super-hydrophobe en conditions humides (ORNL) :
   https://impact.ornl.gov/en/publications/energy-saving-of-air-cooling-heat-exchangers-operating-under-wet-/
+* Picots « moustache de phoque » (Embry-Riddle) : https://erau.edu/research-and-innovation/projects/investigation-of-bio-inspired-cylinders-for-enhanced-heat-transfer ;
+  https://commons.erau.edu/edt/589 ; https://openpolar.no/Record/ftembryriddleaun:oai:commons.erau.edu:publication-2844
+* Ventilateur à profil de chouette (Xi'an Jiaotong) : https://zkxb.xjtu.edu.cn/en/article/doi/10.7652/xjtuxb202011010/ ;
+  bords de fuite ondulés : https://jafmonline.net/article_2432.html ; https://www.mdpi.com/2075-1702/11/2/155
+* Phyllotaxie et picots : https://www.bohrium.com/paper-details/multi-objective-optimization-of-a-fibonacci-phyllotaxis-micro-pin-fin-heat-sink/1000432247771234319-16844 ;
+  https://eld.bl.uk/catalog/100131652937_0x000001 ; brevet radial : https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10627170
+* Poumon d'oiseau, courant croisé : https://pmc.ncbi.nlm.nih.gov/articles/PMC2662944 ;
+  https://publications.ersnet.org/content/erj/29/1/11
+* Revêtement hydrophile anti-givre : https://iifiir.org/en/fridoc/application-study-of-a-new-anti-frosting-coating-for-a-fin-and-tube-130925
