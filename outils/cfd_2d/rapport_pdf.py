@@ -87,6 +87,57 @@ def pct(a, b):
     return f"{100 * (a / b - 1):+.1f} %"
 
 
+def etat_vitesse():
+    n = sum((FORMES / c / f"resultat_U{U:g}.json").exists() for c, _ in BALAYAGE for U in VITESSES if U != 1.0)
+    total = len(BALAYAGE) * (len(VITESSES) - 1)
+    return "fait" if n == total else f"en cours ({n} / {total})"
+
+
+def page_introduction(pdf):
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.955, "Échangeurs d'une PAC de fenêtre au propane", fontsize=17, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.933, f"Étude CFD côté air. Mis à jour le {date.today():%d/%m/%Y}.", fontsize=8.5, color="#495057")
+    y = 0.90
+    blocs = [
+        ("But", [
+            "Concevoir les deux échangeurs air / propane d'une pompe à chaleur de fenêtre réversible (chauffage et clim),",
+            "au propane R290, imprimés en 3D, pour une pièce de 50 m² au plus. Cible : 8 000 BTU/h (≈ 2,3 kW).",
+            "Contrainte forte : charge de propane ≤ 152 g (norme IEC 60335-2-40), dominée par le volume des échangeurs.",
+            "Côté air se trouvent la plus grosse résistance thermique, le ventilateur et le bruit : c'est là qu'il faut",
+            "trouver la meilleure forme de tube, celle qui échange le plus pour le moins de puissance de ventilation."]),
+        ("Méthode", [
+            "1. Comparer des formes simples en CFD 2D avec des règles d'équité strictes, pour comprendre ce qui compte.",
+            "2. Construire une base de simulations, puis optimiser par optimisation bayésienne multi-objectif et",
+            "    multi-fidélité (Ax / BoTorch) : simulateur de la PAC (rapide) → CFD 2D → CFD 3D (coûteuse).",
+            "3. Objectifs finaux : COP (ou SCOP) maximal, charge minimale ; contraintes : encombrement de la fenêtre,",
+            "    tenue à la pression, bruit, givre et condensats."]),
+        ("Règles communes à tous les calculs", [
+            "Même charge de propane et même périmètre de contact côté propane : canal intérieur de Dh = 4 mm, paroi 1 mm.",
+            "Batterie de référence : 4 rangs en quinconce, pas transversal = 2 Ø extérieur du rond (ajusté à charge égale).",
+            "Air à 20 °C, paroi à température imposée (propane en changement de phase), écoulement laminaire",
+            "instationnaire, OpenFOAM v2606, maillage à couches validé en convergence."]),
+    ]
+    for titre, lignes in blocs:
+        fig.text(0.06, y, titre, fontsize=11, fontweight="bold", color=BLEU, va="top")
+        fig.text(0.06, y - 0.024, "\n".join(lignes), fontsize=8.3, va="top", color="#212529", linespacing=1.5)
+        y -= 0.024 + 0.0168 * len(lignes) + 0.025
+    etapes = [
+        ["0", "Validation de la chaîne", "plaques, tube isolé, faisceau de ronds ; convergence en maillage", "fait"],
+        ["1", "Forme du tube", "22 formes à 1 m/s, même charge", "fait"],
+        ["1b", "Vitesse de l'air", "4 formes du meilleur compromis, 0,5 / 1 / 2 / 3 m/s", etat_vitesse()],
+        ["2", "Agencement", "aligné / quinconce, pas, nombre de rangs (1, 2, 4, 8)", "à faire"],
+        ["3", "Ailettes et TPMS", "ailettes (plates, persiennées…), surfaces TPMS en 3D", "à faire"],
+        ["4", "Base + optimisation", "plan d'expériences, puis optimisation bayésienne sur le cycle complet", "à faire"],
+        ["5", "Validation physique", "prototype imprimé, essais d'échange, de givrage et de fuite", "à faire"],
+    ]
+    y = tableau(fig, y + 0.01, ["Étape", "Sujet", "Contenu", "État"], etapes, [0.08, 0.21, 0.53, 0.18],
+                "Étapes", taille=7.8, h_ligne=0.026)
+    fig.text(0.06, y + 0.015, "Dans ce document : validation et convergence (p. 2), comparaison des formes (p. 3), "
+             "compromis (p. 4), influence de la vitesse,\npuis géométries et une page de champs (vitesse, température, "
+             "pression) par cas.", fontsize=7.8, va="top", color="#495057", linespacing=1.5)
+    pdf.savefig(fig); plt.close(fig)
+
+
 def page_synthese(pdf):
     fig = plt.figure(figsize=A4)
     fig.text(0.06, 0.965, "Résultats CFD 2D côté air", fontsize=17, fontweight="bold", color=BLEU)
@@ -122,7 +173,7 @@ def page_synthese(pdf):
                 lignes, [0.22, 0.19, 0.19, 0.19, 0.21],
                 "2. Convergence en maillage (tubes ronds, couches) : maillage moyen retenu")
 
-    fig.text(0.06, y, "La comparaison des formes est en page 2.", fontsize=9, color="#495057", va="top")
+    fig.text(0.06, y, "La comparaison des formes est en page 3.", fontsize=9, color="#495057", va="top")
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -280,6 +331,7 @@ def page_image(pdf, titre, images, notes=""):
 
 def main():
     with PdfPages(SORTIE) as pdf:
+        page_introduction(pdf)
         page_synthese(pdf)
         page_comparaison(pdf)
         page_compromis(pdf)
