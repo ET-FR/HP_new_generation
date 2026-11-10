@@ -195,3 +195,16 @@ de la machine, avec le volume des collecteurs.
 Idées voisines à chiffrer au même moment : échangeur interne ligne liquide / aspiration (quelques %
 de COP selon la littérature pour le propane) et éjecteur (≈ 3 à 5 % pour le propane, difficile à
 régler à faible puissance).
+
+**Collecteurs en arbre de Murray** (à reprendre lors de la conception des collecteurs), notée le
+10 novembre 2026. Arbre symétrique imprimé, divisions en deux avec parent = 1,26 × enfant
+(r₀³ = r₁³ + r₂³), bifurcations courbes ; figure `docs/figures/loi_murray.png`, contexte
+`docs/biomimetisme.md`. Ordres de grandeur (32 circuits de 2 mm, face de 30 cm de haut) : arbre
+6,35 → 2 mm ≈ 7,9 cm³ contre 15,1 cm³ pour un collecteur droit de Ø 8 mm, soit ≈ 3,6 g contre
+6,9 g plein de liquide à 46 °C ; côté vapeur ou diphasique, moins de 1 g. Le volume n'est donc
+pas l'enjeu principal (les tubes en contiennent 40 à 150 g) : **l'intérêt majeur est la
+répartition**, chaque circuit ayant exactement le même chemin, alors qu'un collecteur droit
+répartit mal le mélange liquide / vapeur entre 20 à 40 circuits. PAC réversible : chaque
+collecteur doit fonctionner dans les deux sens (petit en sortie de condenseur, où la charge
+compte ; répartition égale en entrée d'évaporateur, complétée par les orifices calibrés). En
+diphasique, l'exposant de la loi change : à recalculer avec le modèle de charge.

@@ -31,6 +31,11 @@ la perte de charge voulue avec le volume minimal. Le diphasique complique la rè
 optimal change avec le titre de vapeur) : c'est un calcul à faire, pas une loi à appliquer telle
 quelle. Les bifurcations à angle droit ont des pertes plus fortes que les bifurcations douces.
 
+**Ordre de grandeur vérifié** (32 circuits de 2 mm, face de 30 cm) : arbre ≈ 7,9 cm³ contre
+15,1 cm³ pour un collecteur droit de Ø 8 mm, soit ≈ 3 g de propane gagnés par collecteur côté
+liquide. C'est secondaire devant les tubes (40 à 150 g) : le vrai intérêt de l'arbre est la
+**répartition égale** entre circuits (même chemin pour tous). Voir `docs/figures/loi_murray.png`.
+
 **Toile d'araignée.** Les études trouvées (2025-2026) portent sur des puits thermiques à
 microcanaux de liquide pour l'électronique, pas sur l'air : un réseau de canaux radiaux et
 circulaires. Une étude couplée à une optimisation multi-objectif rapporte + 35 % de coefficient
