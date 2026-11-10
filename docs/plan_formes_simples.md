@@ -181,3 +181,17 @@ P ≤ 9 mm). Résultat **non validé** : anneau équivalent peu fidèle sous P/D
 modélisés par des pertes forfaitaires, laminaire supposé, collecteurs non comptés.
 À reprendre par une CFD 3D d'une cellule périodique (P = 8, 10, 12 mm, 1 m/s, bouts plats puis
 profilés), puis le dessin d'un collecteur imprimé, qui décidera de la piste.
+
+**Distributeur imprimé à orifices calibrés** (détente et répartition), notée le 10 novembre 2026.
+Idée de départ : utiliser l'échangeur comme détendeur (plusieurs entrées donnant des Δp différents
+selon la demande). Une détente répartie dans l'évaporateur est écartée : la température du propane
+suit sa pression, le début de l'échangeur resterait chaud et la surface utile chuterait.
+Piste retenue : avec 20 à 40 circuits en parallèle (voir l'estimation de charge,
+`outils/analytique/charge_propane.py`), imprimer un **orifice calibré à l'entrée de chaque circuit**,
+qui assure la répartition et une partie de la détente ; garder un détendeur électronique en amont
+pour la surchauffe et l'inversion de cycle. Effet attendu : répartition égale entre circuits,
+collecteur d'entrée en diphasique léger (moins de charge). À évaluer à l'étape 4 dans le modèle
+de la machine, avec le volume des collecteurs.
+Idées voisines à chiffrer au même moment : échangeur interne ligne liquide / aspiration (quelques %
+de COP selon la littérature pour le propane) et éjecteur (≈ 3 à 5 % pour le propane, difficile à
+régler à faible puissance).
