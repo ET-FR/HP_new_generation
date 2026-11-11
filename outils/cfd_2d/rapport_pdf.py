@@ -719,7 +719,9 @@ def main():
         page_image(pdf, "Étape 3 : maillage 3D des ailettes plates", ["../maillages/ailettes_plates.png"])
         for cle, nom, suf, ail in AILETTES:
             if suf:
-                page_image(pdf, f"{nom} à ailettes plates ({ail}), CFD 3D", [f"{cle}/resultat{suf}.png"])
+                t = (f"{nom} + {ail} (TPMS à la place des ailettes)" if ("gyroide" in suf or "diamond" in suf)
+                     else f"{nom}, ailettes {ail}" if ("_ond" in suf or "_bord" in suf) else f"{nom} à ailettes plates ({ail})")
+                page_image(pdf, f"{t}, CFD 3D", [f"{cle}/resultat{suf}.png"])
         page_longitudinal(pdf)
         page_charge_propane(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
