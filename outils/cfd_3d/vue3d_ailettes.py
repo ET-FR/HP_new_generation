@@ -75,6 +75,7 @@ def mesh3d(p, f, v=None, couleur=None, nom="", echelle=None, cmin=None, cmax=Non
 
 
 def traces_cas(cas, visible):
+    """Retourne (traces, titre) ; chaque trace porte sa visibilité par défaut dans trace.meta."""
     m, r, d = charger(cas)
     ecart, Pt = m["epaisseur_mm"] * 1e-3, m["Pt"]
     xa, xb = m["x_noyau"][0] - 0.008, m["x_noyau"][1] + 0.012          # batterie + un peu d'avant / après
@@ -98,6 +99,24 @@ def traces_cas(cas, visible):
     tr.append(mesh3d(p, f, v, nom="vitesse (coupe verticale)", echelle="Turbo", cmin=0,
                      cmax=float(np.percentile(v, 99.5)),
                      barre=dict(title="|U| m/s", x=1.08, len=0.45, y=0.25), visible=visible))
+    # autres hauteurs : température près de l'ailette et au quart de l'écart (masquées au départ)
+    for zr, nom in ((0.05e-3, "température à 0,05 mm de l'ailette"), (0.25 * ecart, "température au quart de l'écart")):
+        s = vol.slice(normal="z", origin=(0, 0, zr))
+        p, f, v = maillage_tri(s, "T", cible=25000)
+        t = mesh3d(p, f, v, nom=nom, echelle="Inferno", cmin=0, cmax=1, visible=visible)
+        t.meta = "legendonly"; tr.append(t)
+    # maillage : arêtes de la coupe verticale y = 0,2 Pt, bord d attaque de l ailette (on y voit les tranches)
+    x0f = m["x_noyau"][0]
+    s = vol.slice(normal="y", origin=(0, 0.2 * Pt, 0)).clip_box((x0f - 0.003, x0f + 0.012, -1, 1, -1, 1),
+                                                                invert=False).extract_all_edges()
+    seg = s.lines.reshape(-1, 3)[:, 1:]
+    pts = s.points * 1e3
+    xyz = np.full((3 * len(seg), 3), np.nan)
+    xyz[0::3], xyz[1::3] = pts[seg[:, 0]], pts[seg[:, 1]]
+    t = go.Scatter3d(x=xyz[:, 0], y=xyz[:, 1] - 0.01, z=xyz[:, 2] * DILATATION, mode="lines",
+                     line=dict(color="#1c3d6e", width=1.5), name=f"maillage : {m['tranches']['n']} tranches (coupe)",
+                     hoverinfo="skip", visible=visible)
+    t.meta = "legendonly"; tr.append(t)
     # lignes de courant depuis l'entrée, colorées par la température
     x0 = m["x_noyau"][0] - 0.004
     graine = pv.Line((x0, 0.05 * Pt, 0.5 * ecart), (x0, 0.95 * Pt, 0.5 * ecart), resolution=14)
@@ -129,15 +148,21 @@ def figure(cas_liste, hauteur=820):
         bornes.append((len(traces), len(traces) + len(tr)))
         traces += tr; titres.append(t)
         print(Path(cas).name, len(tr), "objets")
+    defaut = [t.meta if t.meta == "legendonly" else True for t in traces]
+    for t, d0 in zip(traces, defaut):
+        if t.visible and d0 == "legendonly":
+            t.visible = "legendonly"
+        t.meta = None
     boutons = []
     for k, (a, b) in enumerate(bornes):
-        vis = [a <= i < b for i in range(len(traces))]
+        vis = [defaut[i] if a <= i < b else False for i in range(len(traces))]
         boutons.append(dict(label=Path(cas_liste[k]).name, method="update",
                             args=[{"visible": vis}, {"title.text": titres[k]}]))
     fig = go.Figure(traces)
     fig.update_layout(
         title=dict(text=titres[0], x=0.02, font=dict(size=15)),
-        scene=dict(aspectmode="data",                     # mêmes échelles en x et y (z dilaté, voir DILATATION) xaxis_title="x, sens de l'air (mm)", yaxis_title="y (mm)",
+        # mêmes échelles en x et y (z dilaté, voir DILATATION)
+        scene=dict(aspectmode="data", xaxis_title="x, sens de l'air (mm)", yaxis_title="y (mm)",
                    zaxis_title=f"z (mm × {DILATATION:g})", camera=dict(eye=dict(x=-0.9, y=-1.3, z=0.9)),
                    bgcolor="white"),
         updatemenus=[dict(buttons=boutons, direction="down", x=0.02, y=0.98, xanchor="left", yanchor="top")]
