@@ -47,11 +47,12 @@ TAILLE_BORD = 0.06      # mm, mailles aux bords d'attaque et de fuite des ailett
 DEMI_BANDE = 0.6        # mm, demi-largeur de la bande fine
 
 
-def tranches(ecart, premiere=0.02, raison=1.15):
+def tranches(ecart, premiere=0.02, raison=1.15, n_total=None):
     """Cotes z des tranches entre deux ailettes distantes de `ecart` (mm), resserrées
-    symétriquement contre les deux ailettes."""
+    symétriquement contre les deux ailettes. n_total (pair) : nombre imposé de tranches (convergence),
+    la 1re tranche est alors ajustée à raison constante."""
     demi = ecart / 2
-    n = max(3, math.ceil(math.log(1 + demi * (raison - 1) / premiere) / math.log(raison)))
+    n = n_total // 2 if n_total else max(3, math.ceil(math.log(1 + demi * (raison - 1) / premiere) / math.log(raison)))
     e = premiere * raison ** np.arange(n)
     e *= demi / e.sum()
     z = np.r_[0.0, np.cumsum(e)]
@@ -189,14 +190,14 @@ def champs_3d(cas, U):
 
 
 def creer(dossier, forme="rond", U_face=1.0, Fp=1.8, e=0.2, premiere=0.02, nproc=48,
-          stationnaire=False, fin=None, iterations=4000, finesse=1.0):
+          stationnaire=False, fin=None, iterations=4000, finesse=1.0, rangs=4, n_tranches=None):
     cas = Path(dossier)
-    b0 = batterie(forme)
+    b0 = batterie(forme, rangs=rangs)
     x0f, x1f = etendue_ailettes(b0)
-    b, xy, cellules, bd = mailler_couches(forme, finesse=finesse,
+    b, xy, cellules, bd = mailler_couches(forme, finesse=finesse, rangs=rangs,
                                           lignes_fines=[(x0f, TAILLE_BORD, DEMI_BANDE), (x1f, TAILLE_BORD, DEMI_BANDE)])
     ecart = Fp - e
-    z = tranches(ecart, premiere)
+    z = tranches(ecart, premiere, n_total=n_tranches)
     n, A_ail = ecrire_polymesh_3d(cas, xy, cellules, bd,
                                   {"entree": "patch", "sortie": "patch", "paroi": "wall", "haut": "cyclic",
                                    "bas": "cyclic"},
@@ -260,9 +261,11 @@ if __name__ == "__main__":
     ap.add_argument("--fin", type=float, default=None)
     ap.add_argument("--iterations", type=int, default=4000)
     ap.add_argument("--suffixe", default=None)
+    ap.add_argument("--rangs", type=int, default=4)
+    ap.add_argument("--tranches", type=int, default=None, help="nombre de tranches imposé (pair)")
     a = ap.parse_args()
     m = creer(a.dossier, a.forme, a.vitesse, a.pas, a.epaisseur, a.premiere, a.nproc, a.stationnaire, a.fin,
-              a.iterations)
+              a.iterations, rangs=a.rangs, n_tranches=a.tranches)
     if a.suffixe:
         m["suffixe"] = a.suffixe
         (Path(a.dossier) / "cas.json").write_text(json.dumps(m, indent=1, ensure_ascii=False))

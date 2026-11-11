@@ -173,7 +173,7 @@ def page_introduction(pdf):
         ["1", "Forme du tube", "22 formes à 1 m/s, même charge", "fait"],
         ["1b", "Vitesse de l'air", "4 formes du meilleur compromis, 0,5 / 1 / 2 / 3 m/s", etat_vitesse()],
         ["2", "Agencement", "aligné / quinconce, pas, nombre de rangs (1, 2, 4, 8)", "fait"],
-        ["3", "Ailettes et TPMS", "ailettes (plates, persiennées…), surfaces TPMS en 3D", "à faire"],
+        ["3", "Ailettes et TPMS", "ailettes (plates, persiennées…), surfaces TPMS en 3D", "en cours"],
         ["4", "Base + optimisation", "plan d'expériences, puis optimisation bayésienne sur le cycle complet", "à faire"],
         ["5", "Validation physique", "prototype imprimé, essais d'échange, de givrage et de fuite", "à faire"],
     ]
@@ -471,6 +471,55 @@ def page_niveau2(pdf):
     pdf.savefig(fig); plt.close(fig)
 
 
+# Étape 3 : ailettes plates (outils/cfd_3d/creer_cas_ailettes.py), CFD 3D stationnaire
+AILETTES = [("rond", "Rond", "", "nus"), ("rond", "Rond", "_ail1.8", "1,8 mm"),
+            ("rond", "Rond", "_ail1.8_t20", "1,8 mm, 20 tranches"), ("rond", "Rond", "_ail1.8_t40", "1,8 mm, 40 tranches"),
+            ("rond", "Rond", "_ail2.5", "2,5 mm"), ("rond", "Rond", "_ail1.8_r2", "1,8 mm, 2 rangs"),
+            ("ellipse2", "Ellipse 2:1", "", "nus"), ("ellipse2", "Ellipse 2:1", "_ail1.8", "1,8 mm"),
+            ("ellipse2", "Ellipse 2:1", "_ail1.8_r2", "1,8 mm, 2 rangs")]
+
+
+def page_ailettes(pdf):
+    if not lire("rond/resultat_ail1.8.json"):
+        return
+    fig = plt.figure(figsize=A4)
+    fig.text(0.06, 0.965, "Étape 3 : tubes à ailettes plates (CFD 3D)", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.95, "Mêmes tubes et même charge de propane que les tubes nus (4 rangs en quinconce, Pt = 12 mm), "
+             "air à 1 m/s en façade.\nAilettes de 0,2 mm sur toute la profondeur (4 Pl), supposées isothermes ; "
+             "domaine : l'espace entre deux ailettes, en 28 tranches.", fontsize=8, color="#495057", va="top",
+             linespacing=1.4)
+    lignes = []
+    for cle, nom, suf, ail in AILETTES:
+        d = lire(f"{cle}/resultat{suf}.json")
+        if not d:
+            lignes.append([nom, ail, "en cours", "", "", "", "", "", "", ""]); continue
+        r, m = d["resultats"], d["parametres"]
+        q = 1.2 * 1006 * m["U"] * r["T_sortie"] * DT_REF / 1e3
+        charge = m.get("rangs", 4) / 4
+        lignes.append([nom, ail, f"{r['dp_Pa']:.2f}", f"{r['h']:.1f}", f"{100 * r['T_sortie']:.1f} %", f"{q:.2f}",
+                       f"{r['P_vent_sur_Q'] / DT_REF * 1e3:.2f}", f"{charge:.2f}", f"{q / charge:.2f}",
+                       f"{100 * r['part_ailettes']:.0f} %" if "part_ailettes" in r else "-"])
+    y = tableau(fig, 0.905, ["Tube", "Ailettes", "Δp (Pa)", "h (W/m²K)", "Efficacité", "Q face",
+                             "P vent / Q", "Charge", "Q / charge", "Ailettes"], lignes,
+                [0.11, 0.18, 0.08, 0.10, 0.10, 0.08, 0.10, 0.08, 0.10, 0.07], "Résultats", taille=7, h_ligne=0.021,
+                degrades={2: -1, 5: +1, 8: +1})
+    fig.text(0.06, y + 0.02, "h : moyen sur toute la surface côté air (tubes + ailettes). Q face : chaleur par m² de "
+             "face (kW/m², 10 K d'écart air / paroi).\nP vent / Q en ‰. Charge : propane relatif à la référence "
+             "(4 rangs). Ailettes : part de la chaleur échangée par les ailettes.\n"
+             "Calcul stationnaire : résidus plafonnant vers 7·10⁻³, mais Δp, température de sortie et flux constants\n"
+             "à moins de 0,1 % depuis l'itération 2 000 ; bilan de chaleur fermé à 0,2 %.",
+             fontsize=7, va="top", color="#343a40", linespacing=1.45)
+    conclusion(fig, y - 0.04, [
+        "À charge de propane égale, les ailettes multiplient la chaleur par m² de face par 3,1 (rond) et 4,3 (ellipse 2:1),",
+        "    pour une ventilation par kW à peine plus élevée avec le rond (+ 11 %), + 57 % avec l'ellipse.",
+        "Pour la même puissance il faut donc 3 à 4 fois moins de tube, donc de propane : c'est le levier qui manquait.",
+        "Les ailettes portent 85 à 91 % de la chaleur ; avec elles le rond redevient compétitif face à l'ellipse.",
+        "L'air sort à 86-90 % de l'écart de température : 4 rangs sont trop profonds avec ailettes, 2 rangs à l'essai.",
+        "À vérifier : convergence (20 / 40 tranches), rendement d'ailette réel (≈ 98 % estimé), stabilité instationnaire."],
+        "Premières conclusions")
+    pdf.savefig(fig); plt.close(fig)
+
+
 def page_longitudinal(pdf):
     """Piste : tubes parallèles à l'air, estimation analytique (outils/analytique/tubes_longitudinaux.py)."""
     d = lire("longitudinal/resultat.json")
@@ -649,6 +698,8 @@ def main():
         page_compromis(pdf)
         page_vitesse(pdf)
         page_niveau2(pdf)
+        page_ailettes(pdf)
+        page_image(pdf, "Étape 3 : maillage 3D des ailettes plates", ["../maillages/ailettes_plates.png"])
         page_longitudinal(pdf)
         page_charge_propane(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
