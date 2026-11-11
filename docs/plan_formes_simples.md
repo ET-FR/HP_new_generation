@@ -219,6 +219,6 @@ diphasique, l'exposant de la loi change : à recalculer avec le modèle de charg
 | Collecteurs en arbre de Murray (voir ci-dessus) | conception des collecteurs |
 | Circuits à contre-courant global (poumon d'oiseau, rete mirabile) | étape 4, modèle de la machine |
 | Ailettes vascularisées (canaux de propane dans l'ailette, oreille d'éléphant) | étape 4 |
-| Échangeur en disque à distribution radiale (toile d'araignée, phyllotaxie) | si ventilateur axial |
+| Échangeur en disque (devant l'axial extérieur) ou en anneau (autour d'un centrifuge intérieur), distribution radiale (toile d'araignée, phyllotaxie) | choix des ventilateurs |
 | Pales de ventilateur inspirées de la chouette (bruit - 2 dB publiés) | choix du ventilateur |
 | Mouillabilité alternée, surfaces glissantes (scarabée du Namib, Nepenthes) : condensats et givre | étape 5, essais |

@@ -6,3 +6,4 @@ cfd_campagne/
 docs/articles/
 docs/*.pdf
 !docs/resultats_cfd.pdf
+!docs/pistes_et_idees.pdf
