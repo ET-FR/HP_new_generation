@@ -137,8 +137,8 @@ def figure(cas_liste, hauteur=820):
     fig = go.Figure(traces)
     fig.update_layout(
         title=dict(text=titres[0], x=0.02, font=dict(size=15)),
-        scene=dict(aspectmode="manual", aspectratio=dict(x=2.6, y=0.75, z=0.45), xaxis_title="x, sens de l'air (mm)", yaxis_title="y (mm)",
-                   zaxis_title=f"z (mm × {DILATATION:g})", camera=dict(eye=dict(x=-1.3, y=-1.9, z=1.3)),
+        scene=dict(aspectmode="data",                     # mêmes échelles en x et y (z dilaté, voir DILATATION) xaxis_title="x, sens de l'air (mm)", yaxis_title="y (mm)",
+                   zaxis_title=f"z (mm × {DILATATION:g})", camera=dict(eye=dict(x=-0.9, y=-1.3, z=0.9)),
                    bgcolor="white"),
         updatemenus=[dict(buttons=boutons, direction="down", x=0.02, y=0.98, xanchor="left", yanchor="top")]
         if len(boutons) > 1 else [],
