@@ -700,6 +700,8 @@ def main():
         page_niveau2(pdf)
         page_ailettes(pdf)
         page_image(pdf, "Étape 3 : maillage 3D des ailettes plates", ["../maillages/ailettes_plates.png"])
+        for cle, nom in (("rond", "Rond"), ("ellipse2", "Ellipse 2:1")):
+            page_image(pdf, f"{nom} à ailettes plates (pas 1,8 mm), CFD 3D", [f"{cle}/resultat_ail1.8.png"])
         page_longitudinal(pdf)
         page_charge_propane(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],
