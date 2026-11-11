@@ -1,0 +1,107 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "ailettes": true,
+  "U": 1.0,
+  "U_domaine": 1.125,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 1.6,
+  "nproc": 24,
+  "finesse": 1.0,
+  "couches": {
+   "premiere": 0.01,
+   "raison": 1.15,
+   "n": 15,
+   "epaisseur": 0.4758041086108217,
+   "tangentielle": 0.08
+  },
+  "forme": "rond",
+  "nom": "Rond à ailettes plates",
+  "pas_ailettes_mm": 1.8,
+  "epaisseur_ailette_mm": 0.2,
+  "tranches": {
+   "n": 28,
+   "premiere_mm": 0.019750791867073417
+  },
+  "Pt": 0.012000685436173702,
+  "Pl": 0.010392898450552362,
+  "rangs": 4,
+  "A_int": 1.2567088401441776e-05,
+  "P_int": 0.012567088401441684,
+  "P_ext": 0.018850094275687037,
+  "x_noyau": [
+   -0.0021963635381693943,
+   0.03937523026404006
+  ],
+  "x_tubes": [
+   0.0,
+   0.03717886672587066
+  ],
+  "x_domaine": [
+   -0.03,
+   0.09717886672587066
+  ],
+  "largeur_frontale": 0.006000171374213574,
+  "Umax": 2.2499357515521345,
+  "Re_Dext": 395.77836411609496,
+  "A_tubes_domaine": 0.00012064060336439704,
+  "A_ailettes_domaine": 0.0007716072926301411,
+  "A_air_domaine": 0.0008922478959945382,
+  "facteur_surface": 7.395917055383816,
+  "instationnaire": false,
+  "fin": 4000,
+  "debut_moyenne": 3000.0,
+  "maillage": {
+   "cellules": 1506792,
+   "cellules_2d": 53814,
+   "tranches": 28,
+   "faces": 4041714,
+   "internes": 3888726
+  },
+  "suffixe": "_ail1.8"
+ },
+ "resultats": {
+  "cas": "rond_ail1.8",
+  "forme": "rond",
+  "U": 1.0,
+  "Umax": 2.2499357515521345,
+  "Re_max_D6": 890.4758911156205,
+  "dp_Pa": 15.025227220045068,
+  "fluct_p": 0.001205899086064063,
+  "T_sortie": 0.863500786940594,
+  "fluct_T": 1.8936065128490186e-05,
+  "NTU": 1.9914364295062976,
+  "h": 58.39611275552955,
+  "Nu_D6": 13.547834061872113,
+  "j": 0.017054078325029753,
+  "f_par_rang": 1.2326061558993966,
+  "j_sur_f": 0.013835788701368193,
+  "Q_W_par_K": 0.022592576485645215,
+  "ecart_bilan": 0.0014714034278041164,
+  "fluct_flux": 1.026775975524716e-06,
+  "P_vent_sur_Q": 0.014365933211845894,
+  "profondeur_mm": 41.571593802209456,
+  "A_air": 0.0008922478959945382,
+  "stabilite_moyenne": {
+   "dp": 2.954958555869267e-06,
+   "T_sortie": 8.0967578285333e-07,
+   "flux_paroi": 3.0053695676704253e-07
+  },
+  "part_ailettes": 0.8467627158130003,
+  "facteur_surface": 7.395917055383816,
+  "duree_suffisante": true,
+  "zukauskas": {
+   "Nu_cylindre_isole": 11.932648688724342,
+   "Nu_loi_1e3": 16.679315728752606,
+   "C2": 0.89,
+   "dp_Pa": 6.2043748341864475,
+   "f_par_rang": 0.5089806964065715,
+   "ecart_dp": 1.4217149385068155
+  }
+ }
+}

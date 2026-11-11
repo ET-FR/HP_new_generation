@@ -68,7 +68,9 @@ def _longueur(p):
     return float(np.sum(np.linalg.norm(np.diff(p, axis=0), axis=1)))
 
 
-def mailler_couches(forme: str, finesse=1.0, sortie=None, avec_bords=True, **kw):
+def mailler_couches(forme: str, finesse=1.0, sortie=None, avec_bords=True, lignes_fines=None, **kw):
+    """lignes_fines : [(x_mm, taille_mm, demi_largeur_mm), ...] bandes verticales de mailles fines
+    (bords d'attaque et de fuite des ailettes, étape 3)."""
     b = batterie(forme, **kw)
     k = 1.0 / finesse
     e1, h_t = PREMIERE_COUCHE * k, TAILLE_PAROI * k
@@ -184,7 +186,13 @@ def mailler_couches(forme: str, finesse=1.0, sortie=None, avec_bords=True, **kw)
     bx = f.add("Box"); f.setNumber(bx, "VIn", TAILLE_LOIN * k); f.setNumber(bx, "VOut", TAILLE_TAMPON * k)
     f.setNumber(bx, "XMin", b.x_noyau[0] - 3); f.setNumber(bx, "XMax", b.x_noyau[1] + 6)
     f.setNumber(bx, "YMin", -1); f.setNumber(bx, "YMax", Pt + 1); f.setNumber(bx, "Thickness", 4)
-    m = f.add("Min"); f.setNumbers(m, "FieldsList", [t, bx]); f.setAsBackgroundMesh(m)
+    liste = [t, bx]
+    for xl, taille, dl in (lignes_fines or []):
+        bl = f.add("Box"); f.setNumber(bl, "VIn", taille * k); f.setNumber(bl, "VOut", TAILLE_TAMPON * k)
+        f.setNumber(bl, "XMin", xl - dl); f.setNumber(bl, "XMax", xl + dl)
+        f.setNumber(bl, "YMin", -1); f.setNumber(bl, "YMax", Pt + 1); f.setNumber(bl, "Thickness", 1.5)
+        liste.append(bl)
+    m = f.add("Min"); f.setNumbers(m, "FieldsList", liste); f.setAsBackgroundMesh(m)
     for o in ("MeshSizeExtendFromBoundary", "MeshSizeFromPoints", "MeshSizeFromCurvature"):
         gmsh.option.setNumber(f"Mesh.{o}", 0)
     gmsh.option.setNumber("Mesh.Algorithm", 6)

@@ -90,6 +90,10 @@ def batterie(cas: Path, m: dict) -> dict:
     T_out, sd_T = moyenne(serie(cas, "TSortie"), t0)
     Qv, _ = moyenne(serie(cas, "debit"), t0)
     flux, sd_f = moyenne(serie(cas, "fluxParoi"), t0)
+    ailettes = m.get("ailettes", False)
+    if ailettes:                                   # étape 3 : flux des deux ailettes en plus des tubes
+        flux_ail = sum(moyenne(serie(cas, n), t0)[0] for n in ("fluxAilette", "fluxAiletteHaut"))
+        flux_tubes, flux = flux, flux + flux_ail
     pin_s, pout_s = serie(cas, "pEntree"), serie(cas, "pSortie")
     dp_s = np.c_[pin_s[:, 0], pin_s[:, 1] - np.interp(pin_s[:, 0], pout_s[:, 0], pout_s[:, 1])]
     stab = dict(dp=stabilite(dp_s, t0), T_sortie=stabilite(serie(cas, "TSortie"), t0),
@@ -99,11 +103,11 @@ def batterie(cas: Path, m: dict) -> dict:
     mcp = air["rho"] * Qv * air["cp"]
     eps = min(T_out, 1 - 1e-12)
     NTU = -math.log(1 - eps)
-    A_air = m["rangs"] * m["P_ext"] * dz           # surface d'échange côté air dans le domaine
+    A_air = m["A_air_domaine"] if ailettes else m["rangs"] * m["P_ext"] * dz   # surface côté air (domaine)
     h = mcp * NTU / A_air                          # UA-LMTD, paroi isotherme
     Q_bilan = mcp * T_out                          # par ΔT = 1 K
     Q_paroi = air["rho"] * air["cp"] * air["nu"] / air["Pr"] * abs(flux)
-    U, Umax = m["U"], m["Umax"]
+    U, Umax = m["U"], m["Umax"]                    # U : vitesse frontale (devant la batterie)
     D = 6e-3                                       # Ø extérieur du tube rond de référence
     k = k_air(air)
     Nu_D = h * D / k
@@ -117,6 +121,7 @@ def batterie(cas: Path, m: dict) -> dict:
              Q_W_par_K=Q_bilan, ecart_bilan=(Q_paroi - Q_bilan) / Q_bilan, fluct_flux=sd_f,
              P_vent_sur_Q=P_vent / Q_bilan, profondeur_mm=(m["x_noyau"][1] - m["x_noyau"][0]) * 1e3,
              A_air=A_air, stabilite_moyenne=stab,
+             **(dict(part_ailettes=flux_ail / flux, facteur_surface=m["facteur_surface"]) if ailettes else {}),
              duree_suffisante=max(stab.values()) < 0.01)
     if m.get("forme") == "rond":
         r["zukauskas"] = zukauskas(Re_max, air["Pr"], m["Pt"] / m["Pl"], m["rangs"], m.get("aligne", False))
