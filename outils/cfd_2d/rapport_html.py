@@ -27,8 +27,7 @@ PDF = DOCS / "resultats_cfd.pdf"
 SORTIE = DOCS / "rapport_cfd.html"
 DOSSIER = DOCS / "rapport_cfd"
 CAS_3D = RACINE / "cfd_campagne" / "ailettes" / "resultats"
-ORDRE_3D = ["rond_ail1.8", "ellipse2_ail1.8", "rond_ail1.8_r2", "ellipse2_ail1.8_r2", "rond_ail2.5",
-            "rond_ail1.8_t20", "rond_ail1.8_t40"]
+ORDRE_3D = ["rond_ail1.8", "ellipse2_ail1.8", "rond_ail1.8_r2", "ellipse2_ail1.8_r2", "rond_ail2.5"]  # convergence (t20, t40) : non affichée
 
 
 def titres_pages():

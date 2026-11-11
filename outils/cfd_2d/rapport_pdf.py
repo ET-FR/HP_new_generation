@@ -487,7 +487,7 @@ def page_ailettes(pdf):
     fig = plt.figure(figsize=A4)
     fig.text(0.06, 0.965, "Étape 3 : tubes à ailettes plates (CFD 3D)", fontsize=15, fontweight="bold", color=BLEU)
     fig.text(0.06, 0.95, "Mêmes tubes et même charge de propane que les tubes nus (4 rangs en quinconce, Pt = 12 mm), "
-             "air à 1 m/s en façade.\nAilettes de 0,2 mm sur toute la profondeur (4 Pl), supposées isothermes ; "
+             "air à 1 m/s en façade.\nAilettes de 0,2 mm sur toute la profondeur (rangs × Pl), supposées isothermes ; "
              "domaine : l'espace entre deux ailettes, en 28 tranches.", fontsize=8, color="#495057", va="top",
              linespacing=1.4)
     lignes = []
@@ -511,14 +511,16 @@ def page_ailettes(pdf):
              "Calcul stationnaire : résidus plafonnant vers 7·10⁻³, mais Δp, température de sortie et flux constants\n"
              "à moins de 0,1 % depuis l'itération 2 000 ; bilan de chaleur fermé à 0,2 %.",
              fontsize=7, va="top", color="#343a40", linespacing=1.45)
-    conclusion(fig, y - 0.04, [
-        "À charge de propane égale, les ailettes multiplient la chaleur par m² de face par 3,1 (rond) et 4,3 (ellipse 2:1),",
-        "    pour une ventilation par kW à peine plus élevée avec le rond (+ 11 %), + 57 % avec l'ellipse.",
-        "Pour la même puissance il faut donc 3 à 4 fois moins de tube, donc de propane : c'est le levier qui manquait.",
-        "Les ailettes portent 85 à 91 % de la chaleur ; avec elles le rond redevient compétitif face à l'ellipse.",
-        "L'air sort à 86-90 % de l'écart de température : 4 rangs sont trop profonds avec ailettes, 2 rangs à l'essai.",
-        "À vérifier : convergence (20 / 40 tranches), rendement d'ailette réel (≈ 98 % estimé), stabilité instationnaire."],
-        "Premières conclusions")
+    conclusion(fig, y - 0.065, [
+        "À charge égale (4 rangs), les ailettes multiplient la chaleur par m² de face par 3,1 (rond) et 4,3 (ellipse 2:1) ;",
+        "    la ventilation par kW augmente de 11 % (rond) et 57 % (ellipse). Les ailettes portent 85 à 91 % de la chaleur.",
+        "Avec ailettes, 4 rangs sont trop profonds (air à 86-90 %). 2 rangs gardent 80 % de la chaleur avec moitié moins de",
+        "    propane : chaleur par gramme × 4,9 (rond) et × 7 (ellipse) par rapport aux tubes nus, et ventilation par kW",
+        "    plus basse que les tubes nus (rond 0,94 contre 1,29 ‰ ; ellipse 0,62 ‰, autant que l'ellipse nue).",
+        "Pas de 2,5 mm (batterie extérieure qui givre) : 13 % de chaleur en moins, 17 % de ventilation par kW en moins.",
+        "Maillage convergé : 20, 28 et 40 tranches donnent Δp et efficacité à moins de 0,5 % près (28 retenues).",
+        "Meilleur candidat à ce stade : ellipse 2:1 à ailettes, 2 rangs. Reste : rendement d'ailette réel, instationnaire."],
+        "Conclusions de l'étape 3 (ailettes plates)")
     pdf.savefig(fig); plt.close(fig)
 
 
@@ -702,8 +704,9 @@ def main():
         page_niveau2(pdf)
         page_ailettes(pdf)
         page_image(pdf, "Étape 3 : maillage 3D des ailettes plates", ["../maillages/ailettes_plates.png"])
-        for cle, nom in (("rond", "Rond"), ("ellipse2", "Ellipse 2:1")):
-            page_image(pdf, f"{nom} à ailettes plates (pas 1,8 mm), CFD 3D", [f"{cle}/resultat_ail1.8.png"])
+        for cle, nom, suf, ail in AILETTES:
+            if suf:
+                page_image(pdf, f"{nom} à ailettes plates ({ail}), CFD 3D", [f"{cle}/resultat{suf}.png"])
         page_longitudinal(pdf)
         page_charge_propane(pdf)
         page_image(pdf, "Géométries : série 1", ["../maillages/formes_niveau1.png"],

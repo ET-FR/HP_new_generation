@@ -81,20 +81,20 @@ def traces_cas(cas, visible):
     vol = pv.read(d / "internal.vtu").clip_box((xa, xb, -1, 1, -1, 1), invert=False).cell_data_to_point_data()
     tr = []
     # tubes (paroi) et ailettes (translucides)
-    p, f, _ = maillage_tri(pv.read(d / "boundary" / "paroi.vtp"), cible=20000)
+    p, f, _ = maillage_tri(pv.read(d / "boundary" / "paroi.vtp"), cible=12000)
     tr.append(mesh3d(p, f, couleur="#c0392b", nom="tubes", visible=visible))
     for nom in ("ailette_bas", "ailette_haut"):
-        p, f, _ = maillage_tri(pv.read(d / "boundary" / f"{nom}.vtp"), cible=15000)
+        p, f, _ = maillage_tri(pv.read(d / "boundary" / f"{nom}.vtp"), cible=8000)
         tr.append(mesh3d(p, f, couleur="#9aa5b1", nom="ailettes" if nom == "ailette_bas" else "", opacite=0.25,
                          visible=visible))
     # coupe horizontale à mi-distance : température
     s = vol.slice(normal="z", origin=(0, 0, 0.5 * ecart))
-    p, f, v = maillage_tri(s, "T", cible=60000)
+    p, f, v = maillage_tri(s, "T", cible=35000)
     tr.append(mesh3d(p, f, v, nom="température (mi-distance)", echelle="Inferno", cmin=0, cmax=1,
                      barre=dict(title="T", x=1.0, len=0.45, y=0.75), visible=visible))
     # coupe verticale à travers les tubes 1 et 3 : vitesse
     s = vol.slice(normal="y", origin=(0, 0.5 * Pt, 0))
-    p, f, v = maillage_tri(s, "U", cible=30000)
+    p, f, v = maillage_tri(s, "U", cible=12000)
     tr.append(mesh3d(p, f, v, nom="vitesse (coupe verticale)", echelle="Turbo", cmin=0,
                      cmax=float(np.percentile(v, 99.5)),
                      barre=dict(title="|U| m/s", x=1.08, len=0.45, y=0.25), visible=visible))

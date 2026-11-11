@@ -34,7 +34,7 @@ def panneau(ax, P, v, cmap, titre, unite, xlim, ylim, vmin=None, vmax=None, aspe
     if vmin is not None:
         pc.set_clim(vmin, vmax)
     ax.add_collection(pc)
-    ax.set_xlim(*xlim); ax.set_ylim(*ylim); ax.set_aspect(aspect); ax.tick_params(labelsize=7)
+    ax.set_xlim(*xlim); ax.set_ylim(*ylim); ax.set_aspect(aspect); ax.set_anchor("W"); ax.tick_params(labelsize=7)
     ax.set_title(titre, fontsize=9.5)
     cb = plt.colorbar(pc, ax=ax, fraction=0.012, pad=0.01); cb.set_label(unite, fontsize=8)
     cb.ax.tick_params(labelsize=7)
@@ -66,26 +66,27 @@ def main(cas, sortie):
 
     fig = plt.figure(figsize=(15, 13))
     fig.suptitle(f"Résultat CFD 3D : {m['nom']} (pas {m['pas_ailettes_mm']:g} mm, épaisseur "
-                 f"{m['epaisseur_ailette_mm']:g} mm), {m['rangs']} rangs, même charge R290, air {m['U']:g} m/s en façade\n"
+                 f"{m['epaisseur_ailette_mm']:g} mm), {m['rangs']} rangs, air {m['U']:g} m/s en façade\n"
                  f"OpenFOAM, simpleFoam laminaire, {m['maillage']['cellules']:,} mailles ".replace(",", " ") +
                  f"({m['tranches']['n']} tranches entre deux ailettes), ailettes isothermes", fontsize=12,
                  fontweight="bold", y=0.995)
     hs, y = 0.155, [0.79, 0.59, 0.39, 0.19]
     lim = ((xa, xb), (0, Pt))
-    ax = fig.add_axes([0.05, y[0], 0.88, hs])
+    w = min(0.85, hs * 13 / 15 * (xb - xa) / Pt + 0.04)        # largeur des vues à l'échelle (+ barre de couleur)
+    ax = fig.add_axes([0.05, y[0], w, hs])
     panneau(ax, Pm, Um, "turbo", "(a) Vitesse à mi-distance entre deux ailettes (vue de dessus)", "|U| (m/s)",
             *lim, 0, umax)
-    ax = fig.add_axes([0.05, y[1], 0.88, hs])
+    ax = fig.add_axes([0.05, y[1], w, hs])
     panneau(ax, Pm, mi.cell_data["T"], "inferno",
             "(b) Température à mi-distance entre deux ailettes (0 = air entrant, 1 = paroi)", "T (-)", *lim, 0, 1)
-    ax = fig.add_axes([0.05, y[2], 0.88, hs])
+    ax = fig.add_axes([0.05, y[2], w, hs])
     panneau(ax, Pp, pres.cell_data["T"], "inferno",
             f"(c) Température à {0.1 * ecart:.2f} mm de l'ailette : l'air est déjà chaud dès les premiers mm",
             "T (-)", *lim, 0, 1)
-    ax = fig.add_axes([0.05, y[3], 0.88, hs])
+    ax = fig.add_axes([0.05, y[3], w, hs])
     pc = cy.cell_data["T"]
     panneau(ax, Pc, pc, "inferno",
-            f"(d) Coupe verticale y = Pt / 2 (à travers les tubes 1 et 3), épaisseur dilatée × {8}", "T (-)",
+            f"(d) Coupe verticale y = Pt / 2 (à travers les tubes des rangs impairs), épaisseur dilatée × {8}", "T (-)",
             (xa, xb), (-0.05, ecart + 0.05), 0, 1, aspect=8)
     for zf in (0, ecart):
         ax.plot([x0f, x1f], [zf, zf], color="#9aa5b1", lw=3, solid_capstyle="butt")
@@ -101,11 +102,15 @@ def main(cas, sortie):
          f"Part des ailettes        {100 * r['part_ailettes']:.0f} % de la chaleur\n"
          f"Bilan d'énergie          écart air / paroi {100 * r['ecart_bilan']:+.2f} %\n"
          f"Convergence              Δp, T et flux stables à {100 * max(r['stabilite_moyenne'].values()):.2f} % près")
-    d2 = (f"Comparaison aux tubes nus (même charge, 1 m/s)\n"
+    ch = m["rangs"] / 4
+    d2 = (f"Comparaison aux tubes nus, 4 rangs, 1 m/s\n"
+          f"  charge R290   × {ch:.2f}   (même tube, {m['rangs']} rangs au lieu de 4)\n"
           f"  Δp            {r['dp_Pa']:6.2f} Pa   contre {nus['dp_Pa']:.2f}  (× {r['dp_Pa'] / nus['dp_Pa']:.1f})\n"
           f"  efficacité    {100 * r['T_sortie']:6.1f} %    contre {100 * nus['T_sortie']:.1f}  "
           f"(× {r['T_sortie'] / nus['T_sortie']:.1f})\n"
           f"  Q face        {q(r['T_sortie']):6.2f}      contre {q(nus['T_sortie']):.2f}\n"
+          f"  Q / charge    {q(r['T_sortie']) / ch:6.2f}      contre {q(nus['T_sortie']):.2f}  "
+          f"(× {q(r['T_sortie']) / ch / q(nus['T_sortie']):.1f})\n"
           f"  P vent / Q    {r['P_vent_sur_Q'] * 100:6.2f} ‰    contre {nus['P_vent_sur_Q'] * 100:.2f}  "
           f"({100 * (r['P_vent_sur_Q'] / nus['P_vent_sur_Q'] - 1):+.0f} %)")
     ax.text(0, 1, g, va="top", family="monospace", fontsize=9.5)
