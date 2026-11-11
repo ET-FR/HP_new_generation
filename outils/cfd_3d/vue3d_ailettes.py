@@ -121,7 +121,8 @@ def traces_cas(cas, visible):
     return tr, titre
 
 
-def main(sortie, cas_liste):
+def figure(cas_liste, hauteur=820):
+    """Figure plotly (menu pour choisir le cas)."""
     traces, titres, bornes = [], [], []
     for k, cas in enumerate(cas_liste):
         tr, t = traces_cas(cas, visible=(k == 0))
@@ -141,12 +142,17 @@ def main(sortie, cas_liste):
                    bgcolor="white"),
         updatemenus=[dict(buttons=boutons, direction="down", x=0.02, y=0.98, xanchor="left", yanchor="top")]
         if len(boutons) > 1 else [],
-        margin=dict(l=0, r=0, t=60, b=40), height=820,
+        margin=dict(l=0, r=0, t=60, b=40), height=hauteur,
         annotations=[dict(text="Souris : glisser = tourner, molette = zoom, clic droit = déplacer. "
                                "Légende : un clic masque ou affiche un objet. Épaisseur entre ailettes dilatée "
                                f"× {DILATATION:g}.", x=0.02, y=0.01, xref="paper", yref="paper",
                           showarrow=False, font=dict(size=12, color="#495057"))],
         legend=dict(x=0.02, y=0.88, bgcolor="rgba(255,255,255,0.7)"))
+    return fig
+
+
+def main(sortie, cas_liste):
+    fig = figure(cas_liste)
     fig.write_html(sortie, include_plotlyjs=True, full_html=True, config=dict(displaylogo=False))
     print(sortie, f"{Path(sortie).stat().st_size / 1e6:.1f} Mo")
 

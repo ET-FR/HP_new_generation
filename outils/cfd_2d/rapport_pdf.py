@@ -22,6 +22,8 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 RACINE = Path(__file__).resolve().parents[2]
 DOCS = RACINE / "docs"
 FORMES = DOCS / "formes"
@@ -727,6 +729,11 @@ def main():
         page_image(pdf, "Test 3D : surfaces TPMS et maillage", ["tpms_gyroide/coupes_tpms.png", "tpms_gyroide/maillage.png"])
     compresser(SORTIE)
     print(SORTIE)
+    try:                                       # rapport HTML : mêmes pages + vues 3D interactives
+        import rapport_html
+        rapport_html.main()
+    except Exception as e:                     # noqa: BLE001  (pdftoppm absent, etc.)
+        print("rapport HTML non régénéré :", e)
 
 
 def compresser(chemin):
