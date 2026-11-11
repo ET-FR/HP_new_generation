@@ -465,7 +465,8 @@ def page_niveau2(pdf):
         "Moins de rangs utilise mieux le propane (2 rangs : + 13 %) mais demande 2 fois plus de surface de face.",
         "Le pas en profondeur (Pl) change peu la chaleur ; Pl × 0,6 amincit la batterie (37 → 25 mm), + 37 % de ventilation.",
         "L'ellipse 2:1 ventile partout 2 fois moins par kW que le rond, pour 20 à 25 % de chaleur par gramme en moins.",
-        "Rond Pl × 1,5 vérifié : calcul bien distinct, Pl n'y change presque rien. À prolonger : ellipse Pl × 1,5 (± 10,7 %)."],
+        "Cas instables corrigés (11/11) : ellipse Pl × 1,5 moyennée après son régime transitoire (dès 0,85 s), rond",
+        "    Pl × 1,5 dès 0,5 s, 3 cas prolongés. Ellipse Pt × 1,5 reste à ± 2,4 % : bouffées irrégulières, valeurs inchangées."],
         "Conclusion de l'étape 2")
     pdf.savefig(fig); plt.close(fig)
 
