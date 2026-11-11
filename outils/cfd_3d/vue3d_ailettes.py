@@ -63,11 +63,12 @@ def maillage_tri(surf, champ=None, cible=None):
 
 def mesh3d(p, f, v=None, couleur=None, nom="", echelle=None, cmin=None, cmax=None, opacite=1.0, barre=None,
            visible=True):
-    kw = dict(x=p[:, 0], y=p[:, 1], z=p[:, 2] * DILATATION, i=f[:, 0], j=f[:, 1], k=f[:, 2], name=nom,
+    p = np.round(p, 3)                                   # 1 µm : largement assez pour l'affichage, fichier 2 × plus léger
+    kw = dict(x=p[:, 0], y=p[:, 1], z=np.round(p[:, 2] * DILATATION, 3), i=f[:, 0], j=f[:, 1], k=f[:, 2], name=nom,
               opacity=opacite, visible=visible, flatshading=False, hoverinfo="skip", showlegend=bool(nom),
               lighting=dict(ambient=0.75, diffuse=0.5, specular=0.1))
     if v is not None:
-        kw.update(intensity=v, colorscale=echelle, cmin=cmin, cmax=cmax, showscale=barre is not None,
+        kw.update(intensity=np.round(v, 3), colorscale=echelle, cmin=cmin, cmax=cmax, showscale=barre is not None,
                   colorbar=barre)
     else:
         kw.update(color=couleur)
@@ -102,18 +103,19 @@ def traces_cas(cas, visible):
     # autres hauteurs : température près de l'ailette et au quart de l'écart (masquées au départ)
     for zr, nom in ((0.05e-3, "température à 0,05 mm de l'ailette"), (0.25 * ecart, "température au quart de l'écart")):
         s = vol.slice(normal="z", origin=(0, 0, zr))
-        p, f, v = maillage_tri(s, "T", cible=25000)
+        p, f, v = maillage_tri(s, "T", cible=10000)
         t = mesh3d(p, f, v, nom=nom, echelle="Inferno", cmin=0, cmax=1, visible=visible)
         t.meta = "legendonly"; tr.append(t)
     # maillage : arêtes de la coupe verticale y = 0,2 Pt, bord d attaque de l ailette (on y voit les tranches)
     x0f = m["x_noyau"][0]
-    s = vol.slice(normal="y", origin=(0, 0.2 * Pt, 0)).clip_box((x0f - 0.003, x0f + 0.012, -1, 1, -1, 1),
+    s = vol.slice(normal="y", origin=(0, 0.2 * Pt, 0)).clip_box((x0f - 0.002, x0f + 0.005, -1, 1, -1, 1),
                                                                 invert=False).extract_all_edges()
     seg = s.lines.reshape(-1, 3)[:, 1:]
     pts = s.points * 1e3
     xyz = np.full((3 * len(seg), 3), np.nan)
     xyz[0::3], xyz[1::3] = pts[seg[:, 0]], pts[seg[:, 1]]
-    t = go.Scatter3d(x=xyz[:, 0], y=xyz[:, 1] - 0.01, z=xyz[:, 2] * DILATATION, mode="lines",
+    xyz = np.round(xyz, 3)
+    t = go.Scatter3d(x=xyz[:, 0], y=xyz[:, 1] - 0.01, z=np.round(xyz[:, 2] * DILATATION, 3), mode="lines",
                      line=dict(color="#1c3d6e", width=1.5), name=f"maillage : {m['tranches']['n']} tranches (coupe)",
                      hoverinfo="skip", visible=visible)
     t.meta = "legendonly"; tr.append(t)
