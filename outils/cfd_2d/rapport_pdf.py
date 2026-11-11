@@ -477,8 +477,13 @@ def page_niveau2(pdf):
 AILETTES = [("rond", "Rond", "", "nus"), ("rond", "Rond", "_ail1.8", "1,8 mm"),
             ("rond", "Rond", "_ail1.8_t20", "1,8 mm, 20 tranches"), ("rond", "Rond", "_ail1.8_t40", "1,8 mm, 40 tranches"),
             ("rond", "Rond", "_ail2.5", "2,5 mm"), ("rond", "Rond", "_ail1.8_r2", "1,8 mm, 2 rangs"),
+            ("rond", "Rond", "_ail1.8_ond", "ondulées 1,8 mm"), ("rond", "Rond", "_ail1.8_bord", "1,8 mm, bord ondulé"),
+            ("rond", "Rond", "_gyroide6", "gyroïde 6 mm (même métal)"), ("rond", "Rond", "_diamond6", "Diamond 6 mm"),
             ("ellipse2", "Ellipse 2:1", "", "nus"), ("ellipse2", "Ellipse 2:1", "_ail1.8", "1,8 mm"),
-            ("ellipse2", "Ellipse 2:1", "_ail1.8_r2", "1,8 mm, 2 rangs")]
+            ("ellipse2", "Ellipse 2:1", "_ail1.8_r2", "1,8 mm, 2 rangs"),
+            ("ellipse2", "Ellipse 2:1", "_ail1.8_r2_ond", "ondulées, 2 rangs"),
+            ("ellipse2", "Ellipse 2:1", "_ail1.8_r2_bord", "bord ondulé, 2 rangs"),
+            ("ellipse2", "Ellipse 2:1", "_r2_gyroide6", "gyroïde 6 mm, 2 rangs")]
 
 
 def page_ailettes(pdf):
@@ -503,7 +508,7 @@ def page_ailettes(pdf):
                        f"{100 * r['part_ailettes']:.0f} %" if "part_ailettes" in r else "-"])
     y = tableau(fig, 0.905, ["Tube", "Ailettes", "Δp (Pa)", "h (W/m²K)", "Efficacité", "Q face",
                              "P vent / Q", "Charge", "Q / charge", "Ailettes"], lignes,
-                [0.11, 0.18, 0.08, 0.10, 0.10, 0.08, 0.10, 0.08, 0.10, 0.07], "Résultats", taille=7, h_ligne=0.021,
+                [0.11, 0.18, 0.08, 0.10, 0.10, 0.08, 0.10, 0.08, 0.10, 0.07], "Résultats", taille=6.8, h_ligne=0.0185,
                 degrades={2: -1, 5: +1, 8: +1})
     fig.text(0.06, y + 0.02, "h : moyen sur toute la surface côté air (tubes + ailettes). Q face : chaleur par m² de "
              "face (kW/m², 10 K d'écart air / paroi).\nP vent / Q en ‰. Charge : propane relatif à la référence "

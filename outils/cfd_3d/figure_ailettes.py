@@ -65,11 +65,17 @@ def main(cas, sortie):
     umax = float(np.percentile(Um, 99.8))
 
     fig = plt.figure(figsize=(15, 13))
-    fig.suptitle(f"Résultat CFD 3D : {m['nom']} (pas {m['pas_ailettes_mm']:g} mm, épaisseur "
-                 f"{m['epaisseur_ailette_mm']:g} mm), {m['rangs']} rangs, air {m['U']:g} m/s en façade\n"
-                 f"OpenFOAM, simpleFoam laminaire, {m['maillage']['cellules']:,} mailles ".replace(",", " ") +
-                 f"({m['tranches']['n']} tranches entre deux ailettes), ailettes isothermes", fontsize=12,
-                 fontweight="bold", y=0.995)
+    tpms = m.get("tpms")
+    ncel = m["maillage"].get("cellules") or vol.n_cells
+    if tpms:
+        l1 = f"{m['nom']}, {m['rangs']} rangs, métal = {100 * m['fraction_solide']:.0f} % du volume, air {m['U']:g} m/s en façade"
+        l2 = f"OpenFOAM, snappyHexMesh + simpleFoam laminaire, {ncel:,} mailles".replace(",", " ") + ", TPMS isotherme"
+    else:
+        l1 = (f"{m['nom']} (pas {m['pas_ailettes_mm']:g} mm, épaisseur {m['epaisseur_ailette_mm']:g} mm), "
+              f"{m['rangs']} rangs, air {m['U']:g} m/s en façade")
+        l2 = (f"OpenFOAM, simpleFoam laminaire, {ncel:,} mailles ".replace(",", " ") +
+              f"({m['tranches']['n']} tranches entre deux ailettes), ailettes isothermes")
+    fig.suptitle(f"Résultat CFD 3D : {l1}\n{l2}", fontsize=12, fontweight="bold", y=0.995)
     hs, y = 0.155, [0.79, 0.59, 0.39, 0.19]
     lim = ((xa, xb), (0, Pt))
     w = min(0.85, hs * 13 / 15 * (xb - xa) / Pt + 0.04)        # largeur des vues à l'échelle (+ barre de couleur)
@@ -81,14 +87,15 @@ def main(cas, sortie):
             "(b) Température à mi-distance entre deux ailettes (0 = air entrant, 1 = paroi)", "T (-)", *lim, 0, 1)
     ax = fig.add_axes([0.05, y[2], w, hs])
     panneau(ax, Pp, pres.cell_data["T"], "inferno",
-            f"(c) Température à {0.1 * ecart:.2f} mm de l'ailette : l'air est déjà chaud dès les premiers mm",
+            (f"(c) Température au quart de la cellule (z = {0.1 * ecart:.2f} mm)" if tpms else
+             f"(c) Température à {0.1 * ecart:.2f} mm de l'ailette : l'air est déjà chaud dès les premiers mm"),
             "T (-)", *lim, 0, 1)
     ax = fig.add_axes([0.05, y[3], w, hs])
     pc = cy.cell_data["T"]
     panneau(ax, Pc, pc, "inferno",
-            f"(d) Coupe verticale y = Pt / 2 (à travers les tubes des rangs impairs), épaisseur dilatée × {8}", "T (-)",
-            (xa, xb), (-0.05, ecart + 0.05), 0, 1, aspect=8)
-    for zf in (0, ecart):
+            f"(d) Coupe verticale y = Pt / 2 (à travers les tubes des rangs impairs), hauteur dilatée × {8 if not tpms else 2}", "T (-)",
+            (xa, xb), (-0.05, ecart + 0.05), 0, 1, aspect=2 if tpms else 8)
+    for zf in (() if tpms else (0, ecart)):
         ax.plot([x0f, x1f], [zf, zf], color="#9aa5b1", lw=3, solid_capstyle="butt")
     ax.set_xlabel("x, sens de l'air (mm)", fontsize=8); ax.set_ylabel("z (mm)", fontsize=8)
     # chiffres clés et comparaison aux tubes nus

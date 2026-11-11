@@ -66,9 +66,11 @@ def etendue_ailettes(b):
     return x0 - m, x1 + m
 
 
-def ecrire_polymesh_3d(cas, xy_mm, cellules, bords, types, cycliques, z_mm, zone_ailette, echelle=1e-3):
-    """Extrusion en len(z_mm) - 1 tranches. zone_ailette(x_mm) -> bool pour classer les faces z.
-    Retourne le nombre de cellules et la surface des ailettes (m², deux faces) dans le domaine."""
+def ecrire_polymesh_3d(cas, xy_mm, cellules, bords, types, cycliques, z_mm, zone_ailette, echelle=1e-3,
+                       deplacement=None):
+    """Extrusion en len(z_mm) - 1 tranches. zone_ailette(x_mm, y_mm) -> bool pour classer les faces z.
+    deplacement(x_mm) -> décalage en z (mm) de toute la colonne (ailettes ondulées) ; None : plates.
+    Retourne le nombre de cellules et la surface des ailettes (m², deux faces, vraie aire 3D)."""
     utilises = np.unique(np.concatenate([np.asarray(c) for c in cellules]))
     nouveau = -np.ones(len(xy_mm), dtype=int)
     nouveau[utilises] = np.arange(len(utilises))
@@ -129,7 +131,7 @@ def ecrire_polymesh_3d(cas, xy_mm, cellules, bords, types, cycliques, z_mm, zone
         for ic, f, _ in lst:
             faces.append(f); owner.append(ic)
         patchs.append((nom, types[nom], debut, len(lst)))
-    ail = np.array([zone_ailette(x) for x in centres[:, 0]])
+    ail = np.array([zone_ailette(x, y) for x, y in centres])
     for nom, k, sens, garder in (("ailette_bas", 0, -1, True), ("ailette_haut", nz, 1, True),
                                  ("libre_bas", 0, -1, False), ("libre_haut", nz, 1, False)):
         debut, n = len(faces), 0
@@ -142,7 +144,8 @@ def ecrire_polymesh_3d(cas, xy_mm, cellules, bords, types, cycliques, z_mm, zone
 
     d = Path(cas) / "constant" / "polyMesh"
     d.mkdir(parents=True, exist_ok=True)
-    pts = np.vstack([np.c_[xy, np.full(N, z)] for z in z_mm]) * echelle
+    dz = deplacement(xy[:, 0]) if deplacement else np.zeros(N)
+    pts = np.vstack([np.c_[xy, z + dz] for z in z_mm]) * echelle
     note = f"nPoints:{len(pts)}  nCells:{nc * nz}  nFaces:{len(faces)}  nInternalFaces:{len(internes)}"
     _ecrire(d, "points", "vectorField", f"{len(pts)}\n(\n" +
             "\n".join(f"({x:.9g} {y:.9g} {z:.9g})" for x, y, z in pts) + "\n)\n")
@@ -162,7 +165,10 @@ def ecrire_polymesh_3d(cas, xy_mm, cellules, bords, types, cycliques, z_mm, zone
                       "        matchTolerance  1e-4;\n")
         corps += f"        nFaces          {n};\n        startFace       {debut};\n    }}\n"
     _ecrire(d, "boundary", "polyBoundaryMesh", corps + ")\n")
-    A_ail = 2 * aires[ail].sum() * echelle ** 2
+    def aire3d(c):                                        # aire vraie de la face de fond (ondulée)
+        q = np.c_[xy[c], dz[c]]
+        return 0.5 * np.linalg.norm(sum(np.cross(q[k] - q[0], q[k + 1] - q[0]) for k in range(1, len(c) - 1)))
+    A_ail = 2 * sum(aire3d(c) for c, a in zip(cel, ail) if a) * echelle ** 2
     return dict(cellules=nc * nz, cellules_2d=nc, tranches=nz, faces=len(faces), internes=len(internes)), A_ail
 
 
@@ -190,19 +196,35 @@ def champs_3d(cas, U):
 
 
 def creer(dossier, forme="rond", U_face=1.0, Fp=1.8, e=0.2, premiere=0.02, nproc=48,
-          stationnaire=False, fin=None, iterations=4000, finesse=1.0, rangs=4, n_tranches=None):
+          stationnaire=False, fin=None, iterations=4000, finesse=1.0, rangs=4, n_tranches=None,
+          ondulation=None, bord=None):
+    """ondulation = (amplitude, longueur d'onde) en mm : ailettes ondulées dans le sens de l'air,
+    z décalé de A sin(2π (x - x_bord) / λ) dans la zone à ailettes (λ ajustée à un nombre entier de
+    demi-ondes sur la profondeur). bord = (amplitude, longueur d'onde) en mm : bord d'attaque ondulé
+    (tubercules de baleine), x_bord(y) = x_bord + A sin(2π y / λ), λ ajustée pour diviser Pt."""
     cas = Path(dossier)
     b0 = batterie(forme, rangs=rangs)
     x0f, x1f = etendue_ailettes(b0)
+    Ab, lb = bord or (0.0, 1.0)
+    if bord:
+        lb = b0.Pt / max(1, round(b0.Pt / lb))
     b, xy, cellules, bd = mailler_couches(forme, finesse=finesse, rangs=rangs,
-                                          lignes_fines=[(x0f, TAILLE_BORD, DEMI_BANDE), (x1f, TAILLE_BORD, DEMI_BANDE)])
+                                          lignes_fines=[(x0f, TAILLE_BORD, DEMI_BANDE + Ab),
+                                                        (x1f, TAILLE_BORD, DEMI_BANDE)])
+    deplacement, lo = None, None
+    if ondulation:
+        Ao, lo = ondulation
+        n_demi = max(1, round(2 * (x1f - x0f) / lo))
+        lo = 2 * (x1f - x0f) / n_demi
+        deplacement = lambda x: np.where((x > x0f) & (x < x1f), Ao * np.sin(2 * np.pi * (x - x0f) / lo), 0.0)
     ecart = Fp - e
     z = tranches(ecart, premiere, n_total=n_tranches)
     n, A_ail = ecrire_polymesh_3d(cas, xy, cellules, bd,
                                   {"entree": "patch", "sortie": "patch", "paroi": "wall", "haut": "cyclic",
                                    "bas": "cyclic"},
                                   {"haut": ("bas", (0, -b.Pt)), "bas": ("haut", (0, b.Pt))},
-                                  z, lambda x: x0f <= x <= x1f)
+                                  z, lambda x, y: x0f + Ab * math.sin(2 * math.pi * y / lb) <= x <= x1f,
+                                  deplacement=deplacement)
     U = U_face * Fp / ecart                                  # vitesse dans le domaine (entre ailettes)
     largeur = (b.exterieur.bounds[3] - b.exterieur.bounds[1]) * 1e-3
     passage = b.Pt - largeur * 1e3
@@ -216,8 +238,9 @@ def creer(dossier, forme="rond", U_face=1.0, Fp=1.8, e=0.2, premiere=0.02, nproc
     dz = ecart * 1e-3
     A_tubes = b.rangs * b.P_ext * 1e-3 * dz
     meta = dict(cas="batterie", ailettes=True, U=U_face, U_domaine=U, air=AIR, epaisseur_mm=ecart, nproc=nproc,
-                finesse=finesse, couches=b.couches, forme=forme, nom=b.nom + " à ailettes plates",
-                pas_ailettes_mm=Fp, epaisseur_ailette_mm=e, tranches=dict(n=len(z) - 1, premiere_mm=float(z[1])),
+                finesse=finesse, couches=b.couches, forme=forme, nom=b.nom + (" à ailettes ondulées" if ondulation else " à ailettes plates") + (", bord d'attaque ondulé" if bord else ""),
+                pas_ailettes_mm=Fp, epaisseur_ailette_mm=e,
+                ondulation_mm=[ondulation[0], lo] if ondulation else None, bord_ondule_mm=[Ab, lb] if bord else None, tranches=dict(n=len(z) - 1, premiere_mm=float(z[1])),
                 Pt=b.Pt * 1e-3, Pl=b.Pl * 1e-3, rangs=b.rangs, A_int=b.A_int * 1e-6, P_int=b.P_int * 1e-3,
                 P_ext=b.P_ext * 1e-3, x_noyau=[x0f * 1e-3, x1f * 1e-3], x_tubes=[x * 1e-3 for x in b.x_noyau],
                 x_domaine=[x * 1e-3 for x in b.x_domaine], largeur_frontale=largeur, Umax=Umax,
@@ -263,9 +286,13 @@ if __name__ == "__main__":
     ap.add_argument("--suffixe", default=None)
     ap.add_argument("--rangs", type=int, default=4)
     ap.add_argument("--tranches", type=int, default=None, help="nombre de tranches imposé (pair)")
+    ap.add_argument("--ondulation", type=float, nargs=2, default=None, metavar=("A", "LAMBDA"),
+                    help="ailettes ondulées : amplitude et longueur d'onde (mm)")
+    ap.add_argument("--bord", type=float, nargs=2, default=None, metavar=("A", "LAMBDA"),
+                    help="bord d'attaque ondulé : amplitude et longueur d'onde (mm)")
     a = ap.parse_args()
     m = creer(a.dossier, a.forme, a.vitesse, a.pas, a.epaisseur, a.premiere, a.nproc, a.stationnaire, a.fin,
-              a.iterations, rangs=a.rangs, n_tranches=a.tranches)
+              a.iterations, rangs=a.rangs, n_tranches=a.tranches, ondulation=a.ondulation, bord=a.bord)
     if a.suffixe:
         m["suffixe"] = a.suffixe
         (Path(a.dossier) / "cas.json").write_text(json.dumps(m, indent=1, ensure_ascii=False))

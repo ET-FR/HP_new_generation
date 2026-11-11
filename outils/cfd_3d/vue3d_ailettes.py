@@ -85,10 +85,11 @@ def traces_cas(cas, visible):
     # tubes (paroi) et ailettes (translucides)
     p, f, _ = maillage_tri(pv.read(d / "boundary" / "paroi.vtp"), cible=12000)
     tr.append(mesh3d(p, f, couleur="#c0392b", nom="tubes", visible=visible))
-    for nom in ("ailette_bas", "ailette_haut"):
-        p, f, _ = maillage_tri(pv.read(d / "boundary" / f"{nom}.vtp"), cible=8000)
-        tr.append(mesh3d(p, f, couleur="#9aa5b1", nom="ailettes" if nom == "ailette_bas" else "", opacite=0.25,
-                         visible=visible))
+    tpms = m.get("tpms")
+    for nom in (("ailette",) if tpms else ("ailette_bas", "ailette_haut")):
+        p, f, _ = maillage_tri(pv.read(d / "boundary" / f"{nom}.vtp"), cible=40000 if tpms else 8000)
+        tr.append(mesh3d(p, f, couleur="#9aa5b1", nom=("surface TPMS" if tpms else "ailettes") if nom != "ailette_haut" else "",
+                         opacite=0.45 if tpms else 0.25, visible=visible))
     # coupe horizontale à mi-distance : température
     s = vol.slice(normal="z", origin=(0, 0, 0.5 * ecart))
     p, f, v = maillage_tri(s, "T", cible=35000)
@@ -116,7 +117,7 @@ def traces_cas(cas, visible):
     xyz[0::3], xyz[1::3] = pts[seg[:, 0]], pts[seg[:, 1]]
     xyz = np.round(xyz, 3)
     t = go.Scatter3d(x=xyz[:, 0], y=xyz[:, 1] - 0.01, z=np.round(xyz[:, 2] * DILATATION, 3), mode="lines",
-                     line=dict(color="#1c3d6e", width=1.5), name=f"maillage : {m['tranches']['n']} tranches (coupe)",
+                     line=dict(color="#1c3d6e", width=1.5), name=(f"maillage : {m['tranches']['n']} tranches (coupe)" if not tpms else "maillage (coupe)"),
                      hoverinfo="skip", visible=visible)
     t.meta = "legendonly"; tr.append(t)
     # lignes de courant depuis l'entrée, colorées par la température
@@ -137,7 +138,8 @@ def traces_cas(cas, visible):
     except Exception as e:                                       # noqa: BLE001
         print("lignes de courant :", e)
     q = 1.2 * 1006 * m["U"] * r["T_sortie"] * 10 / 1e3
-    titre = (f"{m['nom']} (pas {m['pas_ailettes_mm']:g} mm, {m['rangs']} rangs) : Δp {r['dp_Pa']:.1f} Pa, "
+    desc = f"{m['rangs']} rangs" if tpms else f"pas {m['pas_ailettes_mm']:g} mm, {m['rangs']} rangs"
+    titre = (f"{m['nom']} ({desc}) : Δp {r['dp_Pa']:.1f} Pa, "
              f"efficacité {100 * r['T_sortie']:.0f} %, {q:.1f} kW/m² de face, ailettes {100 * r['part_ailettes']:.0f} %")
     return tr, titre
 

@@ -92,7 +92,8 @@ def batterie(cas: Path, m: dict) -> dict:
     flux, sd_f = moyenne(serie(cas, "fluxParoi"), t0)
     ailettes = m.get("ailettes", False)
     if ailettes:                                   # étape 3 : flux des deux ailettes en plus des tubes
-        flux_ail = sum(moyenne(serie(cas, n), t0)[0] for n in ("fluxAilette", "fluxAiletteHaut"))
+        noms = sorted(d.name for d in (cas / "postProcessing").glob("fluxAilette*"))   # ailettes ou TPMS
+        flux_ail = sum(moyenne(serie(cas, n), t0)[0] for n in noms)
         flux_tubes, flux = flux, flux + flux_ail
     pin_s, pout_s = serie(cas, "pEntree"), serie(cas, "pSortie")
     dp_s = np.c_[pin_s[:, 0], pin_s[:, 1] - np.interp(pin_s[:, 0], pout_s[:, 0], pout_s[:, 1])]
