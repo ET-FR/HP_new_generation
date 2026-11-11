@@ -207,7 +207,7 @@ reconstructPar -latestTime > log.reconstructPar 2>&1
     (cas / "Allrun").chmod(0o755)
     passage = Pt - 2 * bb
     meta = dict(cas="batterie", ailettes=True, tpms=surface, U=U, U_domaine=U, air=AIR, epaisseur_mm=L, nproc=nproc,
-                forme=forme, nom=f"{b.nom} + {SURFACES[surface]['nom']} (cellule {L:g} mm)",
+                forme=forme, nom=f"{b.nom} + {SURFACES[surface]['nom']} (cellule {L:.3g} mm)",
                 cellule_tpms_mm=L, fraction_solide=fraction, niveau_feuille=t,
                 pas_ailettes_mm=None, epaisseur_ailette_mm=None, maillage=dict(cellules=None, base_mm=base, niveau=niveau),
                 tranches=dict(n=None),

@@ -478,7 +478,7 @@ AILETTES = [("rond", "Rond", "", "nus"), ("rond", "Rond", "_ail1.8", "1,8 mm"),
             ("rond", "Rond", "_ail1.8_t20", "1,8 mm, 20 tranches"), ("rond", "Rond", "_ail1.8_t40", "1,8 mm, 40 tranches"),
             ("rond", "Rond", "_ail2.5", "2,5 mm"), ("rond", "Rond", "_ail1.8_r2", "1,8 mm, 2 rangs"),
             ("rond", "Rond", "_ail1.8_ond", "ondulées 1,8 mm"), ("rond", "Rond", "_ail1.8_bord", "1,8 mm, bord ondulé"),
-            ("rond", "Rond", "_gyroide6", "gyroïde 6 mm (même métal)"), ("rond", "Rond", "_diamond6", "Diamond 6 mm"),
+            ("rond", "Rond", "_gyroide6", "gyroïde 6 mm"), ("rond", "Rond", "_diamond6", "Diamond 6 mm"),
             ("ellipse2", "Ellipse 2:1", "", "nus"), ("ellipse2", "Ellipse 2:1", "_ail1.8", "1,8 mm"),
             ("ellipse2", "Ellipse 2:1", "_ail1.8_r2", "1,8 mm, 2 rangs"),
             ("ellipse2", "Ellipse 2:1", "_ail1.8_r2_ond", "ondulées, 2 rangs"),
@@ -490,7 +490,7 @@ def page_ailettes(pdf):
     if not lire("rond/resultat_ail1.8.json"):
         return
     fig = plt.figure(figsize=A4)
-    fig.text(0.06, 0.965, "Étape 3 : tubes à ailettes plates (CFD 3D)", fontsize=15, fontweight="bold", color=BLEU)
+    fig.text(0.06, 0.965, "Étape 3 : tubes à ailettes (CFD 3D) : plates, ondulées, TPMS", fontsize=15, fontweight="bold", color=BLEU)
     fig.text(0.06, 0.95, "Mêmes tubes et même charge de propane que les tubes nus (4 rangs en quinconce, Pt = 12 mm), "
              "air à 1 m/s en façade.\nAilettes de 0,2 mm sur toute la profondeur (rangs × Pl), supposées isothermes ; "
              "domaine : l'espace entre deux ailettes, en 28 tranches.", fontsize=8, color="#495057", va="top",
@@ -514,9 +514,9 @@ def page_ailettes(pdf):
              "face (kW/m², 10 K d'écart air / paroi).\nP vent / Q en ‰. Charge : propane relatif à la référence "
              "(4 rangs). Ailettes : part de la chaleur échangée par les ailettes.\n"
              "Calcul stationnaire : résidus plafonnant vers 7·10⁻³, mais Δp, température de sortie et flux constants\n"
-             "à moins de 0,1 % depuis l'itération 2 000 ; bilan de chaleur fermé à 0,2 %.",
+             "à moins de 0,1 % depuis l'itération 2 000 ; bilan de chaleur fermé à 0,2 % (TPMS : maillage snappyHexMesh\nsans couches limites, bilan fermé à 1,2 %, stabilité 0,8 %). Ondulées : A = 0,75 mm, λ = 2 Pl ; bord ondulé : A = 0,8 mm, λ = 4 mm.",
              fontsize=7, va="top", color="#343a40", linespacing=1.45)
-    conclusion(fig, y - 0.065, [
+    conclusion(fig, y - 0.09, [
         "À charge égale (4 rangs), les ailettes multiplient la chaleur par m² de face par 3,1 (rond) et 4,3 (ellipse 2:1) ;",
         "    la ventilation par kW augmente de 11 % (rond) et 57 % (ellipse). Les ailettes portent 85 à 91 % de la chaleur.",
         "Avec ailettes, 4 rangs sont trop profonds (air à 86-90 %). 2 rangs gardent 80 % de la chaleur avec moitié moins de",
@@ -524,8 +524,16 @@ def page_ailettes(pdf):
         "    plus basse que les tubes nus (rond 0,94 contre 1,29 ‰ ; ellipse 0,62 ‰, autant que l'ellipse nue).",
         "Pas de 2,5 mm (batterie extérieure qui givre) : 13 % de chaleur en moins, 17 % de ventilation par kW en moins.",
         "Maillage convergé : 20, 28 et 40 tranches donnent Δp et efficacité à moins de 0,5 % près (28 retenues).",
-        "Meilleur candidat à ce stade : ellipse 2:1 à ailettes, 2 rangs. Reste : rendement d'ailette réel, instationnaire."],
-        "Conclusions de l'étape 3 (ailettes plates)")
+        "Ailettes ondulées (amplitude 0,75 mm, une onde tous les 2 Pl) : + 9 à 10 % de chaleur avec les mêmes tubes,",
+        "    mais Δp + 43 % et ventilation par kW + 30 %. Même NTU par pascal que les plates : gain utile si la charge limite.",
+        "Bord d'attaque ondulé (tubercules, 0,8 mm) : aucun effet (Δp et chaleur identiques à 0,1 %) en laminaire à 1 m/s.",
+        "TPMS à métal égal (gyroïde / Diamond, cellule 6 mm) : air presque saturé (98,7-99,5 % en 4 rangs) mais Δp × 5,7",
+        "    à × 6,2 et ventilation par kW × 5 ; NTU par pascal 2,6 à 4,7 × plus faible que les ailettes plates.",
+        "    Mais par gramme de propane, le gyroïde ellipse 2 rangs est le meilleur (20,6 contre 17,5 plates, 19,3 ondulées)",
+        "    au prix de 3,6 ‰ de ventilation par kW (6 × les plates). Cellule de 6 mm sans doute trop serrée pour 1 m/s.",
+        "Ellipse 2:1, 2 rangs : plates = ventilation minimale ; ondulées = + 10 % par gramme ; gyroïde = + 18 % par gramme.",
+        "    Reste : rendement d'ailette réel, instationnaire, persiennes, TPMS à cellule plus grande (8-12 mm)."],
+        "Conclusions de l'étape 3")
     pdf.savefig(fig); plt.close(fig)
 
 

@@ -1,0 +1,92 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "ailettes": true,
+  "tpms": "gyroide",
+  "U": 1.0,
+  "U_domaine": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 7.133370298219384,
+  "nproc": 8,
+  "forme": "ellipse2",
+  "nom": "Ellipse 2:1 + Gyroïde (cellule 7.13337 mm)",
+  "cellule_tpms_mm": 7.133370298219384,
+  "fraction_solide": 0.11111111111111112,
+  "niveau_feuille": 0.17032709244996586,
+  "pas_ailettes_mm": null,
+  "epaisseur_ailette_mm": null,
+  "maillage": {
+   "cellules": null,
+   "base_mm": 0.25,
+   "niveau": 2
+  },
+  "tranches": {
+   "n": null
+  },
+  "Pt": 0.014266740596438768,
+  "Pl": 0.012355359785718726,
+  "rangs": 2,
+  "A_int": 1.4940095816147765e-05,
+  "P_int": 0.014940095816147757,
+  "P_ext": 0.021222950357895964,
+  "x_noyau": [
+   -0.002093829369824377,
+   0.022616890201613074
+  ],
+  "x_tubes": [
+   0.0,
+   0.0205230608317887
+  ],
+  "x_domaine": [
+   -0.010093829369824376,
+   0.037616890201613074
+  ],
+  "largeur_frontale": 0.005084150240341595,
+  "Umax": 1.5536727702293456,
+  "Re_Dext": 395.77836411609496,
+  "A_tubes_domaine": 0.0002751958424325567,
+  "A_ailettes_domaine": 0.0017823877026611039,
+  "A_air_domaine": 0.0020575835450936607,
+  "facteur_surface": 7.476797348775066,
+  "instationnaire": false,
+  "fin": 3000,
+  "debut_moyenne": 2250.0,
+  "suffixe": "_r2_gyroide6"
+ },
+ "resultats": {
+  "cas": "ellipse2_r2_gyroide6",
+  "forme": "ellipse2",
+  "U": 1.0,
+  "Umax": 1.5536727702293456,
+  "Re_max_D6": 614.9100673730919,
+  "dp_Pa": 37.628316962714955,
+  "fluct_p": 0.01447674195918444,
+  "T_sortie": 0.8543984885488157,
+  "fluct_T": 0.003139821892706654,
+  "NTU": 1.9268817624273862,
+  "h": 115.43608515990921,
+  "Nu_D6": 26.78104505081977,
+  "j": 0.04881985296366966,
+  "f_par_rang": 12.947001492656376,
+  "j_sur_f": 0.0037707459129714786,
+  "Q_W_par_K": 0.1053184534754557,
+  "ecart_bilan": -0.004613685711914815,
+  "fluct_flux": 0.00795441524714606,
+  "P_vent_sur_Q": 0.03636050066558232,
+  "profondeur_mm": 24.71071957143745,
+  "A_air": 0.0020575835450936607,
+  "stabilite_moyenne": {
+   "dp": 0.007829203231047454,
+   "T_sortie": 0.000981094607459237,
+   "flux_paroi": 0.00047745680112894087
+  },
+  "part_ailettes": 0.885659421808742,
+  "facteur_surface": 7.476797348775066,
+  "duree_suffisante": true
+ }
+}

@@ -75,6 +75,8 @@ def main(cas, sortie):
               f"{m['rangs']} rangs, air {m['U']:g} m/s en façade")
         l2 = (f"OpenFOAM, simpleFoam laminaire, {ncel:,} mailles ".replace(",", " ") +
               f"({m['tranches']['n']} tranches entre deux ailettes), ailettes isothermes")
+    if m.get("ondulation_mm"):
+        l2 += f" ; ondulation A = {m['ondulation_mm'][0]:g} mm, λ = {m['ondulation_mm'][1]:.1f} mm : les coupes planes recoupent les ailettes (blanc)"
     fig.suptitle(f"Résultat CFD 3D : {l1}\n{l2}", fontsize=12, fontweight="bold", y=0.995)
     hs, y = 0.155, [0.79, 0.59, 0.39, 0.19]
     lim = ((xa, xb), (0, Pt))
@@ -95,7 +97,8 @@ def main(cas, sortie):
     panneau(ax, Pc, pc, "inferno",
             f"(d) Coupe verticale y = Pt / 2 (à travers les tubes des rangs impairs), hauteur dilatée × {8 if not tpms else 2}", "T (-)",
             (xa, xb), (-0.05, ecart + 0.05), 0, 1, aspect=2 if tpms else 8)
-    for zf in (() if tpms else (0, ecart)):
+    ond = m.get("ondulation_mm")
+    for zf in (() if tpms or ond else (0, ecart)):
         ax.plot([x0f, x1f], [zf, zf], color="#9aa5b1", lw=3, solid_capstyle="butt")
     ax.set_xlabel("x, sens de l'air (mm)", fontsize=8); ax.set_ylabel("z (mm)", fontsize=8)
     # chiffres clés et comparaison aux tubes nus

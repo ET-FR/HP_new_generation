@@ -1,0 +1,100 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "ailettes": true,
+  "tpms": "diamond",
+  "U": 1.0,
+  "U_domaine": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 6.000342718086851,
+  "nproc": 9,
+  "forme": "rond",
+  "nom": "Rond + Diamond (Schwarz-D) (cellule 6 mm)",
+  "cellule_tpms_mm": 6.000342718086851,
+  "fraction_solide": 0.11111111111111112,
+  "niveau_feuille": 0.1363083006238177,
+  "pas_ailettes_mm": null,
+  "epaisseur_ailette_mm": null,
+  "maillage": {
+   "cellules": null,
+   "base_mm": 0.25,
+   "niveau": 2
+  },
+  "tranches": {
+   "n": null
+  },
+  "Pt": 0.012000685436173702,
+  "Pl": 0.010392898450552362,
+  "rangs": 4,
+  "A_int": 1.2567088401441776e-05,
+  "P_int": 0.012567088401441684,
+  "P_ext": 0.018850094275687037,
+  "x_noyau": [
+   -0.0021963635381693943,
+   0.03937523026404006
+  ],
+  "x_tubes": [
+   0.0,
+   0.03717886672587066
+  ],
+  "x_domaine": [
+   -0.010196363538169393,
+   0.05437523026404006
+  ],
+  "largeur_frontale": 0.006000171374213574,
+  "Umax": 1.9999428902685643,
+  "Re_Dext": 395.77836411609496,
+  "A_tubes_domaine": 0.0004204875517936991,
+  "A_ailettes_domaine": 0.0030220210082191517,
+  "A_air_domaine": 0.0034425085600128507,
+  "facteur_surface": 8.186945238516419,
+  "instationnaire": false,
+  "fin": 3000,
+  "debut_moyenne": 2250.0,
+  "suffixe": "_diamond6"
+ },
+ "resultats": {
+  "cas": "rond_diamond6",
+  "forme": "rond",
+  "U": 1.0,
+  "Umax": 1.9999428902685643,
+  "Re_max_D6": 791.5341254361072,
+  "dp_Pa": 93.89685373818806,
+  "fluct_p": 0.0001193486826837695,
+  "T_sortie": 0.9947698998656578,
+  "fluct_T": 4.201229246430014e-06,
+  "NTU": 5.253324854942851,
+  "h": 133.0962452024083,
+  "Nu_D6": 30.878182796332233,
+  "j": 0.04372830474085954,
+  "f_par_rang": 9.748984259964846,
+  "j_sur_f": 0.004485421616735406,
+  "Q_W_par_K": 0.0867619313028584,
+  "ecart_bilan": -0.01224023722224816,
+  "fluct_flux": 7.563596232392729e-07,
+  "P_vent_sur_Q": 0.07792986733999104,
+  "profondeur_mm": 41.571593802209456,
+  "A_air": 0.0034425085600128507,
+  "stabilite_moyenne": {
+   "dp": 7.883761045357365e-06,
+   "T_sortie": 2.4675238162769045e-07,
+   "flux_paroi": 7.46823543309512e-09
+  },
+  "part_ailettes": 0.8947266656962887,
+  "facteur_surface": 8.186945238516419,
+  "duree_suffisante": true,
+  "zukauskas": {
+   "Nu_cylindre_isole": 11.250209073751662,
+   "Nu_loi_1e3": 15.541277538407558,
+   "C2": 0.89,
+   "dp_Pa": 5.016084670688107,
+   "f_par_rang": 0.5208026526377727,
+   "ecart_dp": 17.719152467039052
+  }
+ }
+}

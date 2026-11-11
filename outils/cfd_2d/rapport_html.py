@@ -124,7 +124,7 @@ def main():
         corps.append(f'<section class="page" id="p{k + 1}"><img src="rapport_cfd/pages/{im.name}" '
                      f'alt="{html.escape(t)}" loading="{"eager" if k < 3 else "lazy"}"></section>')
         if k == apres and fig:
-            corps.append('<section class="vue3d" id="vue3d"><h2>Vue 3D interactive : tubes à ailettes plates</h2>'
+            corps.append('<section class="vue3d" id="vue3d"><h2>Vue 3D interactive : tubes à ailettes (plates, ondulées, TPMS)</h2>'
                          "<p>Glisser pour tourner, molette pour zoomer, clic droit pour déplacer. Le menu en haut à "
                          "gauche choisit le cas ; un clic dans la légende masque ou affiche un objet. Coupe horizontale "
                          "à mi-distance entre les ailettes (température), coupe verticale à travers les tubes 1 et 3 "
