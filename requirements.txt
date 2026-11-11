@@ -5,3 +5,4 @@ CoolProp>=6.6
 shapely>=2.0
 gmsh>=4.11
 ht>=1.0
+plotly>=5
