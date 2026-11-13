@@ -1,0 +1,51 @@
+{
+  "nom": "FABRICANT MODELE (à remplir)",
+  "fluide": "R290",
+  "source": "Fiche ou logiciel d'où viennent les coefficients, date, révision",
+  "synthetique": false,
+  "cylindree_cm3": null,
+
+  "unites": {
+    "temperature": "C",
+    "debit_massique": "kg/h",
+    "puissance": "W"
+  },
+
+  "reference": {
+    "surchauffe_K": null,
+    "T_aspiration_C": null,
+    "sous_refroidissement_K": null
+  },
+
+  "puissance_inclut_variateur": false,
+
+  "enveloppe_Te_Tc_C": [
+    [-25.0, 25.0],
+    [15.0, 25.0],
+    [15.0, 65.0],
+    [-25.0, 50.0]
+  ],
+
+  "coefficients": {
+    "debit_massique": {
+      "30": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "60": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "90": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    "puissance_electrique": {
+      "30": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "60": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "90": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    }
+  },
+
+  "_aide": {
+    "polynome": "X = C1 + C2*S + C3*D + C4*S^2 + C5*S*D + C6*D^2 + C7*S^3 + C8*S^2*D + C9*S*D^2 + C10*D^3",
+    "S_D": "Températures de rosée à l'aspiration (S) et au refoulement (D) du compresseur, dans l'unité 'temperature'",
+    "vitesses": "Clés en tours par seconde MÉCANIQUES. Moteur 4 pôles : 60 tr/s = 120 Hz électriques au variateur",
+    "reference": "Remplir surchauffe_K OU T_aspiration_C selon la norme de la fiche (EN 12900 ou AHRI 540)",
+    "enveloppe": "Polygone (Te, Tc) en °C recopié de la fiche ; laisser [] pour désactiver l'alarme",
+    "unites_possibles": "temperature : C ou F ; debit_massique : kg/s, kg/h, g/s, lb/h ; puissance : W ou kW",
+    "sans_coefficients": "Si la fiche donne un tableau de points : compresseurs/ajuster_carte.py points.csv --surchauffe ... -o compresseurs/xxx.json"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "d_int_principal": 100.0,
+  "ep_principal": 2.0,
+  "l_active": 300.0,
+  "plenum": 40.0,
+  "ep_fond": 3.0,
+  "d_noyau": 30.0,
+  "r_couronne": 32.5,
+  "od_entree": 9.53,
+  "id_entree": 7.9,
+  "id_murray": [
+    7.9,
+    6.27,
+    4.98,
+    3.95,
+    3.14
+  ],
+  "ep_branche": 0.5,
+  "dz_niveau1": 25.0,
+  "dz_niveaux": 12.0,
+  "garde_fond": 8.0,
+  "l_tube_entree": 40.0,
+  "conduit_larg": 20.0,
+  "conduit_haut": 30.0,
+  "conduit_long": 70.0
+}

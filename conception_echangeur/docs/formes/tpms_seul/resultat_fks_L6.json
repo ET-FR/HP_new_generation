@@ -1,0 +1,93 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "ailettes": true,
+  "tpms_seul": true,
+  "tpms": "fks",
+  "U": 1.0,
+  "U_domaine": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 6.0,
+  "nproc": 8,
+  "forme": "tpms_seul",
+  "nom": "Fischer-Koch S seul (cellule 6 mm, paroi 0.3 mm)",
+  "cellule_tpms_mm": 6.0,
+  "paroi_mm": 0.3,
+  "niveau_feuille": 0.2654034923811711,
+  "fraction_air": 0.36910445601851855,
+  "fraction_propane": 0.36910445601851855,
+  "fraction_paroi": 0.26179108796296285,
+  "beta_air_par_mm": 0.8783034336419753,
+  "Dh_air_mm": 1.6809883321894306,
+  "profondeur_mm": 5.674261224004613,
+  "propane_L_par_m2": 2.0943951023931957,
+  "charge_relative": 0.5,
+  "pas_ailettes_mm": null,
+  "epaisseur_ailette_mm": null,
+  "maillage": {
+   "cellules": null,
+   "base_mm": 0.1868,
+   "niveau": 2,
+   "paroi_mm": 0.0467
+  },
+  "tranches": {
+   "n": null
+  },
+  "Pt": 0.006,
+  "Pl": null,
+  "rangs": null,
+  "x_noyau": [
+   0.0,
+   0.0056742612240046125
+  ],
+  "x_domaine": [
+   -0.003,
+   0.011674261224004613
+  ],
+  "Umax": 2.709260166585007,
+  "Re_Dh": 300.4112618004611,
+  "A_air_domaine": 0.00022339067184082536,
+  "A_tubes_domaine": 0.0,
+  "A_ailettes_domaine": 0.00022339067184082536,
+  "instationnaire": false,
+  "fin": 2000,
+  "debut_moyenne": 1500.0,
+  "suffixe": "_fks_L6"
+ },
+ "resultats": {
+  "cas": "fks_L6",
+  "forme": "tpms_seul",
+  "U": 1.0,
+  "Umax": 2.709260166585007,
+  "Re_max_D6": 1072.266556695913,
+  "dp_Pa": 60.25294468367671,
+  "fluct_p": 0.005415590587419359,
+  "T_sortie": 0.6215823445439216,
+  "fluct_T": 0.045294297367434386,
+  "NTU": 0.9717567847108476,
+  "h": 189.6791154429139,
+  "Nu_D6": 44.005346584990825,
+  "j": 0.046002690815770894,
+  "f_par_rang": 13.635791810854446,
+  "j_sur_f": 0.003373672130954035,
+  "Q_W_par_K": 0.027103516332763204,
+  "ecart_bilan": -0.006029014910219394,
+  "fluct_flux": 0.007412786457964916,
+  "P_vent_sur_Q": 0.08003042785966144,
+  "profondeur_mm": 5.674261224004613,
+  "A_air": 0.00022339067184082536,
+  "stabilite_moyenne": {
+   "dp": 7.039731421275525e-07,
+   "T_sortie": 0.0011345462798282764,
+   "flux_paroi": 0.0013679779289209634
+  },
+  "part_ailettes": 0.0,
+  "facteur_surface": null,
+  "duree_suffisante": true
+ }
+}

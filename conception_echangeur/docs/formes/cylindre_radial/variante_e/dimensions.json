@@ -1,0 +1,70 @@
+{
+  "parametres": {
+    "largeur": 400.0,
+    "profondeur": 250.0,
+    "hauteur": 200.0,
+    "r_tube": 75.0,
+    "r_cintrage": 100.0,
+    "r_int_echangeur": 20.0,
+    "r_ext_echangeur": 73.0,
+    "secteur_echangeur_deg": [
+      -90.0,
+      140.0
+    ],
+    "secteur_ouverture_deg": [
+      140.0,
+      220.0
+    ],
+    "d_tube_refrigerant": 3.0,
+    "d_int_refrigerant": 2.2,
+    "n_tubes": 32,
+    "marge_tubes": 3.0,
+    "r_filtre": 79.0,
+    "ep_filtre": 2.0,
+    "ep_paroi": 2.0,
+    "ep_socle": 15.0,
+    "d_ventilateur": 90.0,
+    "z_ventilateur": 75.0,
+    "pas_lames": 15.0,
+    "pas_ailettes": 1.3
+  },
+  "ligne_moyenne_mm": 514.2,
+  "tubes_refrigerant": {
+    "nombre": 32,
+    "entraxe_mini_mm": 13.57,
+    "longueur_totale_m": 18.7,
+    "volume_propane_cm3": 71.1,
+    "surface_exterieure_m2": 0.176
+  },
+  "zone_echange": {
+    "surface_frontale_m2": 0.1782
+  },
+  "tubes_nus": {
+    "570": {
+      "hA_W_K": 13,
+      "h_moyen_W_m2K": 75
+    },
+    "830": {
+      "hA_W_K": 16,
+      "h_moyen_W_m2K": 91
+    }
+  },
+  "bouche_plenum_mm": [
+    100.0,
+    100.0
+  ],
+  "encombrement_mm": {
+    "x": 258,
+    "y": 410,
+    "z": 200
+  },
+  "volumes_cm3": {
+    "tubes": 132.2,
+    "filtre": 385.8,
+    "plenum": 36.8,
+    "plaque": 246.0,
+    "socle": 591.8,
+    "ventilateur": 38.6,
+    "volet": 13.8
+  }
+}

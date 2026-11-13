@@ -1,0 +1,60 @@
+{
+ "decalage_x": {
+  "sans": 0.0,
+  "avec": 180.0
+ },
+ "versions": {
+  "sans": {
+   "paroi": {
+    "faces_maillage": 520528,
+    "aire_mm2": 32676.4
+   },
+   "entree": {
+    "faces_maillage": 22460,
+    "aire_mm2": 1465.4
+   },
+   "sortie": {
+    "faces_maillage": 9500,
+    "aire_mm2": 601.3
+   },
+   "cotes": {
+    "faces_maillage": 4285,
+    "aire_mm2": 284.6
+   },
+   "y0": {
+    "faces_maillage": 78608,
+    "aire_mm2": 5099.8
+   },
+   "y1": {
+    "faces_maillage": 78608,
+    "aire_mm2": 5099.7
+   }
+  },
+  "avec": {
+   "paroi": {
+    "faces_maillage": 356672,
+    "aire_mm2": 22369.5
+   },
+   "entree": {
+    "faces_maillage": 22458,
+    "aire_mm2": 1465.4
+   },
+   "sortie": {
+    "faces_maillage": 9500,
+    "aire_mm2": 601.3
+   },
+   "cotes": {
+    "faces_maillage": 4829,
+    "aire_mm2": 317.6
+   },
+   "y0": {
+    "faces_maillage": 93514,
+    "aire_mm2": 6018.1
+   },
+   "y1": {
+    "faces_maillage": 93514,
+    "aire_mm2": 6018.1
+   }
+  }
+ }
+}

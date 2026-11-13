@@ -1,0 +1,124 @@
+{
+  "evap": [
+    {
+      "Q_evap_W": 250.0,
+      "debit_g_s": 0.8796320428747261,
+      "G_tubes_kg_m2s": 7.099567311327776,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 2.4,
+        "arbre entrée (divisions)": 4.4,
+        "tubes": 10.8,
+        "arbre sortie (frottement)": 4.9,
+        "arbre sortie (divisions)": 16.7
+      },
+      "total_kPa": 0.03927704826696143,
+      "dT_sat_K": 0.0021797146305890494
+    },
+    {
+      "Q_evap_W": 500.0,
+      "debit_g_s": 1.7592640857494521,
+      "G_tubes_kg_m2s": 14.199134622655553,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 8.0,
+        "arbre entrée (divisions)": 17.6,
+        "tubes": 36.6,
+        "arbre sortie (frottement)": 16.4,
+        "arbre sortie (divisions)": 66.9
+      },
+      "total_kPa": 0.14556179638708383,
+      "dT_sat_K": 0.008078080997411384
+    },
+    {
+      "Q_evap_W": 1000.0,
+      "debit_g_s": 3.5185281714989043,
+      "G_tubes_kg_m2s": 28.398269245311106,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 26.6,
+        "arbre entrée (divisions)": 70.5,
+        "tubes": 123.6,
+        "arbre sortie (frottement)": 55.2,
+        "arbre sortie (divisions)": 267.7
+      },
+      "total_kPa": 0.5436244079450894,
+      "dT_sat_K": 0.030168918689848678
+    },
+    {
+      "Q_evap_W": 2300.0,
+      "debit_g_s": 8.09261479444748,
+      "G_tubes_kg_m2s": 65.31601926421554,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 114.3,
+        "arbre entrée (divisions)": 373.0,
+        "tubes": 532.0,
+        "arbre sortie (frottement)": 237.3,
+        "arbre sortie (divisions)": 1416.4
+      },
+      "total_kPa": 2.672881752178187,
+      "dT_sat_K": 0.14833394356566326
+    }
+  ],
+  "cond": [
+    {
+      "Q_evap_W": 250.0,
+      "debit_g_s": 0.9031117308087687,
+      "G_tubes_kg_m2s": 7.289073396613083,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 2.1,
+        "arbre entrée (divisions)": 6.9,
+        "tubes": 3.8,
+        "arbre sortie (frottement)": 0.3,
+        "arbre sortie (divisions)": 0.5
+      },
+      "total_kPa": 0.013751866484267067,
+      "dT_sat_K": 0.000393699272666792
+    },
+    {
+      "Q_evap_W": 500.0,
+      "debit_g_s": 1.8062234616175374,
+      "G_tubes_kg_m2s": 14.578146793226166,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 7.1,
+        "arbre entrée (divisions)": 27.8,
+        "tubes": 12.5,
+        "arbre sortie (frottement)": 1.0,
+        "arbre sortie (divisions)": 2.1
+      },
+      "total_kPa": 0.05043769404908282,
+      "dT_sat_K": 0.0014439700592521003
+    },
+    {
+      "Q_evap_W": 1000.0,
+      "debit_g_s": 3.612446923235075,
+      "G_tubes_kg_m2s": 29.156293586452332,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 23.8,
+        "arbre entrée (divisions)": 111.1,
+        "tubes": 41.2,
+        "arbre sortie (frottement)": 3.0,
+        "arbre sortie (divisions)": 8.5
+      },
+      "total_kPa": 0.1876495104209903,
+      "dT_sat_K": 0.005372178086046981
+    },
+    {
+      "Q_evap_W": 2300.0,
+      "debit_g_s": 8.308627923440671,
+      "G_tubes_kg_m2s": 67.05947524884036,
+      "postes_Pa": {
+        "arbre entrée (frottement)": 102.1,
+        "arbre entrée (divisions)": 587.9,
+        "tubes": 177.0,
+        "arbre sortie (frottement)": 13.3,
+        "arbre sortie (divisions)": 45.1
+      },
+      "total_kPa": 0.925438290265147,
+      "dT_sat_K": 0.02649417678627254
+    }
+  ],
+  "longueurs_branches_mm": {
+    "1": 41.9,
+    "2": 28.7,
+    "3": 17.9,
+    "4": 13.8
+  }
+}

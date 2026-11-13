@@ -1,6 +1,6 @@
 # Nomenclature : PAC de fenêtre réversible R290 (≈ 3,5 kW, pièce ≤ 50 m²)
 
-Première version, 9 novembre 2026. Masses et coûts : **ordres de grandeur** (petite série,
+Première version, 9 novembre 2026 ; échangeurs, ventilateurs et compresseur mis à jour le 11 novembre. Masses et coûts : **ordres de grandeur** (petite série,
 hors main-d'œuvre), à remplacer par des devis. Charge R290 : part de la charge totale (cible ≤ 152 g).
 
 Légende impact charge : **++** majeur, **+** notable, **–** négligeable.
@@ -9,8 +9,8 @@ Légende impact charge : **++** majeur, **+** notable, **–** négligeable.
 
 | Élément | Rôle | Choix envisagé | Masse | Coût | Charge R290 |
 |---|---|---|---|---|---|
-| Compresseur | Comprime la vapeur | Rotatif BLDC R290, 16 cm³, 15 à 110 Hz | 8 à 10 kg | 80 à 150 € | **+** (huile : ≈ 40 g dissous) |
-| Échangeur intérieur | Condenseur (chauffage) / évaporateur (clim) | Tube-ailettes, microcanaux ou impression 3D (étude CFD en cours) | 1 à 2 kg | 30 à 300 € (3D : à chiffrer) | **++** |
+| Compresseur | Comprime la vapeur | Rotatif BLDC R290, 16 cm³ dans le simulateur ; la fiche de conception demande ≈ 10,8 cm³/tr, jusqu'à 128 tr/s à −15 °C | 8 à 10 kg | 80 à 150 € | **+** (huile : ≈ 40 g dissous) |
+| Échangeur intérieur | Condenseur (chauffage) / évaporateur (clim) | Module cylindrique imprimé (Ø 100 ailetté ou Ø 150 à hélice, étude CFD en cours), le même des deux côtés | 1 à 2 kg | 30 à 300 € (3D : à chiffrer) | **++** |
 | Échangeur extérieur | Évaporateur (chauffage) / condenseur (clim) ; givre | Idem, contrainte de givrage | 1,5 à 3 kg | 40 à 400 € | **++** |
 | Vanne 4 voies | Inverse le cycle (chauffage / clim / dégivrage) | Vanne à tiroir, bobine 230 V | 0,4 kg | 10 à 20 € | – |
 | Détendeur électronique (EEV) | Règle le débit, surchauffe 5 K | Moteur pas à pas | 0,2 kg | 15 à 30 € | – |
@@ -44,8 +44,8 @@ Légende impact charge : **++** majeur, **+** notable, **–** négligeable.
 
 | Élément | Rôle | Choix envisagé | Coût |
 |---|---|---|---|
-| Ventilateur intérieur | ≈ 500 m³/h, silencieux | Tangentiel ou centrifuge, moteur EC | 15 à 30 € |
-| Ventilateur extérieur | ≈ 1 300 m³/h | Hélicoïde, moteur EC | 15 à 30 € |
+| Ventilateur intérieur | ≤ 800 m³/h, silencieux | Même ventilateur qu'à l'extérieur (module commun) ; type de roue à choisir quand la perte de charge de l'échangeur sera connue ; moteur BLDC en FOC sans capteur | 15 à 30 € |
+| Ventilateur extérieur | ≤ 2 500 m³/h | Idem ; piste de départ : axial Ø 500 à anneau tournant (voir `conception_ventilateur/`) | 15 à 30 € |
 | Volutes, gaines, grilles | Guidage de l'air, éviter la recirculation de l'air rejeté | Plastique injecté | 10 à 20 € |
 | Filtre à air intérieur | Poussière, protection de l'échangeur | Lavable | 2 à 5 € |
 | Bac à condensats + évacuation | Eau de condensation et de dégivrage | Pompe ou projection sur le condenseur | 5 à 15 € |

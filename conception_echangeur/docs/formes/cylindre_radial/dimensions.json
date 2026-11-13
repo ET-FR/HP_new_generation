@@ -1,0 +1,49 @@
+{
+  "parametres": {
+    "longueur": 400.0,
+    "r_ext": 100.0,
+    "r_int": 65.0,
+    "ep_galette": 8.0,
+    "pas_pli_deg": 12.0,
+    "secteur_gorge_deg": [
+      140.0,
+      220.0
+    ],
+    "r_filtre": 108.0,
+    "ep_filtre": 3.0,
+    "ep_paroi": 2.0,
+    "ep_flasque": 3.0,
+    "volute_y_int": 150.0,
+    "volute_h_bouche": 170.0,
+    "x_bouche": 95.0,
+    "n_ventilateurs": 2,
+    "d_ventilateur": 160.0,
+    "x_ventilateur": 34.0
+  },
+  "galette": {
+    "plis": 23,
+    "longueur_developpee_mm": 1329.8,
+    "surface_frontale_m2": 0.5319,
+    "surface_enveloppe_m2": 0.1955,
+    "volume_dm3": 3.69
+  },
+  "filtre_surface_m2": 0.2066,
+  "gorge_mm": 128.6,
+  "bouche_mm": [
+    400.0,
+    170.0
+  ],
+  "encombrement_mm": {
+    "x": 301.0,
+    "y": 406.0,
+    "z": 431.0
+  },
+  "volumes_cm3": {
+    "galette": 3693.5,
+    "filtre": 619.8,
+    "cloisons": 57.6,
+    "volute": 725.7,
+    "flasques": 579.3,
+    "ventilateurs": 235.5
+  }
+}

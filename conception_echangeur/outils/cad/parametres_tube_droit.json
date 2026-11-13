@@ -1,0 +1,38 @@
+{
+  "largeur": 400.0,
+  "profondeur": 250.0,
+  "hauteur": 200.0,
+  "r_tube": 75.0,
+  "r_int_echangeur": 20.0,
+  "r_ext_echangeur": 73.0,
+  "secteur_echangeur_deg": [
+    -90.0,
+    140.0
+  ],
+  "secteur_ouverture_deg": [
+    140.0,
+    220.0
+  ],
+  "n_tubes": 32,
+  "d_tube_refrigerant": 3.0,
+  "d_int_refrigerant": 2.2,
+  "marge_tubes": 3.0,
+  "r_filtre": 79.0,
+  "ep_filtre": 2.0,
+  "ep_paroi": 2.0,
+  "ep_flasque": 3.0,
+  "ep_socle": 15.0,
+  "n_ventilateurs": 3,
+  "d_ventilateur": 90.0,
+  "z_ventilateur": 75.0,
+  "pas_lames": 15.0,
+  "ep_lamelle": 0.12,
+  "pas_lamelles": 1.2,
+  "longueur_tranche": 24.0,
+  "n_plis": 8,
+  "ep_galette_plis": 6.0,
+  "r_int_plis": 25.0,
+  "ep_lamelle_plis": 0.1,
+  "pas_lamelles_plis": 1.0,
+  "r_creux_plis": 45.0
+}

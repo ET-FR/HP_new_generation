@@ -13,7 +13,7 @@ constructeur (surchauffe ou température de gaz aspiré, sous-refroidissement).
 La correction vers les conditions réelles du cycle est faite dans
 `PompeAChaleur.compresseur` (densité d'aspiration et travail isentropique).
 
-Format JSON : voir `cartes/MODELE_carte.json`.
+Format JSON : voir `compresseurs/MODELE_carte.json`.
 """
 
 from __future__ import annotations

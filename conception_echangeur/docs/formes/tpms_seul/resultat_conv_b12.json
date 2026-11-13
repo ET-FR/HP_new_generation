@@ -1,0 +1,93 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "ailettes": true,
+  "tpms_seul": true,
+  "tpms": "gyroide",
+  "U": 1.0,
+  "U_domaine": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 3.0,
+  "nproc": 8,
+  "forme": "tpms_seul",
+  "nom": "Gyroïde seul (cellule 3 mm, paroi 0.3 mm)",
+  "cellule_tpms_mm": 3.0,
+  "paroi_mm": 0.3,
+  "niveau_feuille": 0.4550288947515514,
+  "fraction_air": 0.35299117476851855,
+  "fraction_propane": 0.35302734375,
+  "fraction_paroi": 0.2939814814814814,
+  "beta_air_par_mm": 1.0003737461419753,
+  "Dh_air_mm": 1.411437179873456,
+  "profondeur_mm": 5.932671050762469,
+  "propane_L_par_m2": 2.0943951023931957,
+  "charge_relative": 0.5,
+  "pas_ailettes_mm": null,
+  "epaisseur_ailette_mm": null,
+  "maillage": {
+   "cellules": null,
+   "base_mm": 0.118,
+   "niveau": 2,
+   "paroi_mm": 0.0295
+  },
+  "tranches": {
+   "n": null
+  },
+  "Pt": 0.003,
+  "Pl": null,
+  "rangs": null,
+  "x_noyau": [
+   0.0,
+   0.005932671050762469
+  ],
+  "x_domaine": [
+   -0.003,
+   0.01193267105076247
+  ],
+  "Umax": 2.8329320149597828,
+  "Re_Dh": 263.7536658290279,
+  "A_air_domaine": 6.384411886923936e-05,
+  "A_tubes_domaine": 0.0,
+  "A_ailettes_domaine": 6.384411886923936e-05,
+  "instationnaire": false,
+  "fin": 2000,
+  "debut_moyenne": 1500.0,
+  "suffixe": "_conv_b12"
+ },
+ "resultats": {
+  "cas": "conv_gyroide_L3_b12",
+  "forme": "tpms_seul",
+  "U": 1.0,
+  "Umax": 2.8329320149597828,
+  "Re_max_D6": 1121.2131985328954,
+  "dp_Pa": 72.7853486181349,
+  "fluct_p": 0.022086615540649272,
+  "T_sortie": 0.7204946585107843,
+  "fluct_T": 0.013627238692356191,
+  "NTU": 1.2747338756958344,
+  "h": 217.65347569699892,
+  "Nu_D6": 50.495367458400544,
+  "j": 0.05048285243421908,
+  "f_par_rang": 15.06520932600619,
+  "j_sur_f": 0.003350955923796789,
+  "Q_W_par_K": 0.007854123800340595,
+  "ecart_bilan": 0.007266119453849918,
+  "fluct_flux": 0.008153849399294059,
+  "P_vent_sur_Q": 0.0834043560065614,
+  "profondeur_mm": 5.932671050762469,
+  "A_air": 6.384411886923936e-05,
+  "stabilite_moyenne": {
+   "dp": 0.0003450832489213406,
+   "T_sortie": 0.0004229754065166037,
+   "flux_paroi": 0.00022447029717322504
+  },
+  "part_ailettes": 0.0,
+  "facteur_surface": null,
+  "duree_suffisante": true
+ }
+}

@@ -1,0 +1,21 @@
+{
+  "longueur": 400.0,
+  "r_ext": 100.0,
+  "r_int": 65.0,
+  "ep_galette": 8.0,
+  "pas_pli_deg": 12.0,
+  "secteur_gorge_deg": [
+    140.0,
+    220.0
+  ],
+  "r_filtre": 108.0,
+  "ep_filtre": 3.0,
+  "ep_paroi": 2.0,
+  "ep_flasque": 3.0,
+  "volute_y_int": 150.0,
+  "volute_h_bouche": 170.0,
+  "x_bouche": 95.0,
+  "n_ventilateurs": 2,
+  "d_ventilateur": 160.0,
+  "x_ventilateur": 34.0
+}

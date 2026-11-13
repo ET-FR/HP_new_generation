@@ -1,0 +1,217 @@
+{
+  "parametres": {
+    "d_ext_principal": 150.0,
+    "ep_principal": 3.0,
+    "longueur_principal": 400.0,
+    "conduit_axial": 100.0,
+    "conduit_radial": 50.0,
+    "conduit_long": 120.0,
+    "ep_ailette": 1.0,
+    "n_tubes": 32,
+    "od_tube": 3.49,
+    "id_tube": 2.49,
+    "jeu_tube": 3.0,
+    "depassement_tube": 10.0,
+    "materiau_tubes": "aluminium",
+    "materiau_ailette": "aluminium"
+  },
+  "rayons_mm": {
+    "exterieur": 75.0,
+    "interieur": 72.0,
+    "noyau": 22.0,
+    "tubes_min": 26.75,
+    "tubes_max": 67.25
+  },
+  "longueur_interieure_mm": 394.0,
+  "helice": {
+    "pas_mm": 101.0,
+    "tours": 2.911,
+    "angle_sortie_deg": 327.9,
+    "angle_helice_deg": {
+      "r22": 36.2,
+      "r47": 18.9,
+      "r72": 12.6
+    },
+    "longueur_chemin_moyen_mm": 909.0
+  },
+  "section_conduit_mm2": 5000.0,
+  "section_canal_meridienne": {
+    "45": {
+      "canal_mm2": 15000.0,
+      "canal_moins_tubes_mm2": 15000.0
+    },
+    "90": {
+      "canal_mm2": 15000.0,
+      "canal_moins_tubes_mm2": 15000.0
+    },
+    "135": {
+      "canal_mm2": 15000.0,
+      "canal_moins_tubes_mm2": 14309.0
+    },
+    "180": {
+      "canal_mm2": 15000.0,
+      "canal_moins_tubes_mm2": 15000.0
+    },
+    "225": {
+      "canal_mm2": 15000.0,
+      "canal_moins_tubes_mm2": 15000.0
+    },
+    "270": {
+      "canal_mm2": 15000.0,
+      "canal_moins_tubes_mm2": 15000.0
+    },
+    "315": {
+      "canal_mm2": 18713.0,
+      "canal_moins_tubes_mm2": 17363.0
+    }
+  },
+  "tubes": {
+    "n": 32,
+    "positions_xy_mm": [
+      [
+        27.84,
+        0.0
+      ],
+      [
+        -22.04,
+        20.19
+      ],
+      [
+        2.78,
+        -31.7
+      ],
+      [
+        20.47,
+        26.7
+      ],
+      [
+        -34.83,
+        -6.16
+      ],
+      [
+        31.23,
+        -19.86
+      ],
+      [
+        -10.02,
+        37.26
+      ],
+      [
+        -18.48,
+        -35.58
+      ],
+      [
+        39.03,
+        14.25
+      ],
+      [
+        -39.71,
+        16.39
+      ],
+      [
+        18.79,
+        -40.15
+      ],
+      [
+        13.66,
+        43.56
+      ],
+      [
+        -40.61,
+        -23.53
+      ],
+      [
+        47.06,
+        -10.35
+      ],
+      [
+        -28.41,
+        40.42
+      ],
+      [
+        -6.5,
+        -50.17
+      ],
+      [
+        39.58,
+        33.35
+      ],
+      [
+        -52.85,
+        2.19
+      ],
+      [
+        38.28,
+        -38.1
+      ],
+      [
+        -2.55,
+        55.04
+      ],
+      [
+        -35.99,
+        -43.12
+      ],
+      [
+        56.71,
+        7.63
+      ],
+      [
+        -47.81,
+        33.27
+      ],
+      [
+        13.01,
+        -57.82
+      ],
+      [
+        29.96,
+        52.28
+      ],
+      [
+        -58.34,
+        -18.61
+      ],
+      [
+        56.46,
+        -26.09
+      ],
+      [
+        -24.38,
+        58.25
+      ],
+      [
+        -21.69,
+        -60.3
+      ],
+      [
+        57.54,
+        30.24
+      ],
+      [
+        -63.74,
+        16.8
+      ],
+      [
+        36.13,
+        -56.2
+      ]
+    ],
+    "ecart_min_axes_mm": 18.07,
+    "ecart_min_parois_mm": 14.58,
+    "surface_ext_dans_air_m2": 0.1382,
+    "ecarts_indice_plus_proches_voisins": {
+      "5": 2,
+      "8": 31,
+      "13": 31
+    }
+  },
+  "volumes_cm3": {
+    "enveloppe": 739.4,
+    "noyau": 599.1,
+    "ailette": 1038.3,
+    "tubes": 63.1,
+    "domaine_air": 5356.2
+  },
+  "surface_ailette_m2": 0.3141
+}

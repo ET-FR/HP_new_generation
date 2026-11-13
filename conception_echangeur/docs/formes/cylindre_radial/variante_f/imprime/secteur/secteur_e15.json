@@ -1,0 +1,79 @@
+{
+ "n_secteurs": 8,
+ "tubes_par_secteur": 4,
+ "espace_radial": 4.0,
+ "longueur": 25.0,
+ "r_entree": 77.0,
+ "r_sortie": 33.0,
+ "n_radiales": 7,
+ "r_radiales_inter": 54.0,
+ "pas_lamelles": 2.5,
+ "intercalaires": true,
+ "radiales_inter": true,
+ "couloir_profil": 0.0,
+ "profils_radiales": [
+  [
+   42.0,
+   6.16
+  ],
+  [
+   51.0,
+   18.48
+  ],
+  [
+   60.0,
+   8.21
+  ],
+  [
+   68.0,
+   22.59
+  ]
+ ],
+ "angle_secteur_deg": 28.75,
+ "secteur_simule_deg": [
+  25.0,
+  53.75
+ ],
+ "profils": [
+  [
+   42.0,
+   4.91
+  ],
+  [
+   51.0,
+   16.81
+  ],
+  [
+   60.0,
+   8.6
+  ],
+  [
+   68.0,
+   22.41
+  ]
+ ],
+ "entraxe_mini_mm": 12.0,
+ "parametres": {
+  "r_ext": 73.0,
+  "r_noyau": 35.0,
+  "secteur_deg": [
+   -90.0,
+   140.0
+  ],
+  "n_tubes": 32,
+  "d_canal": 2.2,
+  "paroi": 1.0,
+  "jeu_profils": 1.5,
+  "n_dents": 8,
+  "largeur_dent": 6.0,
+  "r_creux": 55.0,
+  "decalage_x_avec": 180.0,
+  "profil_long": 11.0,
+  "ep_lamelle": 1.0,
+  "jeu": 1.5,
+  "l_troncon": 5.0,
+  "r_intercalaire": 45.0,
+  "longueur_tranche": 25.0,
+  "r_filtre": 77.0
+ }
+}

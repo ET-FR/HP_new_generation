@@ -1,7 +1,7 @@
 """Tests de la carte compresseur (pytest ou python direct).
 
 La carte utilisée est SYNTHÉTIQUE : ajustée sur le modèle générique du
-simulateur (outils/ajuster_carte.py --synthetique). Elle sert à vérifier la
+simulateur (compresseurs/ajuster_carte.py --synthetique). Elle sert à vérifier la
 mécanique (polynômes, interpolation, corrections, enveloppe), pas à
 représenter un compresseur réel.
 """
@@ -17,7 +17,7 @@ sys.path.insert(0, RACINE)
 
 from pac_fenetre.physique import Conception, Conditions, PompeAChaleur, Propane  # noqa: E402
 
-CARTE = os.path.join(RACINE, "cartes", "SYNTHETIQUE_generique.json")
+CARTE = os.path.join(RACINE, "compresseurs", "SYNTHETIQUE_generique.json")
 FL = Propane()
 GEN = PompeAChaleur(Conception(), FL)
 CAR = PompeAChaleur(Conception().avec_carte(CARTE), FL)

@@ -1,0 +1,43 @@
+{
+  "r_ext": 73.0,
+  "r_noyau": 35.0,
+  "secteur_deg": [
+    -90.0,
+    140.0
+  ],
+  "n_tubes": 32,
+  "d_canal": 2.2,
+  "paroi": 1.0,
+  "jeu_profils": 1.5,
+  "n_dents": 8,
+  "largeur_dent": 6.0,
+  "r_creux": 55.0,
+  "decalage_x_avec": 180.0,
+  "profil_long": 11.0,
+  "ep_lamelle": 1.0,
+  "jeu": 1.5,
+  "l_troncon": 5.0,
+  "r_intercalaire": 45.0,
+  "longueur_tranche": 25.0,
+  "r_filtre": 77.0,
+  "versions": {
+    "sans": {
+      "stries": false,
+      "tubes": 32,
+      "entraxe_mini_mm": 11.9,
+      "surface_lamelle_cm2": 82.4,
+      "contour_entree_mm": 293.0,
+      "lamelles_dans_la_tranche": 70,
+      "pas_lamelles": 2.5
+    },
+    "avec": {
+      "stries": true,
+      "tubes": 32,
+      "entraxe_mini_mm": 9.5,
+      "surface_lamelle_cm2": 61.8,
+      "contour_entree_mm": 383.9,
+      "lamelles_dans_la_tranche": 70,
+      "pas_lamelles": 2.5
+    }
+  }
+}

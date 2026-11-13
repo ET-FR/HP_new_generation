@@ -1,0 +1,16 @@
+{
+ "version": "secteur_radiales_p5",
+ "iterations": 3000,
+ "moyenne_sur": 500,
+ "dp_Pa": 82.97161983702593,
+ "fluctuation_dp": 0.004738830964085163,
+ "efficacite": 0.45751025095419995,
+ "fluctuation_T": 0.006387157105016453,
+ "NTU": 0.6115860895141603,
+ "hA_tube_W_K": 170.7881200664251,
+ "debit_tranche_m3s": 0.00036572899000000006,
+ "debit_impose_m3s": 0.0003657289904117316,
+ "bilan_paroi_sur_air": 0.9556080326236379,
+ "Q_tube_W_pour_10K": 1277.6176079095899,
+ "U_max_m_s": 12.063055038452148
+}

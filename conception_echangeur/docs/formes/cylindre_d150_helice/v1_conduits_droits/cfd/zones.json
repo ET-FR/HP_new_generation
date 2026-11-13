@@ -1,0 +1,28 @@
+{
+ "entree": {
+  "faces_cao": 1,
+  "facettes": 2,
+  "aire_m2": 0.005
+ },
+ "sortie": {
+  "faces_cao": 1,
+  "facettes": 2,
+  "aire_m2": 0.005
+ },
+ "tubes": {
+  "faces_cao": 100,
+  "facettes": 19324,
+  "aire_m2": 0.11387
+ },
+ "ailette": {
+  "faces_cao": 19,
+  "facettes": 120440,
+  "aire_m2": 0.11178
+ },
+ "parois": {
+  "faces_cao": 13,
+  "facettes": 55221,
+  "aire_m2": 0.21326
+ },
+ "aire_totale_m2": 0.44891
+}

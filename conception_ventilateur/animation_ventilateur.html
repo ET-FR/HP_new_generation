@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ventilateur interactif</title>
+<style>
+:root { --fond:#f8f9fa; --carte:#fff; --texte:#212529; --doux:#5c636a; --trait:#dee2e6; --accent:#1c7ed6;
+  --ok:#2b8a3e; --alerte:#c92a2a; --attention:#e8590c; --pale:#74c0fc; --pale-bord:#1864ab; --moyeu:#495057;
+  --batterie:#ced4da; --givre:#a5d8ff; --surligne:#e7f5ff;
+  --s1:#495057; --s2:#e8590c; --s3:#f59f00; --s4:#7048e8; --s5:#c2255c; --s6:#1098ad; --s7:#2b8a3e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fond:#141517; --carte:#1f2023;
+  --texte:#e9ecef; --doux:#adb5bd; --trait:#373a40; --accent:#4dabf7; --ok:#69db7c; --alerte:#ff8787; --attention:#ffa94d;
+  --pale:#1c7ed6; --pale-bord:#a5d8ff; --moyeu:#adb5bd; --batterie:#495057; --givre:#d0ebff; --surligne:#1b3550;
+  --s1:#adb5bd; --s2:#ff922b; --s3:#fcc419; --s4:#9775fa; --s5:#f06595; --s6:#3bc9db; --s7:#69db7c; } }
+:root[data-theme="dark"] { --fond:#141517; --carte:#1f2023; --texte:#e9ecef; --doux:#adb5bd; --trait:#373a40;
+  --accent:#4dabf7; --ok:#69db7c; --alerte:#ff8787; --attention:#ffa94d; --pale:#1c7ed6; --pale-bord:#a5d8ff;
+  --moyeu:#adb5bd; --batterie:#495057; --givre:#d0ebff; --surligne:#1b3550;
+  --s1:#adb5bd; --s2:#ff922b; --s3:#fcc419; --s4:#9775fa; --s5:#f06595; --s6:#3bc9db; --s7:#69db7c; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--fond); color:var(--texte); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { max-width:1280px; margin:0 auto; padding:20px 16px 48px; }
+h1 { font-size:22px; margin:0 0 2px; } h2 { font-size:15px; margin:0 0 8px; }
+.sous { color:var(--doux); margin:0 0 14px; }
+a { color:var(--accent); }
+.grille { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr); gap:14px; align-items:start; }
+.carte { background:var(--carte); border:1px solid var(--trait); border-radius:10px; padding:12px 14px; }
+.pile > * + * { margin-top:14px; }
+canvas { width:100%; display:block; }
+.vues { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.legende { color:var(--doux); font-size:12.5px; margin-top:4px; }
+.res { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.tuile { border:1px solid var(--trait); border-radius:8px; padding:7px 9px; }
+.tuile .v { font-size:19px; font-weight:650; font-variant-numeric:tabular-nums; }
+.tuile .l { color:var(--doux); font-size:12px; }
+.statut { margin-top:8px; padding:7px 10px; border-radius:8px; background:var(--surligne); font-size:13.5px; }
+.statut.mal { color:var(--alerte); font-weight:600; }
+fieldset { border:1px solid var(--trait); border-radius:8px; margin:0 0 10px; padding:6px 10px 8px; }
+legend { color:var(--doux); font-size:12.5px; font-weight:600; padding:0 4px; }
+.ctl { display:grid; grid-template-columns:118px 1fr 62px; gap:8px; align-items:center; margin:5px 0; }
+.ctl label { font-size:13px; }
+.ctl output { text-align:right; font-variant-numeric:tabular-nums; font-size:13px; }
+input[type=range] { width:100%; accent-color:var(--accent); }
+select { width:100%; padding:3px 4px; background:var(--carte); color:var(--texte); border:1px solid var(--trait); border-radius:5px; font:inherit; }
+.ctl2 { display:grid; grid-template-columns:118px 1fr; gap:8px; align-items:center; margin:5px 0; font-size:13px; }
+.cases { display:flex; gap:16px; flex-wrap:wrap; font-size:13px; margin:5px 0; }
+button { font:inherit; font-size:13px; padding:5px 10px; border-radius:6px; border:1px solid var(--trait); background:var(--carte); color:var(--texte); cursor:pointer; }
+button:hover { border-color:var(--accent); }
+button.prim { background:var(--accent); color:#fff; border-color:var(--accent); }
+.presets { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+details { margin-top:14px; } summary { cursor:pointer; font-weight:600; }
+details li { margin:4px 0; } code { font-family:ui-monospace,Menlo,monospace; font-size:12.5px; }
+.barre-leg { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:3px 12px; font-size:12.5px; margin-top:6px; }
+.barre-leg span.p { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:-1px; }
+.barre-leg b { font-variant-numeric:tabular-nums; font-weight:600; }
+@media (max-width:900px) { .grille { grid-template-columns:1fr; } .res { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px) { .vues { grid-template-columns:1fr; } .ctl { grid-template-columns:96px 1fr 56px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Ventilateur interactif</h1>
+<p class="sous">Change la géométrie, la vitesse, le bout de pale, les motifs bio-inspirés ou le moteur : le point de
+fonctionnement sur la batterie, la puissance, le rendement et le bilan des pertes se recalculent.
+Modèle d'ordre de grandeur (hypothèses en bas de page), calé à 10–15 % près sur l'ebm-papst W1G200.
+Dossier : <code>conception_ventilateur/</code>, synthèse : <a href="ventilateurs.html">ventilateurs.html</a>.</p>
+
+<div class="grille">
+<div class="pile">
+  <div class="carte">
+    <div class="vues">
+      <div><canvas id="face" height="330"></canvas><div class="legende" id="legFace">Vue de face, sens de rotation antihoraire.</div></div>
+      <div><canvas id="cote" height="330"></canvas><div class="legende">Vue en coupe : l'air traverse la batterie puis le ventilateur (vitesse des particules ∝ vitesse réelle de l'air ; couleur = giration).</div></div>
+    </div>
+    <div class="cases" style="margin-top:8px">
+      <label><input type="checkbox" id="ralenti" checked> rotation ralentie ×10 (sinon effet stroboscopique)</label>
+      <label><input type="checkbox" id="pause"> pause</label>
+    </div>
+  </div>
+
+  <div class="carte">
+    <div class="res">
+      <div class="tuile"><div class="v" id="rQ">—</div><div class="l">débit m³/h <span id="rQc"></span></div></div>
+      <div class="tuile"><div class="v" id="rP">—</div><div class="l">puissance électrique W</div></div>
+      <div class="tuile"><div class="v" id="rEta">—</div><div class="l">rendement statique global</div></div>
+      <div class="tuile"><div class="v" id="rDp">—</div><div class="l">pression statique Pa</div></div>
+      <div class="tuile"><div class="v" id="rN">—</div><div class="l">tr/min</div></div>
+      <div class="tuile"><div class="v" id="rU">—</div><div class="l">vitesse bout de pale m/s</div></div>
+      <div class="tuile"><div class="v" id="rRe">—</div><div class="l">Reynolds de la pale</div></div>
+      <div class="tuile"><div class="v" id="rDb">—</div><div class="l">bruit relatif dB (réf. W1G200)</div></div>
+    </div>
+    <div class="statut" id="statut">—</div>
+  </div>
+
+  <div class="carte">
+    <h2>Où part l'électricité</h2>
+    <canvas id="barre" height="46"></canvas>
+    <div class="barre-leg" id="barreLeg"></div>
+  </div>
+
+  <div class="vues">
+    <div class="carte"><h2>Courbe ventilateur et batterie</h2><canvas id="courbe" height="250"></canvas>
+      <div class="legende">Bleu : pression statique du ventilateur à cette vitesse (rouge pointillé : zone de décrochage). Gris : batterie. Point : fonctionnement.</div></div>
+    <div class="carte"><h2>Triangles des vitesses (rayon moyen)</h2><canvas id="triangle" height="250"></canvas>
+      <div class="legende">u : vitesse de la pale ; c : vitesse de l'air (fixe) ; w : vitesse vue par la pale. Entrée en gris, sortie en couleur.</div></div>
+  </div>
+</div>
+
+<div class="carte">
+  <div class="presets">
+    <button data-preset="ref">W1G200 (référence)</button>
+    <button data-preset="ext300">Extérieur 300 mm</button>
+    <button data-preset="extBase">Extérieur 500 mm, base</button>
+    <button data-preset="extOpt">Extérieur 500 mm, optimisé</button>
+    <button data-preset="intOpt">Intérieur 280 mm, optimisé</button>
+  </div>
+  <fieldset><legend>Application</legend>
+    <div class="ctl2"><label for="app">Batterie</label><select id="app">
+      <option value="ext">Extérieure : 2 500 m³/h, 25 Pa</option>
+      <option value="int">Intérieure : 800 m³/h, 25 Pa</option>
+      <option value="banc">Banc W1G200 : 320 m³/h, 23 Pa</option></select></div>
+    <div class="ctl"><label for="givre">Givre / encrassement</label><input type="range" id="givre" min="1" max="3" step="0.1"><output></output></div>
+  </fieldset>
+  <fieldset><legend>Rotor</legend>
+    <div class="ctl"><label for="D">Diamètre mm</label><input type="range" id="D" min="150" max="650" step="10"><output></output></div>
+    <div class="ctl"><label for="nu">Moyeu / diamètre</label><input type="range" id="nu" min="0.2" max="0.6" step="0.01"><output></output></div>
+    <div class="ctl"><label for="N">Nombre de pales</label><input type="range" id="N" min="2" max="12" step="1"><output></output></div>
+    <div class="ctl"><label for="corde">Corde mm</label><input type="range" id="corde" min="20" max="200" step="5"><output></output></div>
+    <div class="ctl"><label for="beta">Calage °</label><input type="range" id="beta" min="12" max="50" step="1"><output></output></div>
+    <div class="ctl"><label for="faucille">Faucille °</label><input type="range" id="faucille" min="0" max="40" step="1"><output></output></div>
+  </fieldset>
+  <fieldset><legend>Vitesse</legend>
+    <div class="ctl"><label for="n">tr/min</label><input type="range" id="n" min="100" max="3000" step="10"><output></output></div>
+    <button class="prim" id="ajuster">Ajuster la vitesse au débit visé</button>
+  </fieldset>
+  <fieldset><legend>Bout de pale</legend>
+    <div class="ctl"><label for="jeu">Jeu mm</label><input type="range" id="jeu" min="0.5" max="10" step="0.5"><output></output></div>
+    <div class="ctl2"><label for="anneau">Anneau</label><select id="anneau">
+      <option value="non">aucun (pales libres)</option>
+      <option value="anneau">anneau tournant, jeu simple</option>
+      <option value="labyrinthe">anneau tournant + labyrinthe</option></select></div>
+  </fieldset>
+  <fieldset><legend>Récupération en aval</legend>
+    <div class="cases"><label><input type="checkbox" id="diffuseur"> diffuseur</label>
+      <label><input type="checkbox" id="stator"> stator redresseur</label></div>
+  </fieldset>
+  <fieldset><legend>Pale (biomimétisme)</legend>
+    <div class="ctl2"><label for="ba">Bord d'attaque</label><select id="ba">
+      <option value="lisse">lisse</option><option value="tubercules">tubercules (baleine)</option><option value="dents">dents (chouette)</option></select></div>
+    <div class="ctl2"><label for="bf">Bord de fuite</label><select id="bf">
+      <option value="lisse">lisse</option><option value="dentele">dentelé (chouette)</option></select></div>
+    <div class="ctl2"><label for="profil">Profil</label><select id="profil">
+      <option value="plaque">plaque cambrée standard</option><option value="basRe">profil optimisé bas Reynolds</option></select></div>
+  </fieldset>
+  <fieldset><legend>Moteur</legend>
+    <div class="ctl2"><label for="moteur">Type</label><select id="moteur">
+      <option value="foc">BLDC + FOC sans capteur</option><option value="ec">EC standard</option><option value="psc">asynchrone PSC</option></select></div>
+  </fieldset>
+</div>
+</div>
+
+<details class="carte"><summary>Hypothèses du modèle</summary>
+<ul>
+<li><b>Une seule section de pale</b>, au rayon moyen quadratique r_m (méthode de l'élément de pale réduite) : u = ω r_m, c_a = Q / A.</li>
+<li><b>Travail d'Euler</b> : Δp_th = ρ u c_u, avec c_u = μ (u − c_a / tan β). μ = 1 − 0,15 / σ (σ = solidité N·corde / 2πr_m) représente la déviation de l'air derrière un nombre fini de pales.</li>
+<li><b>Pertes de profil</b> : rendement de l'élément de pale (1 − ε tan φ) / (1 + ε / tan φ), ε = traînée / portance = a + b √(10⁵ / Re). Plaque : a = 0,020, b = 0,035 ; profil bas Reynolds : 0,012 et 0,022. Dents de bord d'attaque ε × 1,08, tubercules × 1,04, bord de fuite dentelé × 1,04.</li>
+<li><b>Décrochage</b> : critère de De Haller w₂/w₁ &lt; 0,62 (tubercules 0,55, dents 0,59, hypothèse tirée du retard de décrochage publié). En dessous, le rendement de profil chute.</li>
+<li><b>Bout de pale</b> sans anneau : perte 2,85 × jeu / hauteur de pale (essais sur un ventilateur de 806 mm). Avec anneau : 1 % de pertes de paroi, et une fuite qui recircule entre anneau et carter, Q_fuite = C_d π D s √(2 × 0,8 Δp_t / ρ), C_d = 0,6 (0,25 avec labyrinthe), plus le frottement de l'air sur l'anneau.</li>
+<li><b>Sortie</b> : ½ρc_a² perdu (moitié récupérée par le diffuseur) et ½ρc_u² perdu (70 % récupérés par le stator).</li>
+<li><b>Moteur</b> : P_élec = P_arbre / η_max + P₀. FOC 0,88 et 0,6 W ; EC standard 0,78 et 1,2 W ; PSC 0,50 et 1,0 W. Roulements 0,3 W.</li>
+<li><b>Batterie</b> : Δp = Δp_nominal × givre × (Q / Q_nominal)^1,8. Point retenu : le plus grand débit où les deux courbes se croisent.</li>
+<li><b>Bruit</b> : indice relatif seulement, 50 log(u_bout) + 20 log(D), moins 3,5 dB (dents), 2,5 dB (bord de fuite dentelé), 1,5 dB (tubercules), jusqu'à 2 dB (faucille) ; plus le bruit de jeu, plus 6 dB en décrochage.</li>
+<li>Non modélisé : variation radiale (vrillage), écoulement 3D, entrée non uniforme derrière la batterie, effets de l'air froid (ρ = 1,2 kg/m³ partout). C'est un outil pour comparer des variantes, pas pour dessiner la pale : la CFD 3D prendra le relais.</li>
+</ul></details>
+</main>
+
+<script>
+// ===== MODELE (début) =====
+const RHO = 1.2, NU_AIR = 1.5e-5;
+const MOTEURS = {
+  foc: { nom: "BLDC + FOC sans capteur", etaMax: 0.88, P0: 0.6 },
+  ec: { nom: "EC standard (230 V, trapézoïdal)", etaMax: 0.78, P0: 1.2 },
+  psc: { nom: "Asynchrone PSC (condensateur)", etaMax: 0.50, P0: 1.0 },
+};
+
+// p : paramètres ; Q en m³/s. Renvoie l'état du ventilateur à ce débit net.
+function etatFan(p, Q) {
+  const rt = p.D / 2000, rh = p.nu * rt, h = rt - rh;
+  const rm = Math.sqrt((rt * rt + rh * rh) / 2), A = Math.PI * (rt * rt - rh * rh);
+  const w = 2 * Math.PI * p.n / 60, u = w * rm, ut = w * rt;
+  const c = p.corde / 1000, s = p.jeu / 1000;
+  const sigma = p.N * c / (2 * Math.PI * rm);
+  const mu = Math.min(0.95, Math.max(0.5, 1 - 0.15 / sigma));
+  const tb = Math.tan(p.beta * Math.PI / 180);
+  let Qleak = 0, r = null;
+  for (let it = 0; it < 8; it++) {
+    const Qr = Q + Qleak, ca = Qr / A;
+    const cu = Math.max(0, mu * (u - ca / tb));
+    const wu = u - cu / 2, wm = Math.hypot(ca, wu);
+    const phi = Math.atan2(ca, Math.max(wu, 1e-6));
+    const Re = wm * c / NU_AIR;
+    let eps = p.profil === "basRe" ? 0.012 + 0.022 * Math.sqrt(1e5 / Re) : 0.020 + 0.035 * Math.sqrt(1e5 / Re);
+    if (p.ba === "dents") eps *= 1.08;
+    if (p.ba === "tubercules") eps *= 1.04;
+    if (p.bf === "dentele") eps *= 1.04;
+    let etaBl = (1 - eps * Math.tan(phi)) / (1 + eps / Math.tan(phi));
+    const w1 = Math.hypot(ca, u), w2 = Math.hypot(ca, u - cu), dh = w2 / w1;
+    const lim = p.ba === "tubercules" ? 0.55 : p.ba === "dents" ? 0.59 : 0.62;
+    const decroche = dh < lim;
+    if (decroche) etaBl *= Math.max(0.45, 1 - 2.5 * (lim - dh));
+    etaBl = Math.max(0.05, etaBl);
+    const etaTip = p.anneau === "non" ? Math.max(0.5, 1 - 2.85 * s / h) : 0.99;
+    const Pe = RHO * Qr * u * cu;               // travail d'Euler
+    const dpt = RHO * u * cu * etaBl * etaTip;  // pression totale
+    const Cd = p.anneau === "labyrinthe" ? 0.25 : 0.6;
+    const QleakN = p.anneau === "non" ? 0 : Cd * Math.PI * (p.D / 1000) * s * Math.sqrt(2 * 0.8 * Math.max(dpt, 0) / RHO);
+    const cOut = Q / A;
+    const pAx = 0.5 * RHO * cOut * cOut * (p.diffuseur ? 0.5 : 1);
+    const pSw = 0.5 * RHO * cu * cu * (p.stator ? 0.3 : 1);
+    const dps = dpt - pAx - pSw;
+    const Pring = p.anneau === "non" ? 0 : 0.005 * 0.5 * RHO * ut ** 3 * Math.PI * (p.D / 1000) * 0.06 * (p.D / 1000) * 2;
+    const Pbear = 0.3;
+    const Pshaft = Pe + Pring + Pbear;
+    r = { Q, Qr, Qleak, A, u, ut, ca, cu, wu, phi, Re, eps, etaBl, etaTip, dh, lim, decroche, sigma, mu,
+          Pe, dpt, pAx, pSw, dps, Pring, Pbear, Pshaft, h, rm };
+    if (Math.abs(QleakN - Qleak) < 1e-7) break;
+    Qleak = 0.5 * Qleak + 0.5 * QleakN;
+  }
+  return r;
+}
+
+function dpBatterie(p, Q) { return p.dpNom * p.givre * Math.pow(Q / (p.Qnom / 3600), 1.8); }
+
+function pointFonctionnement(p) {
+  // point stable = plus grand débit où la courbe du ventilateur croise celle de la batterie
+  const f = Q => etatFan(p, Q).dps - dpBatterie(p, Q);
+  let Qmax = 4 * p.Qnom / 3600; const K = 160;
+  while (f(Qmax) > 0 && Qmax < 400 * p.Qnom / 3600) Qmax *= 2;   // ventilateur très puissant : élargir
+  let a = null, b = null;
+  for (let i = K; i >= 1; i--) {
+    const Q = Qmax * i / K, Qp = Qmax * (i - 1) / K || 1e-6;
+    if (f(Q) <= 0 && f(Qp) > 0) { a = Qp; b = Q; break; }
+  }
+  if (a === null) return bilan(p, etatFan(p, 1e-6), true);
+  for (let i = 0; i < 50; i++) { const m = (a + b) / 2; if (f(m) > 0) a = m; else b = m; }
+  return bilan(p, etatFan(p, (a + b) / 2), false);
+}
+
+function bilan(p, e, bloque) {
+  const m = MOTEURS[p.moteur];
+  const Pel = e.Pshaft / m.etaMax + m.P0;
+  const utile = bloque ? 0 : e.Q * e.dps;
+  const pertes = {
+    moteur: Pel - e.Pshaft,
+    profil: e.Pe * (1 - e.etaBl),
+    bout: e.Pe * e.etaBl * (1 - e.etaTip) + e.Qleak * e.dpt,
+    friction: e.Pring + e.Pbear,
+    sortie: e.Q * e.pAx,
+    giration: e.Q * e.pSw,
+  };
+  // bruit indicatif, relatif à la référence (200 mm, 13,6 m/s en bout)
+  let dB = 50 * Math.log10(Math.max(e.ut, 0.1) / 13.6) + 20 * Math.log10(p.D / 200);
+  if (p.ba === "dents") dB -= 3.5;
+  if (p.ba === "tubercules") dB -= 1.5;
+  if (p.bf === "dentele") dB -= 2.5;
+  dB -= 2 * Math.min(p.faucille, 35) / 35;
+  if (p.anneau === "non") dB += 10 * Math.log10(1 + 30 * p.jeu / 1000 / e.h);
+  if (e.decroche) dB += 6;
+  return { ...e, bloque, Pel, utile, pertes, eta: utile / Pel, dB, Qh: e.Q * 3600, moteur: m };
+}
+
+function vitessePourDebit(p) {
+  let a = 50, b = 4000;
+  for (let i = 0; i < 50; i++) {
+    const m = (a + b) / 2;
+    const r = pointFonctionnement({ ...p, n: m });
+    if (r.Qh < p.Qnom) a = m; else b = m;
+  }
+  return Math.round((a + b) / 2);
+}
+// ===== MODELE (fin) =====
+
+// ---------------------------------------------------------------- interface
+const APPS = { ext: { Qnom: 2500, dpNom: 25 }, int: { Qnom: 800, dpNom: 25 }, banc: { Qnom: 320, dpNom: 23 } };
+const COMMUN = { givre: 1, faucille: 20, jeu: 2, anneau: "non", diffuseur: false, stator: false,
+  ba: "lisse", bf: "lisse", profil: "plaque", moteur: "foc" };
+const PRESETS = {
+  ref: { ...COMMUN, app: "banc", D: 200, nu: 0.40, N: 5, corde: 60, beta: 32, n: 1300, moteur: "ec" },
+  ext300: { ...COMMUN, app: "ext", D: 300, nu: 0.30, N: 7, corde: 70, beta: 28, n: 0 },
+  extBase: { ...COMMUN, app: "ext", D: 500, nu: 0.30, N: 7, corde: 110, beta: 28, n: 0 },
+  extOpt: { ...COMMUN, app: "ext", D: 500, nu: 0.30, N: 7, corde: 110, beta: 28, n: 0, faucille: 30,
+    anneau: "labyrinthe", diffuseur: true, stator: true, profil: "basRe", ba: "tubercules", bf: "dentele" },
+  intOpt: { ...COMMUN, app: "int", D: 280, nu: 0.32, N: 7, corde: 65, beta: 28, n: 0, faucille: 30,
+    anneau: "labyrinthe", diffuseur: true, stator: true, profil: "basRe", bf: "dentele" },
+};
+const CHAMPS = ["app", "givre", "D", "nu", "N", "corde", "beta", "faucille", "n", "jeu", "anneau",
+  "diffuseur", "stator", "ba", "bf", "profil", "moteur"];
+const $ = id => document.getElementById(id);
+const fr = (x, d = 1) => Number.isFinite(x) ? x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }).replace("-", "−") : "—";
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function lire() {
+  const p = {};
+  for (const k of CHAMPS) { const el = $(k); p[k] = el.type === "checkbox" ? el.checked : el.type === "range" ? +el.value : el.value; }
+  Object.assign(p, APPS[p.app]);
+  return p;
+}
+function ecrire(pr) {
+  for (const k of CHAMPS) { const el = $(k); if (el.type === "checkbox") el.checked = pr[k]; else el.value = pr[k]; }
+  if (!pr.n) $("n").value = vitessePourDebit(lire());
+  majSorties();
+}
+function majSorties() {
+  for (const el of document.querySelectorAll("input[type=range]")) {
+    const o = el.nextElementSibling, v = +el.value;
+    o.textContent = el.id === "nu" ? fr(v, 2) : el.id === "givre" ? "×" + fr(v, 1) : el.id === "jeu" ? fr(v, 1) : fr(v, 0);
+  }
+}
+
+let P = null, R = null;
+function calcul() {
+  P = lire(); R = pointFonctionnement(P);
+  $("rQ").textContent = fr(R.Qh, 0);
+  const ecart = R.Qh / P.Qnom - 1;
+  $("rQc").textContent = `(visé ${fr(P.Qnom, 0)})`;
+  $("rQ").style.color = Math.abs(ecart) < 0.03 ? css("--ok") : ecart < 0 ? css("--alerte") : css("--attention");
+  $("rP").textContent = fr(R.Pel, 1);
+  $("rEta").textContent = fr(R.eta, 2);
+  $("rDp").textContent = fr(R.bloque ? 0 : R.dps, 1);
+  $("rN").textContent = fr(P.n, 0);
+  $("rU").textContent = fr(R.ut, 1);
+  $("rRe").textContent = fr(R.Re / 1000, 0) + " k";
+  $("rDb").textContent = (R.dB >= 0 ? "+" : "") + fr(R.dB, 1);
+  const st = $("statut"); const msg = [];
+  if (R.bloque) msg.push("Le ventilateur ne vainc pas la batterie : débit nul.");
+  else {
+    if (R.decroche) msg.push(`Décrochage : w₂/w₁ = ${fr(R.dh, 2)} sous la limite ${fr(R.lim, 2)}. Baisse le calage, ajoute des pales ou de la corde, ou un bord d'attaque à tubercules.`);
+    if (ecart < -0.03) msg.push(`Débit insuffisant (${fr(ecart * 100, 0)} %) : augmente la vitesse ou clique sur « Ajuster ».`);
+    if (ecart > 0.03) msg.push(`Débit supérieur au besoin (+${fr(ecart * 100, 0)} %) : on gaspille ; clique sur « Ajuster ».`);
+    if (R.Re < 6e4) msg.push(`Reynolds faible (${fr(R.Re / 1000, 0)} k) : profil peu efficace, la corde ou la vitesse sont petites.`);
+    if (!msg.length) msg.push(`Point sain. Marge au décrochage : w₂/w₁ = ${fr(R.dh, 2)} pour une limite de ${fr(R.lim, 2)}. Solidité ${fr(R.sigma, 2)}.`);
+  }
+  st.textContent = msg.join(" ");
+  st.className = "statut" + (R.bloque || R.decroche || ecart < -0.03 ? " mal" : "");
+  dessinerBarre(); dessinerCourbe(); dessinerTriangle();
+  $("legFace").textContent = `Vue de face, à l'échelle (cadre = 650 mm). Rotation antihoraire${P.anneau === "non" ? ", jeu agrandi ×3 pour être visible" : ""}.`;
+}
+
+// ---------------------------------------------------------------- canvas utilitaires
+function prep(cv) {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = +cv.getAttribute("height");
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px"; }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  return [g, w, h];
+}
+
+const POSTES = [["utile", "pression utile", "--s7"], ["moteur", "moteur + électronique", "--s1"], ["profil", "profil (traînée)", "--s2"],
+  ["bout", "bout de pale / fuite", "--s3"], ["sortie", "air sortant ½ρc²", "--s4"], ["giration", "giration", "--s5"], ["friction", "roulements, anneau", "--s6"]];
+function dessinerBarre() {
+  const [g, w, h] = prep($("barre"));
+  const val = { ...R.pertes, utile: R.utile };
+  const tot = POSTES.reduce((s, [k]) => s + Math.max(0, val[k]), 0) || 1;
+  let x = 0;
+  for (const [k, , c] of POSTES) {
+    const l = Math.max(0, val[k]) / tot * w;
+    g.fillStyle = css(c); g.fillRect(x, 6, Math.max(0, l - 1.5), h - 12);
+    if (l > 36) { g.fillStyle = "#fff"; g.font = "600 12px system-ui"; g.textAlign = "center"; g.fillText(fr(val[k] / tot * 100, 0) + " %", x + l / 2, h / 2 + 4); }
+    x += l;
+  }
+  $("barreLeg").innerHTML = POSTES.map(([k, n, c]) =>
+    `<div><span class="p" style="background:var(${c})"></span>${n} <b>${fr(Math.max(0, val[k]), 1)} W</b></div>`).join("");
+}
+
+function axes(g, x0, y0, w, h, xmax, ymax, xl, yl) {
+  g.strokeStyle = css("--trait"); g.fillStyle = css("--doux"); g.font = "11px system-ui"; g.lineWidth = 1;
+  const pas = v => { const e = Math.pow(10, Math.floor(Math.log10(v / 4))); return [1, 2, 2.5, 5, 10].map(m => m * e).find(s => v / s <= 6); };
+  const sx = pas(xmax), sy = pas(ymax);
+  g.textAlign = "center";
+  for (let v = 0; v <= xmax + 1e-9; v += sx) { const X = x0 + v / xmax * w; g.beginPath(); g.moveTo(X, y0); g.lineTo(X, y0 - h); g.stroke(); g.fillText(fr(v, 0), X, y0 + 13); }
+  g.textAlign = "right";
+  for (let v = 0; v <= ymax + 1e-9; v += sy) { const Y = y0 - v / ymax * h; g.beginPath(); g.moveTo(x0, Y); g.lineTo(x0 + w, Y); g.stroke(); g.fillText(fr(v, 0), x0 - 4, Y + 4); }
+  g.textAlign = "center"; g.fillText(xl, x0 + w / 2, y0 + 27);
+  g.save(); g.translate(x0 - 30, y0 - h / 2); g.rotate(-Math.PI / 2); g.fillText(yl, 0, 0); g.restore();
+}
+
+function dessinerCourbe() {
+  const [g, w, h] = prep($("courbe"));
+  const x0 = 44, y0 = h - 34, W = w - x0 - 22, H = h - 50;
+  const Qmax = 2 * P.Qnom, pts = [];
+  for (let i = 1; i <= 80; i++) { const Q = Qmax * i / 80 / 3600; const e = etatFan(P, Q); pts.push([Q * 3600, e.dps, e.decroche]); }
+  const ymax = Math.max(10, P.dpNom * P.givre * 1.6, Math.min(400, 1.15 * Math.max(...pts.map(p => p[1]))));
+  axes(g, x0, y0, W, H, Qmax, ymax, "débit m³/h", "Pa");
+  const X = q => x0 + q / Qmax * W, Y = v => y0 - Math.max(0, v) / ymax * H;
+  g.save(); g.beginPath(); g.rect(x0, y0 - H, W, H + 1); g.clip();
+  g.strokeStyle = css("--doux"); g.lineWidth = 2; g.beginPath();
+  for (let i = 0; i <= 80; i++) { const q = Qmax * i / 80; const v = dpBatterie(P, q / 3600); i ? g.lineTo(X(q), Y(v)) : g.moveTo(X(q), Y(v)); }
+  g.stroke();
+  for (let i = 1; i < pts.length; i++) {
+    const [qa, va] = pts[i - 1], [qb, vb, db] = pts[i];
+    if (va < 0 && vb < 0) continue;
+    g.strokeStyle = db ? css("--alerte") : css("--accent"); g.setLineDash(db ? [4, 3] : []); g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(X(qa), Y(va)); g.lineTo(X(qb), Y(vb)); g.stroke();
+  }
+  g.setLineDash([3, 3]); g.strokeStyle = css("--ok"); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(X(P.Qnom), y0); g.lineTo(X(P.Qnom), y0 - H); g.stroke(); g.setLineDash([]);
+  g.fillStyle = css("--ok"); g.textAlign = "left"; g.fillText("débit visé", X(P.Qnom) + 3, y0 - H + 10);
+  if (!R.bloque) { g.fillStyle = css("--texte"); g.beginPath(); g.arc(X(R.Qh), Y(R.dps), 5, 0, 7); g.fill(); }
+  g.restore();
+}
+
+function fleche(g, x1, y1, x2, y2, c, lab) {
+  g.strokeStyle = c; g.fillStyle = c; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1), L = 8;
+  g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - L * Math.cos(a - 0.4), y2 - L * Math.sin(a - 0.4));
+  g.lineTo(x2 - L * Math.cos(a + 0.4), y2 - L * Math.sin(a + 0.4)); g.closePath(); g.fill();
+  if (lab) { g.font = "600 12px system-ui"; g.fillText(lab, (x1 + x2) / 2 + 5, (y1 + y2) / 2 - 5); }
+}
+function dessinerTriangle() {
+  const [g, w, h] = prep($("triangle"));
+  const e = R.bloque ? etatFan(P, P.Qnom / 3600) : R;
+  const k = Math.min((w - 70) / Math.max(e.u + e.cu, 1e-3), (h - 95) / Math.max(e.ca, 1e-3));
+  const ox = 35 + e.cu * k + (w - 70 - (e.u + e.cu) * k) / 2, oy = 26; // sommet commun : l'air arrive vers le bas
+  const cIn = [0, e.ca], cOut = [-e.cu, e.ca];
+  const P2 = v => [ox + v[0] * k, oy + v[1] * k];
+  // u : de la pointe de c à la pointe de w, vers la gauche (rotation)
+  const [ax, ay] = P2(cIn), [bx, by] = P2(cOut);
+  g.textAlign = "left";
+  fleche(g, ox, oy, ax, ay, css("--doux"), "c₁");
+  fleche(g, ox, oy, ax + e.u * k, ay, css("--doux"), "w₁");
+  fleche(g, ox, oy, bx, by, css("--accent"), "c₂");
+  fleche(g, ox, oy, bx + e.u * k, by, css("--attention"), "w₂");
+  fleche(g, ax + e.u * k, ay + 18, ax, ay + 18, css("--texte"), "");
+  g.fillStyle = css("--texte"); g.font = "600 12px system-ui"; g.textAlign = "center";
+  g.fillText(`u = ${fr(e.u, 1)} m/s`, ax + e.u * k / 2, ay + 34);
+  g.font = "12px system-ui"; g.fillStyle = css("--doux"); g.textAlign = "left";
+  g.fillText(`c_a = ${fr(e.ca, 1)} m/s · c_u = ${fr(e.cu, 1)} m/s · w₂/w₁ = ${fr(e.dh, 2)}`, 8, h - 8);
+}
+
+// ---------------------------------------------------------------- animation
+let angle = 0, tPrec = performance.now(), parts = [];
+function contour(g, pts) { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); }
+
+function dessinerFace(dt) {
+  const [g, w, h] = prep($("face"));
+  const cx = w / 2, cy = h / 2, Rmax = Math.min(w, h) / 2 - 12, s = Rmax / 325; // px par mm
+  const rt = P.D / 2 * s, rh = P.nu * rt;
+  const jeuPx = (P.anneau === "non" ? 3 : 1.5) * P.jeu * s + 1;
+  // carter
+  g.strokeStyle = css("--trait"); g.lineWidth = 1; g.strokeRect(cx - Rmax, cy - Rmax, 2 * Rmax, 2 * Rmax);
+  g.fillStyle = css("--batterie"); g.globalAlpha = 0.35; g.beginPath(); g.arc(cx, cy, rt + jeuPx + 7, 0, 7); g.arc(cx, cy, rt + jeuPx, 0, 7, true); g.fill(); g.globalAlpha = 1;
+  // stator (fixe, derrière)
+  if (P.stator) {
+    g.strokeStyle = css("--doux"); g.globalAlpha = 0.5; g.lineWidth = 2;
+    for (let i = 0; i < P.N + 2; i++) { const a = i * 2 * Math.PI / (P.N + 2) + 0.2; g.beginPath(); g.moveTo(cx + rh * Math.cos(a), cy + rh * Math.sin(a)); g.lineTo(cx + (rt + jeuPx) * Math.cos(a + 0.08), cy + (rt + jeuPx) * Math.sin(a + 0.08)); g.stroke(); }
+    g.globalAlpha = 1;
+  }
+  // pales
+  const proj = Math.max(0.25, Math.cos(P.beta * Math.PI / 180));
+  const K = 28;
+  for (let b = 0; b < P.N; b++) {
+    const a0 = angle + b * 2 * Math.PI / P.N;
+    const ba = [], bf = [];
+    for (let i = 0; i <= K; i++) {
+      const f = i / K, r = rh + (rt - rh) * f;
+      const cord = P.corde * s * proj * (0.85 + 0.3 * f);
+      const sweep = (P.faucille * Math.PI / 180) * f * f;
+      const ac = a0 + sweep, dA = cord / r / 2;
+      let rBa = r, rBf = r, dBa = 0, dBf = 0;
+      if (P.ba === "tubercules") dBa = 0.12 * cord * Math.max(0, Math.sin(f * Math.PI * 9));
+      if (P.ba === "dents") dBa = 0.22 * cord * (1 - Math.abs(((f * 16) % 1) * 2 - 1));
+      if (P.bf === "dentele") dBf = 0.22 * cord * (1 - Math.abs(((f * 18) % 1) * 2 - 1));
+      // rotation antihoraire : le bord d'attaque est du côté des angles croissants
+      ba.push([cx + rBa * Math.cos(ac + dA + dBa / r), cy - rBa * Math.sin(ac + dA + dBa / r)]);
+      bf.push([cx + rBf * Math.cos(ac - dA - dBf / r), cy - rBf * Math.sin(ac - dA - dBf / r)]);
+    }
+    contour(g, ba.concat(bf.reverse()));
+    g.fillStyle = css("--pale"); g.globalAlpha = 0.85; g.fill(); g.globalAlpha = 1;
+    g.strokeStyle = css("--pale-bord"); g.lineWidth = 1.2; g.stroke();
+  }
+  // anneau tournant
+  if (P.anneau !== "non") {
+    g.strokeStyle = css("--pale-bord"); g.lineWidth = Math.max(3, 0.03 * P.D * s); g.beginPath(); g.arc(cx, cy, rt, 0, 7); g.stroke();
+    if (P.anneau === "labyrinthe") { g.setLineDash([3, 3]); g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, rt + jeuPx + 3, 0, 7); g.stroke(); g.setLineDash([]); }
+  }
+  // moyeu / moteur
+  g.fillStyle = css("--moyeu"); g.beginPath(); g.arc(cx, cy, rh, 0, 7); g.fill();
+  g.fillStyle = css("--carte"); g.beginPath(); g.arc(cx + rh * 0.55 * Math.cos(angle), cy - rh * 0.55 * Math.sin(angle), Math.max(2, rh * 0.12), 0, 7); g.fill();
+  g.fillStyle = css("--doux"); g.font = "11px system-ui"; g.textAlign = "left";
+  g.fillText(`${P.N} pales · Ø ${P.D} mm · ${MOTEURS[P.moteur].nom}`, 8, h - 8);
+}
+
+function dessinerCote(dt) {
+  const [g, w, h] = prep($("cote"));
+  const s = (h - 40) / 650, cy = h / 2, R0 = P.D / 2 * s, Rh = P.nu * R0;
+  const xBat = w * 0.12, eBat = w * 0.12, xFan = w * 0.48, eFan = Math.max(6, P.corde * s * Math.sin(P.beta * Math.PI / 180) * 1.3);
+  const Rcan = Math.max(R0 + 10, (h - 40) / 2 * 0.95);
+  // carter / pavillon
+  g.strokeStyle = css("--doux"); g.lineWidth = 2;
+  for (const sgn of [-1, 1]) {
+    g.beginPath(); g.moveTo(xBat - 8, cy + sgn * Rcan); g.lineTo(xFan - 30, cy + sgn * Rcan);
+    g.quadraticCurveTo(xFan - 10, cy + sgn * (R0 + 4), xFan, cy + sgn * (R0 + 2 + P.jeu * s * 3));
+    g.lineTo(xFan + eFan + 6, cy + sgn * (R0 + 2 + P.jeu * s * 3));
+    if (P.diffuseur) g.lineTo(w * 0.92, cy + sgn * Math.min(Rcan, R0 * 1.25));
+    else g.lineTo(xFan + eFan + 12, cy + sgn * (R0 + 2 + P.jeu * s * 3));
+    g.stroke();
+  }
+  // batterie
+  g.fillStyle = P.givre > 1.05 ? css("--givre") : css("--batterie");
+  g.globalAlpha = 0.6 + 0.12 * (P.givre - 1); g.fillRect(xBat, cy - Rcan, eBat, 2 * Rcan); g.globalAlpha = 1;
+  g.strokeStyle = css("--doux"); g.lineWidth = 0.6;
+  for (let y = cy - Rcan; y < cy + Rcan; y += 7) { g.beginPath(); g.moveTo(xBat, y); g.lineTo(xBat + eBat, y + 7); g.stroke(); }
+  g.fillStyle = css("--doux"); g.font = "11px system-ui"; g.textAlign = "center"; g.fillText("batterie", xBat + eBat / 2, h - 6);
+  // rotor
+  g.fillStyle = css("--moyeu"); g.fillRect(xFan - 8, cy - Rh, eFan + 22, 2 * Rh);
+  g.fillStyle = css("--pale"); g.strokeStyle = css("--pale-bord");
+  for (const sgn of [-1, 1]) { g.fillRect(xFan, sgn < 0 ? cy - R0 : cy + Rh, eFan, R0 - Rh); g.strokeRect(xFan, sgn < 0 ? cy - R0 : cy + Rh, eFan, R0 - Rh); }
+  if (P.anneau !== "non") { g.fillStyle = css("--pale-bord"); for (const sgn of [-1, 1]) g.fillRect(xFan - 4, sgn < 0 ? cy - R0 - 3 : cy + R0, eFan + 8, 3); }
+  g.fillStyle = css("--doux"); g.fillText("rotor", xFan + eFan / 2, h - 6);
+  if (P.stator) {
+    const xs = xFan + eFan + 14; g.fillStyle = css("--doux"); g.globalAlpha = 0.6;
+    for (const sgn of [-1, 1]) g.fillRect(xs, sgn < 0 ? cy - R0 : cy + Rh, 6, R0 - Rh); g.globalAlpha = 1;
+    g.fillText("stator", xs + 3, 14);
+  }
+  // particules
+  const v = R.bloque ? 0 : R.Q / R.A; // m/s dans le rotor
+  const vEch = 22; // px/s par m/s (vitesse lisible)
+  while (parts.length < 70) parts.push({ x: Math.random() * w, y: (Math.random() * 2 - 1), fuite: false });
+  const tauxFuite = P.anneau !== "non" && R.Qr > 0 ? R.Qleak / R.Qr : 0;
+  for (const p of parts) {
+    const dansRotor = p.x > xFan, rr = Math.abs(p.y);
+    if (p.fuite) {
+      p.x -= vEch * Math.max(2, v) * dt * 0.8;
+      if (p.x < xFan - 25) { p.fuite = false; p.y = (Math.random() * 0.4 + 0.6) * (p.y < 0 ? -1 : 1); }
+      const y = cy + Math.sign(p.y) * (R0 + 2 + Math.max(1.5, P.jeu * s * 1.5));
+      g.fillStyle = css("--alerte"); g.beginPath(); g.arc(p.x, y, 2.2, 0, 7); g.fill(); continue;
+    }
+    const rayon = p.x < xFan - 30 ? Rcan : P.diffuseur && p.x > xFan + eFan ? R0 + (Math.min(Rcan, R0 * 1.25) - R0) * Math.min(1, (p.x - xFan - eFan) / (w * 0.92 - xFan - eFan)) : R0;
+    const ymin = p.x > xFan - 30 && p.x < xFan + eFan + 25 ? Rh / R0 : 0;
+    const yy = Math.sign(p.y || 1) * (ymin + (1 - ymin) * rr) * rayon * 0.95;
+    const vloc = v * (R0 * R0 * (1 - P.nu * P.nu)) / (rayon * rayon * (1 - ymin * ymin));
+    p.x += vEch * Math.min(Math.max(vloc, 0), 25) * dt;
+    if (p.x > xFan + eFan && rr > 0.85 && Math.random() < tauxFuite * 6 * dt * 10) { p.fuite = true; continue; }
+    if (p.x > w) { p.x = 0; p.y = Math.random() * 2 - 1; }
+    const sw = dansRotor ? (R.cu || 0) * (P.stator && p.x > xFan + eFan + 20 ? 0.3 : 1) : 0;
+    const t = Math.min(1, sw / Math.max(4, R.u * 0.6));
+    g.fillStyle = t > 0.05 ? `hsl(${210 - 190 * t} 80% 55%)` : css("--doux");
+    g.beginPath(); g.arc(p.x, cy + yy, 2.2, 0, 7); g.fill();
+  }
+}
+
+function boucle(t) {
+  const dt = Math.min(0.05, (t - tPrec) / 1000); tPrec = t;
+  if (P && !$("pause").checked) {
+    const omega = 2 * Math.PI * P.n / 60 / ($("ralenti").checked ? 10 : 1);
+    angle += omega * dt;
+    dessinerFace(dt); dessinerCote(dt);
+  }
+  requestAnimationFrame(boucle);
+}
+
+// ---------------------------------------------------------------- événements
+document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", () => {
+  if (el.id === "app") $("n").value = vitessePourDebit(lire());
+  majSorties(); calcul();
+}));
+$("ajuster").addEventListener("click", () => { $("n").value = vitessePourDebit(lire()); majSorties(); calcul(); });
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => { ecrire(PRESETS[b.dataset.preset]); calcul(); }));
+window.addEventListener("resize", calcul);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", calcul);
+ecrire(PRESETS.extBase); calcul(); requestAnimationFrame(boucle);
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+{
+  "parametres": {
+    "d_int_principal": 100.0,
+    "ep_principal": 2.0,
+    "l_active": 300.0,
+    "plenum": 40.0,
+    "ep_fond": 3.0,
+    "d_noyau": 30.0,
+    "r_couronne": 32.5,
+    "od_entree": 9.53,
+    "id_entree": 7.9,
+    "id_murray": [
+      7.9,
+      6.27,
+      4.98,
+      3.95,
+      3.14
+    ],
+    "ep_branche": 0.5,
+    "dz_niveau1": 25.0,
+    "dz_niveaux": 12.0,
+    "garde_fond": 8.0,
+    "l_tube_entree": 40.0,
+    "conduit_larg": 20.0,
+    "conduit_haut": 30.0,
+    "conduit_long": 70.0,
+    "disposition": "couronne",
+    "r_tournesol": [
+      19.0,
+      46.0
+    ],
+    "dz_dernier": 20.0,
+    "angle_conduit_deg": 4.95
+  },
+  "niveaux_murray": [
+    {
+      "niveau": 0,
+      "branches": 1,
+      "id_mm": 7.9,
+      "od_mm": 9.53,
+      "rapport_parent_enfant": null
+    },
+    {
+      "niveau": 1,
+      "branches": 2,
+      "id_mm": 6.27,
+      "od_mm": 7.27,
+      "rapport_parent_enfant": 1.26
+    },
+    {
+      "niveau": 2,
+      "branches": 4,
+      "id_mm": 4.98,
+      "od_mm": 5.98,
+      "rapport_parent_enfant": 1.259
+    },
+    {
+      "niveau": 3,
+      "branches": 8,
+      "id_mm": 3.95,
+      "od_mm": 4.95,
+      "rapport_parent_enfant": 1.261
+    },
+    {
+      "niveau": 4,
+      "branches": 16,
+      "id_mm": 3.14,
+      "od_mm": 4.14,
+      "rapport_parent_enfant": 1.258
+    }
+  ],
+  "od_tubes_echange_mm": 4.14,
+  "longueur_tubes_mm": 402.0,
+  "n_tubes": 16,
+  "feuilles_xy_mm": [
+    [
+      6.34,
+      -31.88
+    ],
+    [
+      18.06,
+      -27.02
+    ],
+    [
+      27.02,
+      -18.06
+    ],
+    [
+      31.88,
+      -6.34
+    ],
+    [
+      31.88,
+      6.34
+    ],
+    [
+      27.02,
+      18.06
+    ],
+    [
+      18.06,
+      27.02
+    ],
+    [
+      6.34,
+      31.88
+    ],
+    [
+      -6.34,
+      31.88
+    ],
+    [
+      -18.06,
+      27.02
+    ],
+    [
+      -27.02,
+      18.06
+    ],
+    [
+      -31.88,
+      6.34
+    ],
+    [
+      -31.88,
+      -6.34
+    ],
+    [
+      -27.02,
+      -18.06
+    ],
+    [
+      -18.06,
+      -27.02
+    ],
+    [
+      -6.34,
+      -31.88
+    ]
+  ],
+  "ecart_entre_tubes_mm": 8.54,
+  "jeu_tube_paroi_mm": 15.43,
+  "jeu_tube_noyau_mm": 15.43,
+  "longueur_arbre_mm": 61.0,
+  "encombrement_mm": {
+    "longueur_hors_tout": 604.0,
+    "longueur_tube_principal": 386.0,
+    "diametre_exterieur": 104.0,
+    "largeur_avec_conduits": 122.0
+  },
+  "section_air_anneau_cm2": 69.3,
+  "surface_ext_tubes_zone_active_m2": 0.0624,
+  "volume_interne_cm3": {
+    "arbre_entree": 9.98,
+    "arbre_sortie": 9.98,
+    "tubes": 49.81,
+    "total": 69.77
+  }
+}

@@ -1,0 +1,93 @@
+{
+ "parametres": {
+  "cas": "batterie",
+  "ailettes": true,
+  "tpms_seul": true,
+  "tpms": "diamond",
+  "U": 1.0,
+  "U_domaine": 1.0,
+  "air": {
+   "nu": 1.516e-05,
+   "rho": 1.204,
+   "cp": 1006.0,
+   "Pr": 0.71
+  },
+  "epaisseur_mm": 4.0,
+  "nproc": 8,
+  "forme": "tpms_seul",
+  "nom": "Diamond (Schwarz-D) seul (cellule 4 mm, paroi 0.3 mm)",
+  "cellule_tpms_mm": 4.0,
+  "paroi_mm": 0.3,
+  "niveau_feuille": 0.337626903998738,
+  "fraction_air": 0.36179832175925924,
+  "fraction_propane": 0.3619068287037037,
+  "fraction_paroi": 0.276294849537037,
+  "beta_air_par_mm": 0.8983470775462963,
+  "Dh_air_mm": 1.6109511826874685,
+  "profondeur_mm": 5.787111312309322,
+  "propane_L_par_m2": 2.0943951023931957,
+  "charge_relative": 0.5,
+  "pas_ailettes_mm": null,
+  "epaisseur_ailette_mm": null,
+  "maillage": {
+   "cellules": null,
+   "base_mm": 0.179,
+   "niveau": 2,
+   "paroi_mm": 0.04475
+  },
+  "tranches": {
+   "n": null
+  },
+  "Pt": 0.004,
+  "Pl": null,
+  "rangs": null,
+  "x_noyau": [
+   0.0,
+   0.005787111312309322
+  ],
+  "x_domaine": [
+   -0.003,
+   0.011787111312309322
+  ],
+  "Umax": 2.763970808757373,
+  "Re_Dh": 293.7085780528582,
+  "A_air_domaine": 0.0001051952331972148,
+  "A_tubes_domaine": 0.0,
+  "A_ailettes_domaine": 0.0001051952331972148,
+  "instationnaire": false,
+  "fin": 2000,
+  "debut_moyenne": 1500.0,
+  "suffixe": "_diamond_L4"
+ },
+ "resultats": {
+  "cas": "diamond_L4",
+  "forme": "tpms_seul",
+  "U": 1.0,
+  "Umax": 2.763970808757373,
+  "Re_max_D6": 1093.9198451546333,
+  "dp_Pa": 47.88905826657428,
+  "fluct_p": 0.003738137881592621,
+  "T_sortie": 0.6999414747574509,
+  "fluct_T": 0.007760949080394889,
+  "NTU": 1.2037777392105424,
+  "h": 221.76586433935933,
+  "Nu_D6": 51.449437109540995,
+  "j": 0.052720033433738586,
+  "f_par_rang": 10.41292886423594,
+  "j_sur_f": 0.0050629399394832965,
+  "Q_W_par_K": 0.013564574605145903,
+  "ecart_bilan": -0.01593780001719851,
+  "fluct_flux": 0.0022917487622616125,
+  "P_vent_sur_Q": 0.05648720690249371,
+  "profondeur_mm": 5.787111312309322,
+  "A_air": 0.0001051952331972148,
+  "stabilite_moyenne": {
+   "dp": 0.0023253264253657495,
+   "T_sortie": 0.0012762943215081347,
+   "flux_paroi": 0.0014164398490450886
+  },
+  "part_ailettes": 0.0,
+  "facteur_surface": null,
+  "duree_suffisante": true
+ }
+}

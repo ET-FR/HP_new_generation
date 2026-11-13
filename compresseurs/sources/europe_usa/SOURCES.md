@@ -1,0 +1,42 @@
+# Sources — compresseurs R290 petits, fabricants Europe / USA et technologies de niche
+
+Consultées le 2026-11-11. Fichiers locaux dans ce dossier (non exécutés).
+Note : les PDF hébergés sur embraco.com (productselector, wp-content) sont protégés par une vérification anti-robot ;
+ils n'ont pas pu être téléchargés. Les données Embraco viennent de copies chez des distributeurs.
+Les fiches individuelles Secop (/SEPS/datasheets/) renvoient « lien expiré » au téléchargement direct ; les données Secop viennent du quick-reference et des leaflets.
+
+| Titre | URL | Fichier local | Ce que ça appuie |
+|---|---|---|---|
+| Secop — Variable-speed drive compressors for R290 (quick reference 06-2026) | https://www.secop.com/fileadmin/user_upload/technical-literature/quick-references/variable_speed_drive_compressors_for_r290_06-2026_desb300b702.pdf | secop_quickref_vitesse_variable_R290_06-2026.pdf | NLV8.0/10/12.6/15CN, NLVE13CN, SLVE18CN : cylindrée, capacité et COP ASHRAE (Tc 54,4) et EN12900/CECOMAF (Tc 55) à 2000/2200 et 4500 tr/min, contrôleurs MP/XT, Tool4Cool |
+| Secop — SLVE-CN MP leaflet 01-2026 | https://www.secop.com/fileadmin/user_upload/technical-literature/leaflets/slve-cn_variable_speed_compressors_mp-controllers_01-2026_desn300k302.pdf | secop_leaflet_SLVE-CN_MP_01-2026.pdf | SLVE18CN : 2200–4500 tr/min, Te −45 à +10 °C, tableau ASHRAE LBP/MBP vs vitesse, dimensions |
+| Secop — page produit SLVE | https://www.secop.com/products/product-portfolio/slve | secop_page_SLVE.html | 17,69 cm³, applications (dont « heat pumps »), outils Tool4Cool / Toolkit |
+| Secop — gamme des compresseurs | https://secop.com/products | (non sauvé) | NLV/E 7,96–14,65 cm³, SLVE 17,69 cm³ ; Product Selector, Application Selector, CapSel |
+| Secop — Toolkit (CapSel, Application Selector) | https://toolkit.secop.com | (non sauvé) | outils de sélection en ligne |
+| Secop — Tool4Cool | https://www.secop.com/products/software-tools/variable-speed-drive-software-tool4cool | (non sauvé) | logiciel de paramétrage des variateurs |
+| Secop — Heat Pump Propane Compressors (actualité 2026) | https://www.secop.com/updates/news/heat-pump-propane-compressors | secop_actu_compresseurs_PAC_R290_2026.html | NLU8.8DN, NLE10DNDX (PAC eau chaude sanitaire, vitesse fixe) |
+| Secop — Heat Pump Compressors R290 220 V 50 Hz leaflet 09-2026 | https://www.secop.com/fileadmin/user_upload/technical-literature/leaflets/heat-pump_compressors_r290_220v_50hz_09-2026_desn560h202.pdf | secop_leaflet_compresseurs_PAC_R290_220V_50Hz_09-2026.pdf | KLF6.6DND / NLU8.8DN / NLE10DNDX : ASHRAE HBP et CECOMAF HBP, COP 3,0–3,1 (ASHRAE 7,2/54,4) |
+| Secop SLVE18CN fiche 12-2025 (résultat de recherche, lien expiré au téléchargement) | https://www.secop.com/fileadmin/user_upload/SEPS/datasheets/en/slve18cn_104h8841_r290_220v_50-60hz_12-2025_desd300w302.pdf | — | huile POE 550 cm³, charge R290 max 550 g, 7,0 A (d'après l'extrait de recherche, non vérifié sur le PDF) |
+| Danfoss — Application guidelines VRN R290 + CDS203 (AB463930637612en-000202) | https://assets.danfoss.com/documents/455089/AB463930637612en-000202.pdf | danfoss_VRN_guide_application_AB463930637612.pdf | VRN150…752 : cylindrée, 15–120 tr/s, huile, masse, puissance acoustique, codes échantillon (MOQ 1) |
+| Danfoss — Instructions rotary compressors (AN464543903088en-000201) | https://assets.danfoss.com/documents/397261/AN464543903088en-000201.pdf | danfoss_AN464543903088_R290_vitesse_variable.pdf | enveloppes et plages de vitesse : VRN150WSQASE et VRN226WTPAGE « Heat pump », VRN110DTM (MBP, 1000–6600 tr/min) |
+| Danfoss Design Center — VRN150WSQASE 126F2025 | https://designcenter.danfoss.com/products/climate-solutions-for-cooling/compressors/hermetic-rotary-compressors/vrn/p/126F2025 | danfoss_VRN150WSQASE_page_produit.html | 15 cm³, 17–120 Hz, POE 0,48 L, Ø113 × 308 mm, 8,9 kg, R290/R454C |
+| Danfoss — annonce accord Highly (2023) | https://danfoss.com/en/about-danfoss/news/dcs/danfoss-to-offer-rotary-compressors-for-residential-heat-pump-market | (non sauvé) | les rotatifs VRN sont fabriqués par Highly (Chine) sous marque Danfoss |
+| Embraco — Variable capacity compressors (brochure, copie Hawco) | https://www.hawco.co.uk/content/files/brochures/refrigeration/embraco-reciprocating-compressors/embraco-variable-capacity-reciprocating-compressors_1.pdf | embraco_vitesse_variable_hawco.pdf | familles VES/VEM/FMF/VNE ; FMFT406U/411U/413U, VNEK/VNEU R290 : cylindrée, 1400/1800/2000–4500 tr/min, masse, huile, ASHRAE/EN12900 |
+| Embraco — VNEK213U fiche (copie Frigopartners) | https://frigopartners.com/media/bf/f3/c8/1636647046/22-VNEK213U_tech.pdf | embraco_VNEK213U_fiche_frigopartners.pdf | 13,54 cm³, LBP, alternatif, POE 500 ml, 14,2 kg, charge R290 max 150 g |
+| Embraco — catalogue Europe 2020 (copie Marsel) | https://www.marselsogutma.com/wp-content/uploads/datasheet/embraco-compressor-2020.pdf | embraco_catalogue_europe_2020_marsel.pdf | gamme Embraco Europe (contexte) |
+| Embraco — page remplacement (familles FMF 6–15 cc, VNE 6–17 cc) | https://www.embraco.com/en/categories/replacement | (non sauvé) | plages de cylindrée par famille |
+| Embraco — sélecteur produits | https://embraco.com/productselector | (non sauvé, anti-robot) | fiches FTxxxx et données EN12900 par modèle |
+| Tecumseh — R290 catalog (2021) | https://www.tecumseh.com/userfiles/documents/marketing-brochures/tecumseh-r-290-catalog.pdf | tecumseh_catalogue_R290.pdf | VTCX360U…VTCW424U : 3,14–12,47 cm³, PMSM, 2000/2500–4500 tr/min (réfrigération) |
+| Tecumseh — heat pump leaflet (2022) | https://www.tecumseh.com/userfiles/documents/marketing-brochures/leaflet_heat_pump_en.pdf | tecumseh_leaflet_pompe_a_chaleur.pdf | offre PAC R290 TC/AE/AJ/TCW/AEX/ALX (vitesse fixe, HBP) |
+| Aspen Compressor — accueil | https://aspencompressor.com/ | (non sauvé) | séries A/Q/T/H, 1,4 à 7,6 cm³, BLDC 12–48 V DC |
+| Aspen Compressor — documentation produits | https://www.aspencompressor.com/product-documentation | aspen_documentation_produits.html | liens vers fiches et tableaux R290 |
+| Aspen — fiche H76 (7,6 cc) jan. 2026 | https://www.aspencompressor.com/_files/ugd/87858f_30d34f32e307412b93fbb7012f3bcc0a.pdf | aspen_H-Series_7.6cc_fiche.pdf | 1200–6500 tr/min, 130 cm³ d'huile, ~40 dBA à 1 m, ~3,2 kg, Te −30…+24 °C, Tc max 71 °C |
+| Aspen — performances H76 R290 | https://www.aspencompressor.com/_files/ugd/87858f_be1fede5ef2348ee9bdc211d484e605f.pdf | aspen_H-Series_7.6cc_perf_R290.pdf | capacité et puissance absorbée, Tc 35/43/50 °C, 2000–6000 tr/min, SH 5 K / SC 5 K |
+| Aspen — performances H56 R290 | https://www.aspencompressor.com/_files/ugd/87858f_21444bd75b254259a59d480a8ecdf159.pdf | aspen_H-Series_5.6cc_perf_R290.pdf | idem pour 5,6 cc |
+| Aspen — brochure comparaison | https://www.aspencompressor.com/_files/ugd/87858f_c4506f8574414064921ca5dc857ea0a6.pdf | aspen_brochure_comparaison.pdf | positionnement (fabrication USA, Somerset KY) |
+| Copeland — R290 scroll pour PAC résidentielles | https://copeland.com/en-gb/products/heating-and-air-conditioning/the-silent-revolution/r290-scroll-solution-for-residential-heat-pumps | (non sauvé) | YHV scroll variable R290 ; pas de rotatif R290 |
+| Copeland — expansion gamme R290 scroll (2024) | https://www.copeland.com/en-us/news/copeland-expands-r290-scroll-compressor-portfolio | (non sauvé) | YHV119 (42 kW), YH23–38K1G : hors échelle |
+| Copeland/Daikin — JV rotatif swing (2024) | https://www.businesswire.com/news/home/20241125265551/en/Copeland-and-Daikin-Announce-a-Joint-Venture-to-Bring-Inverter-Swing-Rotary-Compression-to-the-U.S. | (non sauvé) | les rotatifs Copeland viendront de Daikin (pas annoncés en R290) |
+| Copeland/Daikin — coopération Europe (déc. 2025) | https://www.businesswire.com/news/home/20251215625806/en/Copeland-and-Daikin-Cooperation-Brings-Solutions-to-European-Customers | (non sauvé) | rotatifs swing pour PAC résidentielles européennes (fluide non précisé dans l'extrait) |
+| Cooling Post — compresseur linéaire sans huile (Embraco Wisemotion) | https://www.coolingpost.com/world-news/oil-less-linear-compressor-launched/ | (non sauvé) | linéaire sans huile pour réfrigérateurs (R134a/R600a), pas de version R290 PAC trouvée |
+| ebm-papst — turbo compresseurs sans huile | https://mag.ebmpapst.com/en/?p=22360 | (non sauvé) | turbo sans huile pour grosses PAC/chillers, hors échelle |
+| Air Squared — scroll BLDC | https://airsquared.com/products/scroll-compressors/p14h022a-bldc | (non sauvé) | scrolls miniatures air/vide ; aucun modèle frigorifique R290 trouvé |

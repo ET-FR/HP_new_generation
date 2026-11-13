@@ -1,0 +1,18 @@
+{
+  "r_noyau": 150.0,
+  "r_ext": 190.0,
+  "r_tubes": 170.0,
+  "n_niveaux": 5,
+  "d_tube": 3.0,
+  "d_int_tube": 2.0,
+  "hauteur": 80.0,
+  "tours": 1.0,
+  "filets": 16,
+  "ep_ailette": 0.4,
+  "plenum": 30.0,
+  "ep_paroi": 2.0,
+  "garde_arbre": 25.0,
+  "conduit_l": 120.0,
+  "conduit_larg": 35.0,
+  "conduit_haut": 26.0
+}

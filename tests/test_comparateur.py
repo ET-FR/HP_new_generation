@@ -6,7 +6,7 @@ import sys
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RACINE)
-sys.path.insert(0, os.path.join(RACINE, "outils", "cfd_tpms"))
+sys.path.insert(0, os.path.join(RACINE, "conception_echangeur", "outils", "cfd_tpms"))
 
 import numpy as np  # noqa: E402
 

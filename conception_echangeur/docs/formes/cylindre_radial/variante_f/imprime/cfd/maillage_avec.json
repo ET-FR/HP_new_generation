@@ -1,0 +1,26 @@
+{
+ "version": "avec",
+ "cellules": 2185287.0,
+ "hexaedres": 2131465.0,
+ "polyedres": 12672.0,
+ "non_orthogonalite_max": 64.99983358,
+ "asymetrie_max": 4.076222112,
+ "rapport_aspect_max": 8.281561797,
+ "checkMesh_ok": false,
+ "checkMesh_echecs": [
+  "Max skewness = 4.076222112, 1 highly skew faces detected which may impair the quality of the results"
+ ],
+ "cellules_lues": 2185287,
+ "aire_entree_mm2": 1465.4,
+ "aire_sortie_mm2": 601.2,
+ "aire_cotes_mm2": 317.6,
+ "aire_paroi_mm2": 22363.9,
+ "aire_y0_mm2": 5998.2,
+ "aire_y1_mm2": 5998.4,
+ "aire_entree_attendue_mm2": 1545.5,
+ "aire_sortie_attendue_mm2": 662.4,
+ "volume_air_maillage_cm3": 33.37,
+ "volume_air_attendu_cm3": 34.115,
+ "echantillon_centres": 400000,
+ "centres_dans_le_solide": 1
+}

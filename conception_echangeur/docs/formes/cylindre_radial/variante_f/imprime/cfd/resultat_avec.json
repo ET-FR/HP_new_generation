@@ -1,0 +1,16 @@
+{
+ "version": "avec",
+ "iterations": 3000,
+ "moyenne_sur": 500,
+ "dp_Pa": 696.1503132075912,
+ "fluctuation_dp": 0.004566177207151683,
+ "efficacite": 0.6420432173882,
+ "fluctuation_T": 0.015116133427092811,
+ "NTU": 1.0273430188300097,
+ "hA_tube_W_K": 286.8900811474079,
+ "debit_tranche_m3s": 0.0029258319200000005,
+ "debit_impose_m3s": 0.0029258319232938527,
+ "bilan_paroi_sur_air": 0.8672121047110098,
+ "Q_tube_W_pour_10K": 1792.934077134384,
+ "U_max_m_s": 33.59080123901367
+}

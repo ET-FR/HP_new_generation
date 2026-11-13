@@ -1,0 +1,16 @@
+{
+  "d_ext_principal": 150.0,
+  "ep_principal": 3.0,
+  "longueur_principal": 400.0,
+  "conduit_axial": 100.0,
+  "conduit_radial": 50.0,
+  "conduit_long": 120.0,
+  "ep_ailette": 1.0,
+  "n_tubes": 32,
+  "od_tube": 3.49,
+  "id_tube": 2.49,
+  "jeu_tube": 3.0,
+  "depassement_tube": 10.0,
+  "materiau_tubes": "aluminium",
+  "materiau_ailette": "aluminium"
+}

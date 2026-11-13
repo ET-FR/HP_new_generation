@@ -3,7 +3,10 @@ __pycache__/
 .venv/
 .pytest_cache/
 cfd_campagne/
-docs/articles/
+conception_echangeur/cfd_campagne
+conception_echangeur/docs/articles/
+conception_echangeur/docs/*.pdf
+!conception_echangeur/docs/resultats_cfd.pdf
+!conception_echangeur/docs/pistes_et_idees.pdf
 docs/*.pdf
-!docs/resultats_cfd.pdf
-!docs/pistes_et_idees.pdf
+compresseurs/sources/**/*.pdf
