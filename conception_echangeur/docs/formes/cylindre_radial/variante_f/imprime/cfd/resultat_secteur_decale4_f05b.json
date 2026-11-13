@@ -1,0 +1,16 @@
+{
+ "version": "secteur_decale4_f05b",
+ "iterations": 3000,
+ "moyenne_sur": 500,
+ "dp_Pa": 30.31004173907864,
+ "fluctuation_dp": 0.0855464758960382,
+ "efficacite": 0.8869676633777999,
+ "fluctuation_T": 0.012449802564331501,
+ "NTU": 2.1800813364089016,
+ "hA_tube_W_K": 608.7973539963178,
+ "debit_tranche_m3s": 0.00018286449500000003,
+ "debit_impose_m3s": 0.0001828644952058658,
+ "bilan_paroi_sur_air": 0.46930793910855145,
+ "Q_tube_W_pour_10K": 2476.8964236636198,
+ "U_max_m_s": 5.694433212280273
+}

@@ -30,7 +30,10 @@ R_ENTREE, R_SORTIE = 77.0, 33.0
 LONGUEUR_TUBE = 394.0
 
 
-def creer(dossier, modele, debit_m3h=830.0, base=1.0, niveau=2, nproc=16, iterations=3000):
+def creer(dossier, modele, debit_m3h=830.0, base=1.0, niveau=2, nproc=16, iterations=3000, niveau_paroi=None, nom=None, pcg=False):
+    """niveau : raffinement de toute la zone ; niveau_paroi : raffinement au contact du solide (lamelles minces : niveau + 1)."""
+    niveau_paroi = niveau_paroi or niveau
+    nom_cas = nom or modele
     import pyvista as pv
     cas = Path(dossier)
     (cas / "constant" / "triSurface").mkdir(parents=True, exist_ok=True)
@@ -88,7 +91,7 @@ castellatedMeshControls
     maxLocalCells 20000000; maxGlobalCells 80000000; minRefinementCells 0;
     maxLoadUnbalance 0.10; nCellsBetweenLevels 2;
     features ();
-    refinementSurfaces {{ paroi {{ level ({niveau} {niveau}); patchInfo {{ type wall; }} }} }}
+    refinementSurfaces {{ paroi {{ level ({niveau_paroi} {niveau_paroi}); patchInfo {{ type wall; }} }} }}
     resolveFeatureAngle 30;
     refinementRegions {{ tout {{ mode inside; levels ((1 {niveau})); }} }}
     locationInMesh ({loc[0]:.9g} {loc[1]:.9g} {loc[2]:.9g});
@@ -119,12 +122,25 @@ mergeTolerance 1e-6;
         ecrire(cas, f"0/{nom}", f"dimensions      {dim};\ninternalField   uniform {interne};\n\n"
                                 f"boundaryField\n{{\n{bf}{cyc_bc}}}\n", classe)
     systeme(cas, False, iterations, 0, nproc, None, iterations=iterations)
+    # découpage en tranches le long du tube (14/11) : avec scotch ou un découpage en x/z, un processeur porte à la fois
+    # une partie de y0 et de y1, et l'AMI en translation parallèle ne raccorde que 20 à 60 % de la face (sum(weights)
+    # moyen 0,2 à 0,6 au pas de 2,5 mm, contre 1,00 en série) ; en tranches y : 0,996 avec 4 ou 8 tranches, mais 0,92 avec 16 (testé le 14/11) : 8 tranches au plus.
+    ny_fin = ny * 2 ** niveau
+    if nproc > min(8, ny_fin):
+        raise SystemExit(f"nproc {nproc} > {ny_fin} couches de mailles le long du tube : impossible de découper en tranches")
+    ecrire(cas, "system/decomposeParDict", f"numberOfSubdomains {nproc};\nmethod simple;\ncoeffs {{ n (1 {nproc} 1); }}\n")
     fv = (cas / "system" / "fvSchemes").read_text()
     fv = fv.replace("laplacianSchemes { default Gauss linear corrected; }", "laplacianSchemes { default Gauss linear limited corrected 0.5; }")
     fv = fv.replace("snGradSchemes   { default corrected; }", "snGradSchemes   { default limited corrected 0.5; }")
     fv = fv.replace("gradSchemes     { default Gauss linear; }", "gradSchemes     { default cellLimited Gauss linear 1; }")
     (cas / "system" / "fvSchemes").write_text(fv)
-    (cas / "system" / "fvSolution").write_text((cas / "system" / "fvSolution").read_text()
+    fs = (cas / "system" / "fvSolution").read_text()
+    if pcg:      # solveur de pression robuste (GAMG a planté avec des lamelles de 0,5 mm et des faces AMI non identiques)
+        i = fs.index("    p\n")
+        j = fs.index("    pFinal")
+        fs = fs[:i] + ("    p\n    {\n        solver          PCG;\n        preconditioner  DIC;\n        tolerance       1e-8;\n"
+                       "        relTol          0.05;\n        maxIter         3000;\n    }\n") + fs[j:]
+    (cas / "system" / "fvSolution").write_text(fs
                                                 .replace("relaxationFactors { equations { U 0.9; T 0.9; } }",
                                                          "relaxationFactors { equations { U 0.7; T 0.9; } fields { p 0.3; } }")
                                                 .replace("consistent          yes;", "consistent          no;"))
@@ -138,14 +154,21 @@ decomposePar -force > log.decomposePar 2>&1
 touch MAILLE
 """)
     (cas / "Allrun").write_text(entete + f"""[ -f MAILLE ] || bash Allmesh
-mpirun -np {nproc} simpleFoam -parallel > log.simpleFoam 2>&1
+mpirun -np {nproc} simpleFoam -parallel > log.simpleFoam 2>&1 &
+pid=$!
+# garde-fou : raccord AMI le long du tube (y0 → y1) ; arrêt si moins de 98 % de la face est raccordée
+for i in $(seq 120); do grep -q "source:y0" log.simpleFoam 2>/dev/null && grep -A6 "source:y0" log.simpleFoam | grep -q "target sum" && break; sleep 5; done
+moy=$(grep -A6 "source:y0" log.simpleFoam | grep "source sum(weights)" | head -1 | sed 's/.*average://')
+echo "raccord AMI y0/y1 : $moy" > log.ami
+if ! awk -v m="$moy" 'BEGIN{{exit !(m > 0.98 && m < 1.02)}}'; then echo "RACCORD AMI MAUVAIS ($moy) : calcul arrêté" >> log.ami; kill $pid; exit 3; fi
+wait $pid
 reconstructPar -latestTime > log.reconstructPar 2>&1
 """)
     for f in ("Allmesh", "Allrun"):
         (cas / f).chmod(0o755)
-    meta = dict(cas="secteur", version=modele, debit_m3h=debit_m3h, debit_tranche_m3s=Q, periode_mm=per_mm,
+    meta = dict(cas="secteur", version=nom_cas, geometrie=modele, solveur_p="PCG" if pcg else "GAMG", debit_m3h=debit_m3h, debit_tranche_m3s=Q, periode_mm=per_mm,
                 secteur_deg=[f0, f1], n_secteurs=n_sect, r_entree_mm=R_ENTREE, r_sortie_mm=R_SORTIE, air=AIR, nproc=nproc,
-                maillage=dict(base_mm=base, niveau=niveau), iterations=iterations,
+                maillage=dict(base_mm=base, niveau=niveau, niveau_paroi=niveau_paroi), iterations=iterations,
                 mcp_tranche=Q * AIR["rho"] * AIR["cp"], mcp_tube=debit_m3h / 3600 * AIR["rho"] * AIR["cp"],
                 U_entree=Q / (math.radians(da) * R_ENTREE * 1e-3 * per), profils=inf["profils"])
     (cas / "cas.json").write_text(json.dumps(meta, indent=1, ensure_ascii=False))
@@ -158,6 +181,11 @@ if __name__ == "__main__":
     ap.add_argument("--modele", required=True, help="decale4, continu, radiales")
     ap.add_argument("--nproc", type=int, default=16)
     ap.add_argument("--iterations", type=int, default=3000)
+    ap.add_argument("--niveau-paroi", type=int, default=None)
+    ap.add_argument("--niveau", type=int, default=2)
+    ap.add_argument("--nom", default=None, help="nom du cas (résultats), si différent du modèle de géométrie")
+    ap.add_argument("--pcg", action="store_true", help="solveur de pression PCG/DIC au lieu de GAMG")
     a = ap.parse_args()
-    m = creer(a.dossier, a.modele, nproc=a.nproc, iterations=a.iterations)
+    m = creer(a.dossier, a.modele, nproc=a.nproc, iterations=a.iterations, niveau_paroi=a.niveau_paroi, niveau=a.niveau,
+              nom=a.nom, pcg=a.pcg)
     print(json.dumps({k: m[k] for k in ("version", "debit_tranche_m3s", "U_entree")}, ensure_ascii=False))

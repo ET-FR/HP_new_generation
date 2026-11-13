@@ -131,7 +131,13 @@ def bloc_secteur():
         return "", []
     s = json.loads(fs.read_text())
     dS = DI / "secteur"
-    ECARTS = [("_e15", "écart 1,5 mm"), ("_c15", "écart 1,5 mm corrigé"), ("_e4", "écart 4 mm"), ("_e5", "écart 5 mm")]
+    ECARTS = [("_e15", "écart 1,5 mm"), ("_c15", "écart 1,5 mm corrigé"), ("_e4", "écart 4 mm"), ("_e5", "écart 5 mm"),
+              ("_f05", "lamelles 0,5 mm, espace radial 1,5 mm"),
+              ("_f05i", "lamelles 0,5 mm IMBRIQUÉES à moitié (14/11)"), ("_f05v", "ailettes 0,5 mm EN VAGUE (14/11)"),
+              ("_f05s", "lamelles 0,5 mm décalées AVEC DENTS (14/11)")]
+    TITRES_LAM = {"_f05i": "Secteur simulé : lamelles imbriquées (chaque couronne recouvre la moitié de ses deux voisines décalées)",
+                  "_f05v": "Secteur simulé : ailettes en vague (couronnes décalées reliées par des pentes)",
+                  "_f05s": "Secteur simulé : lamelles décalées à bord extérieur en dents triangulaires (une dent par secteur)"}
     MODS = [("dec", "Décalées"), ("cont", "Continues"), ("rad", "Continues + radiales")]
     obj = []
 
@@ -146,7 +152,11 @@ def bloc_secteur():
         og = {m: f"{nm} · {ne}" for m, nm in MODS}
         if e == "_c15":
             og["dec"] = og["cont"] = "__aucun__"
-        ajoute(f"sect_lamelles{e}", "Secteur simulé : lamelles décalées (couronnes de 5 mm, espace radial 4 mm)", "#1c7ed6", 1.0, [og["dec"]])
+        if e in ("_f05", "_f05i", "_f05v", "_f05s"):
+            og["cont"] = og["rad"] = "__aucun__"
+        if e in ("_f05i", "_f05v", "_f05s"):
+            og["dec"] = {"_f05i": "Imbriquées", "_f05v": "Vague", "_f05s": "Décalées avec dents"}[e] + " · lamelles 0,5 mm, espace radial 1,5 mm"
+        ajoute(f"sect_lamelles{e}", TITRES_LAM.get(e, "Secteur simulé : lamelles décalées (couronnes de 5 mm, espace radial 4 mm)"), "#1c7ed6", 1.0, [og["dec"]])
         ajoute(f"tout_lamelles{e}", "Reste de l'échangeur : lamelles décalées", "#a5d8ff", 0.2, [og["dec"]])
         ajoute(f"sect_cont_lamelles{e}", "Secteur simulé : lamelles continues (r 35 → 73 mm)", "#1c7ed6", 1.0, [x for x in (og["cont"], og["rad"]) if x != "__aucun__"])
         ajoute(f"tout_cont_lamelles{e}", "Reste de l'échangeur : lamelles continues", "#a5d8ff", 0.2, [x for x in (og["cont"], og["rad"]) if x != "__aucun__"])
@@ -176,6 +186,21 @@ r = 35 à 73 mm. <b>Continues + radiales</b> : en plus, des lamelles perpendicul
 profil étant centré sur l'une d'elles.
 <b>Écart 1,5 mm</b> (pas 2,5 mm, première version) : une lamelle sur deux supprimée près du noyau ; 7 lamelles radiales par secteur
 + 7 intercalaires (à partir de r = 54 mm) ; défaut de cette version radiale : les profils touchent presque les radiales voisines (fentes).
+<b>Lamelles 0,5 mm, espace radial 1,5 mm</b> (lamelles décalées seulement, 13/11) : lamelles de 0,5 mm au pas de 2,5 mm (jeu de 2 mm),
+couronnes de 5 mm séparées de 1,5 mm ; les 4 profils sont répartis régulièrement sur la profondeur (r = 40,5 à 67 mm) pour que
+chacune des 6 couronnes touche un profil.
+<b>Imbriquées</b> (14/11, dessin 2 de l'utilisateur) : mêmes lamelles de 0,5 mm au pas de 2,5 mm, mais chaque rangée porte des
+couronnes de 5 mm séparées de 1,5 mm, et la rangée décalée d'un demi-pas est aussi décalée d'une demi-couronne : chaque lamelle recouvre la
+moitié des deux lamelles voisines de l'autre rangée (13 couronnes au lieu de 6, deux fois plus de surface). Là où elles se recouvrent, il ne
+reste que 0,75 mm entre deux lamelles (pas/2 − épaisseur) : plus d'échange, mais plus de Δp, et un jeu inférieur aux 1,5 mm de dépoudrage.
+<b>Vague</b> (14/11, dessin 3) : les couronnes décalées sont reliées en une seule ailette ondulée : paliers de 5 mm alternativement à y et
+y + 1,25 mm, raccordés dans les espaces de 1,5 mm par des demi-cosinus (pente maxi ≈ 53°), épaisseur de 0,5 mm mesurée
+perpendiculairement à la tôle ; le canal entre deux ailettes garde 2 mm de haut partout, il ondule avec elles.
+<b>Décalées avec dents</b> (14/11) : les lamelles décalées de 0,5 mm, avec le bord extérieur en dents triangulaires du concept
+« avec stries » (8 dents sur 230°, une par secteur, pointes sur les faces périodiques, rainures en V jusqu'à r = 58 mm) : l'air
+entre plus profond par les rainures, le bord d'attaque des lamelles est plus long. Les deux profils extérieurs sont recalés dans
+les dents (r = 58,2 mm : φ 8,7 → 7,8° ; r = 67 mm : φ 22,4 → 28,6°, centré sur la dent du bord). Moins de surface de lamelles que les
+décalées sans dents (volume du solide 1,65 contre 1,73 cm³).
 <b>Écart 1,5 mm corrigé</b> (modèle radial seulement) : même géométrie, mais les lamelles radiales sont coupées à 1,5 mm des profils
 (plus de fente). <b>Écart 4 mm</b> (pas 5 mm) : pas d'intercalaires ; 7 radiales par secteur, coupées à 1,5 mm des profils.
 <b>Écart 5 mm</b> (pas 6 mm, demande du 13/11) : pas d'intercalaires ; 3 radiales par secteur (5 mm d'écart au bord du noyau,
@@ -198,12 +223,92 @@ seule pièce (vérifié). À comparer en CFD : profils en quinconce ou alignés 
     return html, obj
 
 
+def graphe_dp_hA(v, non_valables, raccord, dc):
+    """Graphe Δp = f(hA du tube) des cas du secteur : plein = raccord périodique correct (98–102 %), creux = raccord partiel
+    (84–97 %, chiffres à confirmer) ; les cas non valables ne sont pas tracés. Objectif : 600 W/K sous 25 Pa."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    FAM = [("_f05s", "Décalées avec dents", "#0b7285"), ("_f05i", "Imbriquées", "#2f9e44"), ("_f05v", "Vague", "#e03131"), ("decale4", "Décalées", "#1c7ed6"),
+           ("continu", "Continues", "#f08c00"), ("radiales", "Continues + radiales", "#7048e8")]
+    ECART = {"": "écart 1,5", "_c15": "écart 1,5 corrigé", "_p5": "écart 4", "_p6": "écart 5", "_m3": "écart 1,5, maillage fin",
+             "_f05b_m3y": "lam. 0,5", "_f05i_m3y": "lam. 0,5", "_f05v_m3y": "lam. 0,5", "_f05s_m3y": "lam. 0,5 + dents"}
+    # position des étiquettes (points, alignement) pour éviter les chevauchements
+    DECAL = {"decale4": (6, -15, "left"), "decale4_f05b_m3y": (9, 5, "left"), "decale4_f05s_m3y": (8, -13, "left"), "continu": (-8, 6, "right"),
+             "decale4_m3": (6, 7, "left"), "continu_p5": (-6, 8, "right"), "continu_p6": (-6, -12, "right"),
+             "decale4_p6": (4, -14, "left"), "decale4_p5": (6, 6, "left"), "radiales_p6": (-6, 6, "right"),
+             "radiales_p5": (-8, -4, "right")}
+    fig, ax = plt.subplots(figsize=(10, 6.2))
+    vus = set()
+    for k, r in v.items():
+        if k in non_valables:
+            continue
+        ra = raccord(k)
+        fam = next(x for x in FAM if x[0] in k)
+        suf = k.replace("decale4", "").replace("continu", "").replace("radiales", "")
+        bon = ra is not None and 0.98 <= ra <= 1.02
+        x, y = r["hA_tube_W_K"], r["dp_Pa"]
+        ax.scatter(x, y, s=70, color=fam[2] if bon else "white", edgecolor=fam[2], linewidth=1.8, zorder=3)
+        vus.add(fam[1])
+        dx, dy, ha = DECAL.get(k, (7, 4, "left"))
+        ax.annotate(f"{ECART.get(suf, suf)}" + ("" if bon else f" ({round(100 * ra)} %)"), (x, y), textcoords="offset points",
+                    xytext=(dx, dy), fontsize=8, color=fam[2], ha=ha)
+    ax.axhline(25, color="#555", ls="--", lw=1)
+    ax.axvline(600, color="#555", ls="--", lw=1)
+    ax.fill_between([600, 3000], 1, 25, color="#2f9e44", alpha=0.08, zorder=0)
+    ax.scatter([600], [25], marker="*", s=260, color="#fab005", edgecolor="#333", zorder=4)
+    ax.text(620, 20, "zone visée", fontsize=9, color="#2f9e44")
+    ax.set_xscale("log"); ax.set_yscale("log")
+    ax.set_xlim(35, 1500); ax.set_ylim(15, 600)
+    ax.set_xlabel("hA du tube complet (W/K), échelle log"); ax.set_ylabel("Δp de l'échangeur (Pa), échelle log")
+    ax.set_title("Secteur 1/8, 830 m³/h : perte de charge en fonction de l'échange")
+    ax.grid(alpha=0.3, which="both")
+    from matplotlib.lines import Line2D
+    from matplotlib.ticker import ScalarFormatter
+    for a_ in (ax.xaxis, ax.yaxis):
+        a_.set_major_formatter(ScalarFormatter())
+        a_.set_minor_formatter(ScalarFormatter())
+    ax.tick_params(which="minor", labelsize=7)
+    poignees = [Line2D([], [], marker="o", ls="", color=c, markersize=8, label=n) for _, n, c in FAM if n in vus]
+    poignees += [Line2D([], [], marker="o", ls="", color="#555", markersize=8, label="plein : raccord périodique correct"),
+                 Line2D([], [], marker="o", ls="", markerfacecolor="white", markeredgecolor="#555", markersize=8,
+                        label="creux : raccord partiel (%), à confirmer"),
+                 Line2D([], [], marker="*", ls="", color="#fab005", markeredgecolor="#333", markersize=14, label="Objectif (600 W/K, 25 Pa)")]
+    ax.legend(handles=poignees, fontsize=8, loc="upper left")
+    fig.tight_layout()
+    fi = dc / "graphe_secteur_dp_hA.png"
+    fig.savefig(fi, dpi=130)
+    plt.close(fig)
+    return (f"<figure style='margin:12px 0;max-width:900px'><img src='data:image/jpeg;base64,{jpeg_b64(fi, 1200)}' "
+            f"style='width:100%;border:1px solid var(--trait);border-radius:8px'><figcaption class=aide><b>Δp = f(hA du tube)</b> pour "
+            "les cas du tableau. Marqueur plein : faces périodiques bien raccordées (98–102 %) ; creux : raccord partiel (84–97 %), "
+            "valeur à confirmer. Cas non valables (grisés dans le tableau) non tracés. Lamelles de 1 mm sauf « lam. 0,5 » (0,5 mm, "
+            "pas 2,5, espace radial 1,5, maillage fin). Aucune de ces valeurs n'a encore d'étude de maillage valable (voir plus bas). "
+            "En bas à droite : plus d'échange pour moins de perte de charge.</figcaption></figure>")
+
+
 def bloc_resultats_secteur():
     """Résultats CFD du secteur de 1/8 (resultats_concept.py, cas « secteur ») : tableau par écart, vue 3D x/y/z, images."""
     dc = DI / "cfd"
     MOD = [("decale4", "Décalées, espace radial 4 mm"), ("continu", "Lamelles continues"), ("radiales", "Continues + radiales")]
     ECARTS = [("", "écart 1,5 mm (pas 2,5)"), ("_c15", "écart 1,5 mm, corrigé (couloir de 1,5 mm autour des profils)"),
-              ("_p5", "écart 4 mm (pas 5)"), ("_p6", "écart 5 mm (pas 6)")]
+              ("_p5", "écart 4 mm (pas 5)"), ("_p6", "écart 5 mm (pas 6)"),
+              ("_f05", "lamelles de 0,5 mm, pas 2,5 (jeu 2 mm), espace radial 1,5 mm"),
+              ("_f05b", "lamelles de 0,5 mm, pas 2,5 (jeu 2 mm), espace radial 1,5 mm, écartées des faces périodiques"),
+              ("_m3", "écart 1,5 mm (pas 2,5), MAILLAGE FIN 0,156 mm"),
+              ("_f05b_m3", "lamelles de 0,5 mm, pas 2,5, espace radial 1,5 mm, MAILLAGE FIN 0,156 mm"),
+              ("_f05i_m3", "lamelles 0,5 mm IMBRIQUÉES, maillage fin (1er essai)"), ("_f05v_m3", "ailettes 0,5 mm EN VAGUE, maillage fin (1er essai)"),
+              ("_f05b_m3y", "lamelles 0,5 mm décalées, maillage fin, RACCORD CORRIGÉ (14/11)"),
+              ("_f05i_m3y", "lamelles 0,5 mm IMBRIQUÉES, maillage fin, raccord corrigé (14/11)"),
+              ("_f05v_m3y", "ailettes 0,5 mm EN VAGUE, maillage fin, raccord corrigé (14/11)"),
+              ("_f05s_m3y", "lamelles 0,5 mm décalées AVEC DENTS (plis triangulaires), maillage fin, raccord corrigé (14/11)")]
+    def raccord(k):
+        """Part de la face périodique y0 raccordée à y1 (AMI, sum(weights) moyen, log.simpleFoam)."""
+        fl = RACINE_CE / "cfd_campagne/secteur/resultats" / k / "log.simpleFoam"
+        if not fl.exists():
+            return None
+        l = [x for x in fl.read_text(errors="ignore").splitlines()[:400] if "source sum(weights)" in x]
+        return float(l[1].split("average:")[1]) if len(l) > 1 else None
     v = {}
     for m, _ in MOD:
         for s_, _ in ECARTS:
@@ -217,17 +322,36 @@ def bloc_resultats_secteur():
         x = max(r["fluctuation_dp"], r["fluctuation_T"]) / 2          # demi-écart (± affiché)
         etat = "stable" if x < 0.01 else ("oscille un peu" if x < 0.05 else "oscille")
         return f"{etat} <span class=aide>(Δp ± {f(50 * r['fluctuation_dp'], 1)} %, θ ± {f(50 * r['fluctuation_T'], 1)} %)</span>"
+    NON_VALABLES = {"radiales": "fentes autour des profils", "decale4_f05": "bilan de chaleur faux (lamelles de 0,25 mm sur les faces périodiques)"}
+    for k_ in ("decale4_f05b", "decale4_f05b_m3", "decale4_f05i_m3", "decale4_f05v_m3"):
+        NON_VALABLES[k_] = "faces périodiques le long du tube raccordées à 18–31 % seulement (défaut du calcul parallèle)"
     tab = ("<tr><th>Modèle</th><th>Écart entre lamelles</th><th class=n>Δp</th><th class=n>hA du tube</th>"
-           "<th class=n>Efficacité ε</th><th>Stabilité du calcul</th></tr>")
+           "<th class=n>hA / Δp<br><span class=aide>(W/K par Pa, plus haut = mieux ; objectif 600 / 25 = 24)</span></th>"
+           "<th class=n>Efficacité ε</th><th>Stabilité du calcul</th><th class=n>Bilan de chaleur paroi / air</th><th class=n>Raccord périodique y</th></tr>")
+    # dégradé de couleur de hA / Δp (rouge = mauvais, vert = bon), échelle log entre le plus mauvais cas valable et l'objectif (24)
+    import math
+    rv = [x["hA_tube_W_K"] / x["dp_Pa"] for k_, x in v.items() if k_ not in NON_VALABLES]
+    lo, hi = math.log(min(rv)), math.log(24.0)
+
+    def couleur_ratio(val, nv):
+        if nv:
+            return "transparent"
+        s = min(1.0, max(0.0, (math.log(val) - lo) / (hi - lo)))
+        return f"hsla({round(120 * s)}, 75%, 45%, 0.35)"
     for m, nom in MOD:
         for s_, ne in ECARTS:
             r = v.get(m + s_)
             if not r:
                 continue
-            nv = (m == "radiales" and s_ == "")
+            nv = NON_VALABLES.get(m + s_)
+            ac = None
+            ra = raccord(m + s_)
+            bil = r.get("bilan_paroi_sur_air")
             tab += (f"<tr{' style=opacity:.55' if nv else ''}><td>{nom}</td><td>{ne}</td>"
-                    f"<td class=n><b>{f(r['dp_Pa'])} Pa</b>{' (non valable : fentes)' if nv else ''}</td>"
-                    f"<td class=n><b>{f(r['hA_tube_W_K'])} W/K</b></td><td class=n>{f(r['efficacite'], 3)}</td><td>{stab(r)}</td></tr>")
+                    f"<td class=n><b>{f(r['dp_Pa'])} Pa</b>{f' (non valable : {nv})' if nv else ''}</td>"
+                    f"<td class=n><b>{f(r['hA_tube_W_K'])} W/K</b>{f' <span class=aide>({ac})</span>' if ac else ''}</td><td class=n style='background:{couleur_ratio(r['hA_tube_W_K'] / r['dp_Pa'], nv)}'><b>{f(r['hA_tube_W_K'] / r['dp_Pa'], 2)}</b></td><td class=n>{f(r['efficacite'], 3)}</td><td>{stab(r)}</td>"
+                    f"<td class=n>{f(100 * bil) + ' %' if bil else ''}</td><td class=n>{f(100 * ra) + ' %' if ra else ''}</td></tr>")
+    graphe = graphe_dp_hA(v, NON_VALABLES, raccord, dc)
     imgs = ""
     for k in [m + "_p6" for m, _ in MOD if m + "_p6" in v]:
         nom = dict(MOD)[k.replace("_p6", "")] + ", écart 5 mm"
@@ -239,10 +363,39 @@ def bloc_resultats_secteur():
                          f"<figcaption class=aide>{nom}, {leg}.</figcaption></figure> ")
     return f"""<h4 id=resultats-secteur>Résultats CFD du secteur (13/11, 830 m³/h, quelques minutes de calcul par modèle)</h4>
 <div class=carte><table>{tab}</table>
+{graphe}
 <p class=aide>hA du tube complet à 830 m³/h (requis ≈ 600 W/K) ; Δp de l'échangeur seul (budget ≈ 25 Pa). Lamelles de 1 mm.
 Efficacité ε : part de l'écart de température air / propane récupérée par l'air (température de mélange en sortie) ; NTU = −ln(1 − ε).
 Stabilité : demi-écart max / moyenne de Δp et de θ de sortie sur les 500 dernières itérations (50 si le calcul a convergé tôt) ;
 « stable » sous 1 %, « oscille un peu » sous 5 %, « oscille » au-delà (écoulement instationnaire derrière les tronçons : valeurs moyennes).
+Bilan de chaleur : chaleur reçue par les parois (gradient de température à la paroi) / chaleur emportée par l'air. Ce bilan devrait
+valoir 100 % ; il varie de 47 à 162 % selon les cas, parce que le gradient calculé dans les mailles de paroi est imprécis : ce n'est
+pas un indicateur fiable à lui seul (ε, tiré de la température de mélange en sortie, fait foi).<br>
+<b>Correction du 14/11 — raccord des faces périodiques.</b> Les faces périodiques le long du tube (y0 ↔ y1) sont reliées par une
+interpolation (AMI). En calcul parallèle, OpenFOAM ne la calcule correctement que si aucun processeur ne porte à la fois une partie de
+y0 et de y1 : avec le découpage automatique, seuls <b>18 à 31 % de la face étaient raccordés au pas de 2,5 mm</b> (le reste se comportait
+en paroi), 84 à 100 % au pas de 5 à 6 mm (colonne « Raccord périodique y »). Les cas au pas de 2,5 mm calculés avant le 14/11 sont donc
+faux (grisés). Correctif : découpage en 8 tranches le long du tube (raccord 99,6 à 100,5 %) et arrêt automatique du calcul si le raccord
+est hors de 98–102 %. Au pas de 5 à 6 mm, les décalées et les radiales sont à 92–100 %, mais les <b>lamelles continues seulement à 72–84 %</b> : leur comparaison avec les décalées est à refaire avec le raccord corrigé.<br>
+<b>Lamelles 0,5 mm au maillage fin, raccord corrigé (14/11)</b> : décalées <b>59 Pa / 299 W/K</b> (ε 0,66) ; <b>imbriquées</b> (chaque
+lamelle recouvre la moitié de ses voisines) <b>169 Pa / 731 W/K</b> (ε 0,93) : seule forme qui dépasse les 600 W/K requis, au prix de
+jeux de 0,75 mm et d'une perte de charge 7 fois le budget ; <b>vague</b> <b>103 Pa / 330 W/K</b> (ε 0,69) : à peine plus d'échange que les
+décalées pour 1,7 fois leur perte de charge (la couche limite n'est plus coupée, et l'air est dévié à chaque pente). Les trois calculs
+sont stables, bilans de chaleur 90 à 93 %.<br>
+<b>Décalées 0,5 mm avec dents (plis triangulaires, 14/11)</b> : <b>56 Pa / 229 W/K</b> (ε 0,56, hA/Δp 4,1), calcul stable, bilan 91 %,
+raccord 100,1 %. Les dents font <b>perdre 23 % d'échange</b> par rapport aux mêmes lamelles sans dents (299 W/K) pour seulement 5 % de
+perte de charge en moins. Cause visible dans la coupe y : les creux en V entre deux dents n'ont pas de lamelle, ils forment des canaux
+radiaux ouverts où l'air traverse sans toucher de paroi (zone extérieure restée à θ ≈ 0). Le surcroît de surface des flancs ne compense
+pas cette fuite. De plus, le recalage des profils dans les dents a déplacé la rangée extérieure de tubes vers les bords du secteur.
+Pour que les plis servent, il faudrait qu'ils ne laissent pas de passage direct (dents d'une couronne en face des creux de la suivante,
+ou plis dans l'épaisseur plutôt qu'en plan).<br>
+<b>Étude de maillage (13/11)</b> : deux cas refaits avec des mailles de 0,156 mm dans toute la zone d'échange (au lieu de 0,25 mm).
+Décalées, écart 1,5 mm (lamelles de 1 mm) : 62 → <b>83 Pa</b> (+35 %), 266 → <b>220 W/K</b> (−17 %). Lamelles de 0,5 mm : 30 → 71 Pa,
+609 → 291 W/K ; ces deux calculs avaient le défaut de raccord périodique (corrigé le 14/11 : 59 Pa, 299 W/K) : la comparaison n'est
+pas valable pour ce cas. Conséquence : <b>tous les
+résultats au maillage de 0,25 mm sous-estiment Δp d'environ 30 % et surestiment hA d'environ 15 à 20 %</b> ; les comparaisons entre modèles
+restent indicatives, les valeurs absolues doivent être corrigées ou refaites au maillage fin. Les lamelles décalées oscillent (± 9 à
+23 % sur Δp) : un calcul instationnaire préciserait leur perte de charge.
 <b>Écart 1,5 mm</b> : les lamelles continues donnent 65 Pa et 241 W/K (68 Pa et 218 W/K sur le secteur complet, profils placés
 autrement) : le secteur de 1/8 est utilisable pour les études ; le modèle radial n'est pas valable (profils à 0 à 0,4 mm des lamelles
 radiales voisines : fentes, jets à 30 m/s). <b>Écarts 4 et 5 mm</b> : moins de lamelles, donc moins de Δp et moins d'échange ; les
@@ -560,8 +713,8 @@ supprimée sous r = {f(pi_['r_intercalaire'])} mm. Bord d'entrée de l'air : {f(
 """
     corps2d = corps2d.replace("<h2 id=variante-e>", vue_f + "<h2 id=variante-e>", 1)
     html = MODELE.replace("__CSS2D__", css2d).replace("__CROQUIS__", corps2d).replace("__OBJETS__", json.dumps(objets)).replace("__OBJETS_E__", json.dumps(objets_e)).replace("__OBJETS_F__", json.dumps(objets_f)).replace("__OBJETS_FL__", json.dumps(objets_fl)).replace("__OBJETS_FP__", json.dumps(objets_fp)).replace("__OBJETS_FI__", json.dumps(objets_fi)).replace("__MAILLAGES__", maillages_json()).replace("__OBJETS_DS__", json.dumps(bloc_domaine())).replace("__RES3D__", resultats_3d_json()).replace("__RES3DS__", resultats_3d_json(
-        tuple(f"secteur_{m}{s_}" for s_ in ("_p6", "_p5", "") for m in ("decale4", "continu", "radiales")) + ("secteur_radiales_c15",), "secteur",
-        lambda k: k.replace("secteur_", ""))).replace("__OBJETS_SP__", json.dumps(objets_sp)).replace("__TABLE__", table).replace("__L__", str(p["longueur"])).replace("__L2__", str(p["longueur"] / 2))
+        tuple(f"secteur_{m}{s_}" for s_ in ("_p6", "_p5", "") for m in ("decale4", "continu", "radiales")) + ("secteur_radiales_c15", "secteur_decale4_f05b", "secteur_decale4_f05", "secteur_decale4_m3", "secteur_decale4_f05b_m3", "secteur_decale4_f05b_m3y", "secteur_decale4_f05i_m3y", "secteur_decale4_f05v_m3y", "secteur_decale4_f05s_m3y"), "secteur",
+        lambda k: k.replace("secteur_", "").replace("_m3y", "").replace("_m3", ""))).replace("__OBJETS_SP__", json.dumps(objets_sp)).replace("__TABLE__", table).replace("__L__", str(p["longueur"])).replace("__L2__", str(p["longueur"] / 2))
     out = D / "echangeur_radial.html"
     out.write_text(html)
     print(out, round(len(html) / 1e6, 2), "Mo")
@@ -885,7 +1038,11 @@ async function vueResultats(sfx, RES3D) {
     secteur_decale4: "Décalées, écart 1,5", secteur_continu: "Continues, écart 1,5", secteur_radiales: "Radiales, écart 1,5 (défaut)",
     secteur_decale4_p5: "Décalées, écart 4", secteur_continu_p5: "Continues, écart 4", secteur_radiales_p5: "Radiales, écart 4",
     secteur_decale4_p6: "Décalées, écart 5", secteur_continu_p6: "Continues, écart 5", secteur_radiales_p6: "Radiales, écart 5",
-    secteur_radiales_c15: "Radiales, écart 1,5 corrigé" };
+    secteur_radiales_c15: "Radiales, écart 1,5 corrigé", secteur_decale4_f05: "Décalées, lamelles 0,5 mm (non valable)",
+    secteur_decale4_f05b: "Décalées, lamelles 0,5 mm (infirmé)",
+    secteur_decale4_m3: "Décalées, écart 1,5 — MAILLAGE FIN", secteur_decale4_f05b_m3: "Décalées, lamelles 0,5 mm — maillage fin (raccord faux)",
+    secteur_decale4_f05b_m3y: "Décalées 0,5 mm — corrigé (14/11)", secteur_decale4_f05i_m3y: "Imbriquées 0,5 mm (14/11)",
+    secteur_decale4_f05v_m3y: "Vague 0,5 mm (14/11)", secteur_decale4_f05s_m3y: "Décalées 0,5 mm avec dents (14/11)" };
   for (const k of Object.keys(RES3D)) { const b = document.createElement("button"); b.dataset.k = k; b.textContent = NOMS[k] || k; b.onclick = () => charger(k);
     $R("casR").append(b, " "); }
   const sel = $R("champR");

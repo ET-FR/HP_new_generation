@@ -21,7 +21,9 @@ exec(open("/home/thomas/Documents/PROJETCS/HP_new_generation/conception_echangeu
 # configuration : SUFFIXE et S_MODIF peuvent être définis avant l'exec (ex. « _p5 » : une lamelle sur deux)
 SUFFIXE = globals().get("SUFFIXE", "_p6")
 S.update(globals().get("S_MODIF", {}))
-PERIODE = S["pas_lamelles"] if S["pas_lamelles"] >= 5.0 else 2 * S["pas_lamelles"]   # période de la tranche le long du tube
+P.update(globals().get("P_MODIF", {}))            # ex. {"ep_lamelle": 0.5}
+# période de la tranche le long du tube : un pas, sauf avec les intercalaires (une lamelle sur deux près du noyau) : deux pas
+PERIODE = 2 * S["pas_lamelles"] if S["intercalaires"] else S["pas_lamelles"]
 DOSSIER_G = "/home/thomas/Documents/PROJETCS/HP_new_generation/conception_echangeur/cfd_campagne/secteur/geometrie"
 Y_BANDE = (-1.0, PERIODE + 1.0)
 DEBORD = 4.0
@@ -56,21 +58,28 @@ def solide_secteur(modele):
     g0, g1 = f0 - DEBORD, f1 + DEBORD
 
     def plaques(r_in, r_out, dec, inter):
-        c = secteur(r_in, r_out, g0, g1, pas=0.5)
+        cs = faces_lamelle(r_in, r_out, g0, g1, 0.5)
         for i in range(-2, 4):
-            y = -0.5 + dec + i * pas
+            # par défaut une famille est coupée en son milieu par les faces périodiques ; « phase_y » place au contraire
+            # toutes les lamelles à distance des faces (lamelles minces : une demi-lamelle de 0,25 mm sur une face
+            # périodique fausse l'interpolation AMI — bilan de chaleur à 33 % le 13/11)
+            y = S.get("phase_y", -t / 2) + dec + i * pas
             if y + t < Y_BANDE[0] or y > Y_BANDE[1]:
                 continue
             if inter and i % 2 == 1:
                 continue
-            morceaux.append(dans_plan_y(c, y, t))
-    if modele == "decale4":
-        k, r_in = 0, rn
-        while r_in < re - 0.5:
-            r_out = min(r_in + lc, re)
-            plaques(r_in, r_out, (k % 2) * pas / 2, S["intercalaires"] and r_out <= P["r_intercalaire"])
-            r_in = r_out + S["espace_radial"]
-            k += 1
+            morceaux.extend(dans_plan_y(c, y, t) for c in cs)
+    if modele == "decale4" and S.get("forme_lamelles") == "vague":
+        # ailettes en vague (14/11) : ligne moyenne au milieu de la lamelle « phase_y » ; une ailette occupe
+        # [y, y + pas/2 + t] : les faces périodiques restent dans la bande libre, comme pour les lamelles décalées
+        for i in range(-2, 4):
+            yc = S.get("phase_y", -t / 2) + t / 2 + i * pas
+            if yc + pas / 2 + t / 2 < Y_BANDE[0] or yc - t / 2 > Y_BANDE[1]:
+                continue
+            morceaux.append(vague(rn, re, g0, g1, yc))
+    elif modele == "decale4":
+        for r_in, r_out, fam in troncons(rn, re):
+            plaques(r_in, r_out, fam * pas / 2, S["intercalaires"] and r_out <= P["r_intercalaire"])
     else:
         plaques(rn, re, 0.0, False)
     if modele == "radiales":
@@ -94,14 +103,21 @@ def solide_secteur(modele):
         sol = list(s.Solids)
         ip = max(range(len(sol)), key=lambda i: sol[i].Volume)
         princ = sol[ip]
+        gardes = []
         for i, x in enumerate(sol):
             if i == ip:
                 continue
             cm = x.CenterOfMass
             phi = math.degrees(math.atan2(cm.z, cm.x))
             dedans = f0 - 1.0 < phi < f1 + 1.0
-            print(f"[{modele}] morceau isolé retiré à φ = {phi:.1f}° ({'DANS LE SECTEUR : ERREUR' if dedans else 'hors du secteur'})", flush=True)
-        s = princ
+            if dedans and S.get("garder_morceaux_dans_secteur"):
+                # lamelles avec stries (14/11) : la dent du bord du secteur est reliée au reste de la pièce par un profil du
+                # secteur voisin, hors de la bande modélisée ; parois à température imposée : on la garde dans le solide CFD
+                gardes.append(x)
+                print(f"[{modele}] morceau séparé GARDÉ à φ = {phi:.1f}°, r = {math.hypot(cm.x, cm.z):.1f} mm, {x.Volume:.2f} mm³ (relié hors de la bande)", flush=True)
+                continue
+            print(f"[{modele}] morceau isolé retiré à φ = {phi:.1f}°, r = {math.hypot(cm.x, cm.z):.1f} mm, y = {cm.y:.2f}, {x.Volume:.2f} mm³ ({'DANS LE SECTEUR : ERREUR' if dedans else 'hors du secteur'})", flush=True)
+        s = Part.makeCompound([princ] + gardes) if gardes else princ
     return s, dict(secteur_deg=[f0, f1], angle_deg=da, profils=pos)
 
 
@@ -109,7 +125,7 @@ os.makedirs(DOSSIER_G, exist_ok=True)
 F_GEO = os.path.join(DOSSIER_G, "geometrie.json")
 anc = json.load(open(F_GEO)) if os.path.exists(F_GEO) else {}
 info = anc.get("modeles", {})
-for m0 in ("decale4", "continu", "radiales"):
+for m0 in globals().get("MODELES", ("decale4", "continu", "radiales")):
     m = m0 + SUFFIXE
     s, inf = solide_secteur(m0)
     print(f"[{m}] valide {s.isValid()}, solides {len(s.Solids)}, fermé {all(x.isClosed() for x in s.Shells)}, volume {s.Volume / 1e3:.2f} cm³", flush=True)
